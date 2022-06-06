@@ -1,0 +1,7 @@
+[package]
+name = "contest-lib-rust"
+version = "0.1.0"
+authors = ["Andrei Matveiakin <a.matveiakin@gmail.com>"]
+edition = "2021"
+
+[dependencies]
