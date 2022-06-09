@@ -1,7 +1,10 @@
 // Optimization potential: Check index validity in `to_tree_index` and do
 // unchecked array access in tree traversal.
 
+use std::ops;
+
 use crate::bits::ceil_to_pow_2;
+use crate::u32_index::U32Index;
 
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -22,7 +25,8 @@ impl Node {
 }
 
 
-pub struct SegmentTree<T: Clone + Default, F: Fn(&T, &T) -> T> {
+#[derive(Clone, Debug)]
+pub struct SegmentTree<T, F> {
     num_leaves: u32,
     num_non_leaves: u32,
     heap: Vec<T>,
@@ -43,19 +47,17 @@ impl<T: Clone + Default, F: Fn(&T, &T) -> T> SegmentTree<T, F> {
 
     pub fn size(&self) -> u32 { self.num_leaves }
 
-    pub fn update(&mut self, pos: u32, value: &T) {
-        let v = self.to_tree_index(pos);
-        self.update_vertex(v, value);
-    }
-    // Improvement potential: Accept ranges instead.
-    // Updates segment [`from`, `to`).
-    pub fn update_range(&mut self, from: u32, to: u32, value: &T) {
+    // Updates all values on a segment.
+    // Complexity: O(log N) where N is tree size.
+    pub fn update(&mut self, idx: impl U32Index, value: &T) {
+        let (from, to) = idx.bounds(self.size());
         if from == to {
             return;
         }
         let to_inclusive = to - 1;
         if from == to_inclusive {
-            self.update(from, value);
+            let v = self.to_tree_index(from);
+            self.update_vertex(v, value);
             return;
         }
         let mut u = self.to_tree_index(from);
@@ -82,9 +84,22 @@ impl<T: Clone + Default, F: Fn(&T, &T) -> T> SegmentTree<T, F> {
         }
     }
 
-    // Improvement potential: Implement via index operator; accept ranges.
+    // Returnes combined value for a segment.
+    // Complexity: O(M log N) where M is range length, N is tree size.  // TOOD: Fix
+    pub fn get(&self, idx: impl U32Index) -> T {
+        let (from, to) = idx.bounds(self.size());
+        (from..to).map(|i| self.get_value(i)).fold(Default::default(), |a, b| (self.combiner)(&a, &b))
+    }
+
+    // Returns an iterator yielding each value.
+    // Complexity of traversing the iterator: O(N log N) where N is tree size.
+    // Optimization potential: Make O(N).
+    pub fn iter(&self) -> impl Iterator<Item = T> + '_ {
+        (0..self.num_leaves).map(|i| self.get_value(i))
+    }
+
     // Equivalent to `self.aggregate(pos, pos + 1)`
-    pub fn value(&self, pos: u32) -> T {
+    fn get_value(&self, pos: u32) -> T {
         let mut v = self.to_tree_index(pos);
         let mut ret = T::default();
         loop {
@@ -95,17 +110,6 @@ impl<T: Clone + Default, F: Fn(&T, &T) -> T> SegmentTree<T, F> {
             v = v.parent();
         }
     }
-    // Returnes combined value for segment [`from`, `to`).
-    // Optimization potential: Make O(N) instead of O(N log N).
-    pub fn aggregate(&self, from: u32, to: u32) -> T {
-        (from..to).map(|i| self.value(i)).fold(Default::default(), |a, b| (self.combiner)(&a, &b))
-    }
-
-    // Optimization potential: Make O(N) instead of O(N log N).
-    pub fn iter(&self) -> impl Iterator<Item = T> + '_ {
-        (0..self.num_leaves).map(|i| self.value(i))
-    }
-
     fn update_vertex(&mut self, v: Node, value: &T) {
         self.heap[v.0 as usize] = (self.combiner)(&self.heap[v.0 as usize], &value);
     }
@@ -127,9 +131,9 @@ mod tests {
     #[test]
     fn update_range() {
         let mut t = SegmentTree::<i32, _>::new(10, |x, y| x + y);
-        t.update_range(1, 6, &42);
-        assert_eq!(t.value(3), 42);
-        assert_eq!(t.value(7), 0);
+        t.update(1..6, &42);
+        assert_eq!(t.get(3), 42);
+        assert_eq!(t.get(7), 0);
         assert_eq!(tree_to_vec(&t), vec![0, 42, 42, 42, 42, 42, 0, 0, 0, 0]);
     }
 
@@ -137,27 +141,56 @@ mod tests {
     fn update_one() {
         let mut t = SegmentTree::<i32, _>::new(10, |x, y| x + y);
         t.update(3, &17);
-        t.update_range(5, 6, &18);
-        assert_eq!(tree_to_vec(&t), vec![0, 0, 0, 17, 0, 18, 0, 0, 0, 0]);
+        assert_eq!(tree_to_vec(&t), vec![0, 0, 0, 17, 0, 0, 0, 0, 0, 0]);
     }
 
     #[test]
     fn update_all() {
         let mut t = SegmentTree::<i32, _>::new(10, |x, y| x + y);
-        t.update_range(0, 10, &33);
+        t.update(.., &33);
         assert_eq!(tree_to_vec(&t), vec![33; 10]);
     }
 
     #[test]
     fn update_multi() {
         let mut t = SegmentTree::<i32, _>::new(10, |x, y| x + y);
-        t.update_range(2, 7, &1);
-        t.update_range(3, 8, &-1);
-        t.update_range(0, 6, &10);
-        t.update_range(5, 10, &-10);
+        t.update(2..7, &1);
+        t.update(3..8, &-1);
+        t.update(0..6, &10);
+        t.update(5..10, &-10);
         assert_eq!(tree_to_vec(&t), vec![10, 10, 11, 10, 10, 0, -10, -11, -10, -10]);
-        assert_eq!(t.aggregate(0, 2), 20);
-        assert_eq!(t.aggregate(1, 4), 31);
-        assert_eq!(t.aggregate(0, 10), 10);
+        assert_eq!(t.get(0..2), 20);
+        assert_eq!(t.get(1..4), 31);
+        assert_eq!(t.get(0..10), 10);
     }
+
+    #[test]
+    fn range_syntax() {
+        let empty_tree = SegmentTree::<i32, _>::new(5, |x, y| x + y);
+
+        let mut t = empty_tree.clone();
+        t.update(1..3, &1);
+        assert_eq!(tree_to_vec(&t), vec![0, 1, 1, 0, 0]);
+
+        let mut t = empty_tree.clone();
+        t.update(1..=3, &1);
+        assert_eq!(tree_to_vec(&t), vec![0, 1, 1, 1, 0]);
+
+        let mut t = empty_tree.clone();
+        t.update(..2, &1);
+        assert_eq!(tree_to_vec(&t), vec![1, 1, 0, 0, 0]);
+
+        let mut t = empty_tree.clone();
+        t.update(..=2, &1);
+        assert_eq!(tree_to_vec(&t), vec![1, 1, 1, 0, 0]);
+
+        let mut t = empty_tree.clone();
+        t.update(2.., &1);
+        assert_eq!(tree_to_vec(&t), vec![0, 0, 1, 1, 1]);
+
+        let mut t = empty_tree.clone();
+        t.update(.., &1);
+        assert_eq!(tree_to_vec(&t), vec![1, 1, 1, 1, 1]);
+    }
+
 }
