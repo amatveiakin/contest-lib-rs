@@ -2,13 +2,11 @@
 
 #![allow(unused_imports)]
 
-pub mod bits;
 pub mod io;
 pub mod segment_tree;
 pub mod testing;
 pub mod u32_index;
 
-use bits::*;
 use io::*;
 use segment_tree::*;
 use u32_index::*;

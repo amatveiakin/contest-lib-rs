@@ -7,7 +7,6 @@
 
 use std::ops;
 
-use crate::bits::ceil_to_pow_2;
 use crate::u32_index::U32Index;
 
 
@@ -42,7 +41,7 @@ impl<T: Clone, F: Fn(&T, &T, i32) -> T> SegmentTree<T, F> {
         //  D     D
 
         let num_leaves: u32 = data.len().try_into().unwrap();
-        let num_shallow_leaves = ceil_to_pow_2(num_leaves) - num_leaves;
+        let num_shallow_leaves = num_leaves.next_power_of_two() - num_leaves;
         let num_deep_leaves = num_leaves - num_shallow_leaves;
         let num_non_leaves = num_leaves - 1;
         let heap_size = num_non_leaves + num_leaves;
