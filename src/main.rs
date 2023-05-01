@@ -3,11 +3,13 @@
 #![allow(unused_imports)]
 
 pub mod io;
+pub mod partial_sums;
 pub mod segment_tree;
 pub mod testing;
 pub mod u32_index;
 
 use io::*;
+use partial_sums::*;
 use segment_tree::*;
 use u32_index::*;
 
