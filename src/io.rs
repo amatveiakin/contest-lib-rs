@@ -103,7 +103,7 @@ simple_emittable!(
     u8, u16, u32, u64, u128, usize,
     i8, i16, i32, i64, i128, isize,
     f64, f32,
-    String, str,
+    String, str,  // TODO: Consider replacing with `ToString<T>`
 );
 
 trait_for_value_and_ref!(impl<{T: Emittable}> Emittable for Vec<T> {
