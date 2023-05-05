@@ -5,6 +5,7 @@
 pub mod bfs;
 pub mod directed_graph;
 pub mod graph;
+#[macro_use]
 pub mod io;
 pub mod partial_sums;
 pub mod segment_tree;
@@ -22,11 +23,9 @@ use u32_index::*;
 use undirected_graph::*;
 
 
+#[allow(unused_variables)]
 fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
-    let n = read.i32();
-    let v = read.vec_i32(n as usize);
-    emitln!(write, n);
-    emitln!(write, v);
+    // ...
 }
 
 fn main() {
@@ -44,6 +43,6 @@ mod tests {
 
     #[test]
     fn test() {
-        assert_trimmed_eq!(&run_solver(solve, "3\n1 2 3\n"), "3\n1 2 3\n");
+        // assert_trimmed_eq!(&run_solver(solve, "..."), "...");
     }
 }

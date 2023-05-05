@@ -23,3 +23,22 @@ macro_rules! assert_trimmed_eq {
         assert_eq!(crate::testing::trim_lines($left), crate::testing::trim_lines($right));
     };
 }
+
+
+#[cfg(test)]
+mod tests {
+    use crate::io::*;
+    use super::*;
+
+    fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
+        let n = read.usize();
+        let v = read.vec_i32(n);
+        emitln!(write, n);
+        emitln!(write, v.iter().map(|x| x + 1).collect::<Vec<_>>());
+    }
+
+    #[test]
+    fn test() {
+        assert_trimmed_eq!(&run_solver(solve, "3\n1 -2 3\n"), "3\n2 -1 4\n");
+    }
+}
