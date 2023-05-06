@@ -5,8 +5,9 @@
 // Optimization potential: Rely on index validity check in `U32Index::bound` and do
 //   unchecked array access in tree traversal.
 
-use std::ops;
+use std::{fmt, ops};
 
+use crate::num::PrimInt;
 use crate::u32_index::U32Index;
 
 
@@ -19,6 +20,22 @@ pub struct SegmentTree<T, F> {
     neutral: T,
 }
 
+pub fn new_sum_tree<T: PrimInt>(data: &[T]) -> SegmentTree<T, impl Clone + Fn(&T, &T, i32) -> T>
+where
+    i32: TryInto<T>,
+    <i32 as TryInto<T>>::Error: fmt::Debug,
+{
+    SegmentTree::new(data, T::zero(), |&a, &b, n| a + b * n.try_into().unwrap())
+}
+
+pub fn new_min_tree<T: PrimInt>(data: &[T]) -> SegmentTree<T, impl Clone + Fn(&T, &T, i32) -> T> {
+    SegmentTree::new(data, T::max_value(), |&a, &b, _| a.min(b))
+}
+
+pub fn new_max_tree<T: PrimInt>(data: &[T]) -> SegmentTree<T, impl Clone + Fn(&T, &T, i32) -> T> {
+    SegmentTree::new(data, T::min_value(), |&a, &b, _| a.max(b))
+}
+
 impl<T: Clone, F: Fn(&T, &T, i32) -> T> SegmentTree<T, F> {
     // `combiner` takes (A, B, N) and returns A with B applied N times.
     // Requirement:  combiner(A, B, N) == combiner(...combiner(A, B, 1), ..., B, 1)  N times.
@@ -28,7 +45,7 @@ impl<T: Clone, F: Fn(&T, &T, i32) -> T> SegmentTree<T, F> {
     //   * neutral == 0
     //   * combiner: (A, B, N) -> A + B * N
     //
-    pub fn new(data: &Vec<T>, neutral: T, combiner: F) -> Self {
+    pub fn new(data: &[T], neutral: T, combiner: F) -> Self {
         // Shallow leaves are those one level closer to the root than deep leaves.
         // Example. "N" are non-leaves, "S" are shallow leaves, "D" are deep leaves:
         //
@@ -147,7 +164,7 @@ impl<T: Clone, F: Fn(&T, &T, i32) -> T> SegmentTree<T, F> {
     }
 
     fn fill_heap(
-        data: &Vec<T>, neutral: &T, combiner: &F,
+        data: &[T], neutral: &T, combiner: &F,
         num_non_leaves: u32, num_shallow_leaves: u32, num_deep_leaves: u32,
         v: VertexId, heap: &mut Vec<Option<Vertex<T>>>)
     {
@@ -235,7 +252,7 @@ mod tests {
 
     #[test]
     fn one_update() {
-        let mut t = SegmentTree::<i32, _>::new(&vec![0; 10], 0, |x, y, n| x + y * n);
+        let mut t = new_sum_tree(&vec![0; 10]);
         t.update(1..6, &42);
         assert_eq!(t.get(3), 42);
         assert_eq!(t.get(7), 0);
@@ -245,7 +262,7 @@ mod tests {
 
     #[test]
     fn multiple_updates() {
-        let mut t = SegmentTree::<i32, _>::new(&vec![0; 10], 0, |x, y, n| x + y * n);
+        let mut t = new_sum_tree(&vec![0; 10]);
         t.update(2..7, &1);
         t.update(3..8, &-1);
         t.update(0..6, &10);
@@ -259,7 +276,7 @@ mod tests {
     #[test]
     fn custom_init() {
         let v = vec![1, 1, 2, 3, 5, 8, 13, 21, 34, 55];
-        let mut t = SegmentTree::<i32, _>::new(&v, 0, |x, y, n| x + y * n);
+        let mut t = new_sum_tree(&v);
         assert_eq!(tree_to_vec(&mut t), v);
         assert_eq!(t.get(..3), 4);
         assert_eq!(t.get(2..5), 10);
@@ -270,7 +287,7 @@ mod tests {
     #[test]
     fn pow_of_two_size() {
         let v = vec![1, 2, 3, 4, 5, 6, 7, 8];
-        let mut t = SegmentTree::<i32, _>::new(&v, 0, |x, y, n| x + y * n);
+        let mut t = new_sum_tree(&v);
         assert_eq!(tree_to_vec(&mut t), v);
         t.update(3..=4, &-10);
         t.update(2..=5, &5);
@@ -280,7 +297,7 @@ mod tests {
 
     #[test]
     fn min_tree() {
-        let mut t = SegmentTree::<i32, _>::new(&vec![i32::MAX; 7], i32::MAX, |x, y, _n| cmp::min(*x, *y));
+        let mut t = new_min_tree(&vec![i32::MAX; 7]);
         t.update(1..=3, &55);
         t.update(3..=4, &77);
         t.update(2, &99);
@@ -289,7 +306,7 @@ mod tests {
 
     #[test]
     fn range_syntax() {
-        let empty_tree = SegmentTree::<i32, _>::new(&vec![0; 5], 0, |x, y, n| x + y * n);
+        let empty_tree = new_sum_tree(&vec![0; 5]);
 
         let mut t = empty_tree.clone();
         t.update(2, &1);

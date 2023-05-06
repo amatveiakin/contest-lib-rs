@@ -7,6 +7,7 @@ pub mod directed_graph;
 pub mod graph;
 #[macro_use]
 pub mod io;
+pub mod num;
 pub mod partial_sums;
 pub mod segment_tree;
 pub mod testing;
@@ -17,6 +18,7 @@ use bfs::*;
 use directed_graph::*;
 use graph::*;
 use io::*;
+use num::*;
 use partial_sums::*;
 use segment_tree::*;
 use u32_index::*;
