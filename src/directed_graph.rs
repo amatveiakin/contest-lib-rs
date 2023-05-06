@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::graph::{Graph, VertexId, Edge};
+use crate::graph::{Graph, VertexId, HalfEdge};
 
 
 #[derive(Clone, Debug)]
@@ -45,9 +45,9 @@ impl<VP, EP> DirectedGraph<VP, EP> {
         payload
     }
 
-    fn get_edge<'g>(&'g self, from: VertexId, to: VertexId) -> Option<Edge<'g, EP>> {
+    fn get_payload<'g>(&'g self, from: VertexId, to: VertexId) -> Option<&'g EP> {
         let id = DirectedEdgeId::new(from, to);
-        self.edges.get(&id).map(|payload| Edge { from, to, payload })
+        self.edges.get(&id)
     }
 }
 
@@ -77,7 +77,7 @@ impl<VP> DirectedGraph<VP, ()> {
 }
 
 impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for DirectedGraph<VP, EP> {
-    type EdgeIter = Box<dyn Iterator<Item = Edge<'g, EP>> + 'g>;
+    type EdgeIter = Box<dyn Iterator<Item = HalfEdge<'g, EP>> + 'g>;
 
     fn num_vertices(&self) -> usize { self.vertices.len() }
     fn num_edges(&self) -> usize { self.edges.len() }
@@ -111,12 +111,12 @@ impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for DirectedGraph<VP, EP> {
     fn edges_from(&'g self, from: VertexId) -> Self::EdgeIter {
         Box::new(self.edges_from[from.to_0_based() as usize]
             .iter()
-            .map(move |&to| self.get_edge(from, to).unwrap()))
+            .map(move |&to| HalfEdge { other: to, payload: self.get_payload(from, to).unwrap() }))
     }
     fn edges_to(&'g self, to: VertexId) -> Self::EdgeIter {
         Box::new(self.edges_to[to.to_0_based() as usize]
             .iter()
-            .map(move |&from| self.get_edge(from, to).unwrap()))
+            .map(move |&from| HalfEdge { other: from, payload: self.get_payload(from, to).unwrap() }))
     }
 }
 

@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::graph::{Graph, VertexId, Edge};
+use crate::graph::{Graph, VertexId, HalfEdge};
 
 
 #[derive(Clone, Debug)]
@@ -42,15 +42,15 @@ impl<VP, EP> UndirectedGraph<VP, EP> {
         payload
     }
 
-    pub fn adjacent(&self, v: VertexId) -> impl Iterator<Item = Edge<'_, EP>> {
+    pub fn adjacent(&self, v: VertexId) -> impl Iterator<Item = HalfEdge<'_, EP>> {
         self.neighbours[v.to_0_based() as usize]
             .iter()
-            .map(move |&u| self.get_edge(v, u).unwrap())
+            .map(move |&u| HalfEdge { other: u, payload: self.get_payload(v, u).unwrap() })
     }
 
-    fn get_edge<'g>(&'g self, from: VertexId, to: VertexId) -> Option<Edge<'g, EP>> {
+    fn get_payload<'g>(&'g self, from: VertexId, to: VertexId) -> Option<&'g EP> {
         let id = UndirectedEdgeId::new(from, to);
-        self.edges.get(&id).map(|payload| Edge { from, to, payload })
+        self.edges.get(&id)
     }
 }
 
@@ -80,7 +80,7 @@ impl<VP> UndirectedGraph<VP, ()> {
 }
 
 impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for UndirectedGraph<VP, EP> {
-    type EdgeIter = Box<dyn Iterator<Item = Edge<'g, EP>> + 'g>;
+    type EdgeIter = Box<dyn Iterator<Item = HalfEdge<'g, EP>> + 'g>;
 
     fn num_vertices(&self) -> usize { self.vertices.len() }
     fn num_edges(&self) -> usize { self.edges.len() }

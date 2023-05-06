@@ -22,11 +22,10 @@ use std::collections::{HashMap, HashSet};
 pub struct VertexId { index: u32 }
 
 // TODO: Consider cloning the payload instead.
+// Edge, as viewed from one vertex (which could be either the head or the tail).
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
-pub struct Edge<'g, EP> {
-    // TODO: Having both vertices is confusing! Either remove `adjacent` or keep just one vertex.
-    pub from: VertexId,
-    pub to: VertexId,
+pub struct HalfEdge<'g, EP> {
+    pub other: VertexId,
     pub payload: &'g EP,
 }
 
@@ -54,7 +53,7 @@ pub struct Edge<'g, EP> {
 // certainly need to take either a `&mut DirectedGraph` or a `&mut UndirectedGraph`.
 //
 pub trait Graph<'g, VP, EP: 'g> {
-    type EdgeIter: Iterator<Item = Edge<'g, EP>>;
+    type EdgeIter: Iterator<Item = HalfEdge<'g, EP>>;
 
     fn num_vertices(&self) -> usize;
     fn num_edges(&self) -> usize;

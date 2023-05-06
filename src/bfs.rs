@@ -24,11 +24,11 @@ pub fn bfs_path<'g, VP, EP: 'g>(
             return Some(path);
         }
         for e in graph.edges_from(v) {
-            match prev.entry(e.to) {
+            match prev.entry(e.other) {
                 hash_map::Entry::Occupied(_) => {}
                 hash_map::Entry::Vacant(entry) => {
                     entry.insert(v);
-                    queue.push_back(e.to);
+                    queue.push_back(e.other);
                 }
             }
         }
