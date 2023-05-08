@@ -80,10 +80,15 @@ impl<VP> UndirectedGraph<VP, ()> {
 }
 
 impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for UndirectedGraph<VP, EP> {
-    type EdgeIter = Box<dyn Iterator<Item = HalfEdge<'g, EP>> + 'g>;
+    type VertexIter = Box<dyn Iterator<Item = VertexId>>;
+    type HalfEdgeIter = Box<dyn Iterator<Item = HalfEdge<'g, EP>> + 'g>;
 
     fn num_vertices(&self) -> usize { self.vertices.len() }
     fn num_edges(&self) -> usize { self.edges.len() }
+
+    fn vertex_ids(&self) -> Self::VertexIter {
+        Box::new((0..self.vertices.len()).map(|i| VertexId::from_0_based(i.try_into().unwrap())))
+    }
 
     fn vertex(&'g self, v: VertexId) -> &'g VP {
         &self.vertices[v.to_0_based() as usize]
@@ -107,8 +112,8 @@ impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for UndirectedGraph<VP, EP> {
     fn out_degree(&'g self, v: VertexId) -> u32 { self.degree(v) }
     fn in_degree(&'g self, v: VertexId) -> u32 { self.degree(v) }
 
-    fn edges_from(&'g self, from: VertexId) -> Self::EdgeIter { Box::new(self.adjacent(from)) }
-    fn edges_to(&'g self, to: VertexId) -> Self::EdgeIter { Box::new(self.adjacent(to)) }
+    fn edges_from(&'g self, from: VertexId) -> Self::HalfEdgeIter { Box::new(self.adjacent(from)) }
+    fn edges_to(&'g self, to: VertexId) -> Self::HalfEdgeIter { Box::new(self.adjacent(to)) }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]

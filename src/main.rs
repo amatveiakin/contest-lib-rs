@@ -3,6 +3,8 @@
 #![allow(unused_imports)]
 
 pub mod bfs;
+pub mod dfs;
+pub mod dijkstra;
 pub mod directed_graph;
 pub mod graph;
 #[macro_use]
@@ -11,16 +13,20 @@ pub mod num;
 pub mod partial_sums;
 pub mod segment_tree;
 pub mod testing;
+pub mod topological_sort;
 pub mod u32_index;
 pub mod undirected_graph;
 
 use bfs::*;
+use dfs::*;
+use dijkstra::*;
 use directed_graph::*;
 use graph::*;
 use io::*;
 use num::*;
 use partial_sums::*;
 use segment_tree::*;
+use topological_sort::*;
 use u32_index::*;
 use undirected_graph::*;
 

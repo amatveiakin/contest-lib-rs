@@ -1,3 +1,4 @@
+use std::ops;
 use std::collections::{hash_map, HashSet, HashMap, VecDeque};
 
 use crate::graph::{Graph, VertexId};
@@ -36,7 +37,7 @@ pub fn bfs_path<'g, VP, EP: 'g>(
     None
 }
 
-// Distances from `from` to all reachable vertices in an unweighted graph.
+// Distances from `from` to reachable vertices in an unweighted graph.
 pub fn bfs_distances<'g, VP, EP: 'g>(
     graph: &'g impl Graph<'g, VP, EP>, from: VertexId,
 ) -> HashMap<VertexId, u32> {

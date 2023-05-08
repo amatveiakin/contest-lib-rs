@@ -53,10 +53,13 @@ pub struct HalfEdge<'g, EP> {
 // certainly need to take either a `&mut DirectedGraph` or a `&mut UndirectedGraph`.
 //
 pub trait Graph<'g, VP, EP: 'g> {
-    type EdgeIter: Iterator<Item = HalfEdge<'g, EP>>;
+    type VertexIter: Iterator<Item = VertexId>;
+    type HalfEdgeIter: Iterator<Item = HalfEdge<'g, EP>>;
 
     fn num_vertices(&self) -> usize;
     fn num_edges(&self) -> usize;
+
+    fn vertex_ids(&self) -> Self::VertexIter;
 
     fn vertex(&'g self, v: VertexId) -> &'g VP;
     fn vertex_mut(&'g mut self, v: VertexId) -> &'g mut VP;
@@ -75,8 +78,8 @@ pub trait Graph<'g, VP, EP: 'g> {
     //   - `edges_to().count()` == `in_degree()`;
     // Iteration order is unspecified. (Note. It's easy to fix it if necessary by replacing
     // `HashSet` with `BTreeSet`.)
-    fn edges_from(&'g self, from: VertexId) -> Self::EdgeIter;
-    fn edges_to(&'g self, to: VertexId) -> Self::EdgeIter;
+    fn edges_from(&'g self, from: VertexId) -> Self::HalfEdgeIter;
+    fn edges_to(&'g self, to: VertexId) -> Self::HalfEdgeIter;
 }
 
 impl VertexId {
