@@ -9,6 +9,7 @@ pub mod directed_graph;
 pub mod graph;
 #[macro_use]
 pub mod io;
+pub mod mod_ring;
 pub mod num;
 pub mod partial_sums;
 pub mod segment_tree;
@@ -23,6 +24,7 @@ use dijkstra::*;
 use directed_graph::*;
 use graph::*;
 use io::*;
+use mod_ring::*;
 use num::*;
 use partial_sums::*;
 use segment_tree::*;

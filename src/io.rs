@@ -88,6 +88,7 @@ macro_rules! trait_for_value_and_ref {
     }
 }
 
+#[macro_export]
 macro_rules! simple_emittable {
     ( $( $t:ty ),* $(,)? ) => {
         $(
@@ -99,11 +100,20 @@ macro_rules! simple_emittable {
         )*
     }
 }
+
+// TODO: Try to replace `simple_emittable` with `impl<T: Display> Emittable for T`
+//   (or at least, `String` and `str` with `ToString<T>`).
+// Problem:
+// "
+//   conflicting implementations of trait `io::Emittable` for type `std::vec::Vec<_>`
+//   upstream crates may add a new impl of trait `std::fmt::Display` for type `std::vec::Vec<_>`
+//   in future versions
+// "
 simple_emittable!(
     u8, u16, u32, u64, u128, usize,
     i8, i16, i32, i64, i128, isize,
     f64, f32,
-    String, str,  // TODO: Consider replacing with `ToString<T>`
+    String, str,
 );
 
 trait_for_value_and_ref!(impl<{T: Emittable}> Emittable for Vec<T> {
