@@ -3,6 +3,7 @@
 #![allow(unused_imports)]
 
 pub mod bfs;
+pub mod bitset;
 pub mod dfs;
 pub mod dijkstra;
 pub mod directed_graph;
@@ -19,6 +20,7 @@ pub mod u32_index;
 pub mod undirected_graph;
 
 use bfs::*;
+use bitset::*;
 use dfs::*;
 use dijkstra::*;
 use directed_graph::*;
