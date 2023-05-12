@@ -3,6 +3,7 @@
 #![allow(unused_imports)]
 
 pub mod bfs;
+pub mod binary_heaps;
 pub mod bitset;
 pub mod dfs;
 pub mod dijkstra;
@@ -20,6 +21,7 @@ pub mod u32_index;
 pub mod undirected_graph;
 
 use bfs::*;
+use binary_heaps::*;
 use bitset::*;
 use dfs::*;
 use dijkstra::*;
