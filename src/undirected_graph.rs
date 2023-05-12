@@ -30,20 +30,20 @@ impl<VP, EP> UndirectedGraph<VP, EP> {
     pub fn add_edge_p(&mut self, from: VertexId, to: VertexId, payload: EP) {
         let id = UndirectedEdgeId::new(from, to);
         self.edges.insert(id, payload);
-        self.neighbours[from.to_0_based() as usize].insert(to);
-        self.neighbours[to.to_0_based() as usize].insert(from);
+        self.neighbours[from].insert(to);
+        self.neighbours[to].insert(from);
     }
 
     pub fn remove_edge(&mut self, from: VertexId, to: VertexId) -> Option<EP> {
         let id = UndirectedEdgeId::new(from, to);
         let payload = self.edges.remove(&id);
-        self.neighbours[from.to_0_based() as usize].remove(&to);
-        self.neighbours[to.to_0_based() as usize].remove(&from);
+        self.neighbours[from].remove(&to);
+        self.neighbours[to].remove(&from);
         payload
     }
 
     pub fn edges_adj(&self, v: VertexId) -> impl Iterator<Item = HalfEdge<'_, EP>> {
-        self.neighbours[v.to_0_based() as usize]
+        self.neighbours[v]
             .iter()
             .map(move |&u| HalfEdge { other: u, payload: self.get_payload(v, u).unwrap() })
     }
@@ -90,12 +90,8 @@ impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for UndirectedGraph<VP, EP> {
         Box::new((0..self.vertices.len()).map(|i| VertexId::from_0_based(i.try_into().unwrap())))
     }
 
-    fn vertex(&'g self, v: VertexId) -> &'g VP {
-        &self.vertices[v.to_0_based() as usize]
-    }
-    fn vertex_mut(&'g mut self, v: VertexId) -> &'g mut VP {
-        &mut self.vertices[v.to_0_based() as usize]
-    }
+    fn vertex(&'g self, v: VertexId) -> &'g VP { &self.vertices[v] }
+    fn vertex_mut(&'g mut self, v: VertexId) -> &'g mut VP { &mut self.vertices[v] }
 
     fn edge(&'g self, from: VertexId, to: VertexId) -> Option<&'g EP> {
         let id = UndirectedEdgeId::new(from, to);
@@ -106,9 +102,7 @@ impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for UndirectedGraph<VP, EP> {
         self.edges.get_mut(&id)
     }
 
-    fn degree(&'g self, v: VertexId) -> u32 {
-        self.neighbours[v.to_0_based() as usize].len() as u32
-    }
+    fn degree(&'g self, v: VertexId) -> u32 { self.neighbours[v].len() as u32 }
     fn out_degree(&'g self, v: VertexId) -> u32 { self.degree(v) }
     fn in_degree(&'g self, v: VertexId) -> u32 { self.degree(v) }
 

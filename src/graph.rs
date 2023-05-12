@@ -98,3 +98,19 @@ impl VertexIdVec for Vec<VertexId> {
     fn to_0_based_vec(&self) -> Vec<u32> { self.iter().map(|v| v.to_0_based()).collect() }
     fn to_1_based_vec(&self) -> Vec<u32> { self.iter().map(|v| v.to_1_based()).collect() }
 }
+
+impl<T> ops::Index<VertexId> for [T] {
+    type Output = T;
+    fn index(&self, v: VertexId) -> &T { &self[v.to_0_based() as usize] }
+}
+impl<T> ops::IndexMut<VertexId> for [T] {
+    fn index_mut(&mut self, v: VertexId) -> &mut T { &mut self[v.to_0_based() as usize] }
+}
+
+impl<T> ops::Index<VertexId> for Vec<T> {
+    type Output = T;
+    fn index(&self, v: VertexId) -> &T { &self[v.to_0_based() as usize] }
+}
+impl<T> ops::IndexMut<VertexId> for Vec<T> {
+    fn index_mut(&mut self, v: VertexId) -> &mut T { &mut self[v.to_0_based() as usize] }
+}

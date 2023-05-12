@@ -18,7 +18,7 @@ pub fn topological_sort<VP, EP>(graph: &DirectedGraph<VP, EP>) -> Option<Vec<Ver
     let mut sorted = Vec::new();
     sorted.reserve_exact(graph.num_vertices());
     for v in graph.vertex_ids() {
-        if !vertex_state[v.to_0_based() as usize].visited {
+        if !vertex_state[v].visited {
             match visit(graph, v, &mut vertex_state, &mut sorted) {
                 Err(GraphHasCycles) => return None,
                 Ok(()) => {}
@@ -33,19 +33,18 @@ fn visit<VP, EP>(
     graph: &DirectedGraph<VP, EP>, v: VertexId,
     vertex_state: &mut Vec<VertexState>, sorted: &mut Vec<VertexId>
 ) -> Result<(), GraphHasCycles> {
-    let id = v.to_0_based() as usize;
-    if vertex_state[id].visited {
+    if vertex_state[v].visited {
         return Ok(());
     }
-    if vertex_state[id].active {
+    if vertex_state[v].active {
         return Err(GraphHasCycles {});
     }
-    vertex_state[id].active = true;
+    vertex_state[v].active = true;
     for e in graph.edges_out(v) {
         visit(graph, e.other, vertex_state, sorted)?;
     }
-    vertex_state[id].active = false;
-    vertex_state[id].visited = true;
+    vertex_state[v].active = false;
+    vertex_state[v].visited = true;
     sorted.push(v);
     Ok(())
 }
