@@ -36,7 +36,7 @@ fn dfs_impl<'g, VP, EP: 'g, R>(
     on_exit: &mut impl FnMut(VertexId) -> ops::ControlFlow<R, ()>,
 ) -> ops::ControlFlow<R, ()> {
     on_enter(v)?;
-    for e in graph.edges_from(v) {
+    for e in graph.edges_out(v) {
         on_see(e.other)?;
         if visited.insert(v) {
             dfs_impl(graph, e.other, visited, on_see, on_enter, on_exit);

@@ -42,7 +42,7 @@ impl<VP, EP> UndirectedGraph<VP, EP> {
         payload
     }
 
-    pub fn adjacent(&self, v: VertexId) -> impl Iterator<Item = HalfEdge<'_, EP>> {
+    pub fn edges_adj(&self, v: VertexId) -> impl Iterator<Item = HalfEdge<'_, EP>> {
         self.neighbours[v.to_0_based() as usize]
             .iter()
             .map(move |&u| HalfEdge { other: u, payload: self.get_payload(v, u).unwrap() })
@@ -112,8 +112,8 @@ impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for UndirectedGraph<VP, EP> {
     fn out_degree(&'g self, v: VertexId) -> u32 { self.degree(v) }
     fn in_degree(&'g self, v: VertexId) -> u32 { self.degree(v) }
 
-    fn edges_from(&'g self, from: VertexId) -> Self::HalfEdgeIter { Box::new(self.adjacent(from)) }
-    fn edges_to(&'g self, to: VertexId) -> Self::HalfEdgeIter { Box::new(self.adjacent(to)) }
+    fn edges_in(&'g self, to: VertexId) -> Self::HalfEdgeIter { Box::new(self.edges_adj(to)) }
+    fn edges_out(&'g self, from: VertexId) -> Self::HalfEdgeIter { Box::new(self.edges_adj(from)) }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]

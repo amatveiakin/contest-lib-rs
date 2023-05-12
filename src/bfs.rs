@@ -24,7 +24,7 @@ pub fn bfs_path<'g, VP, EP: 'g>(
             path.reverse();
             return Some(path);
         }
-        for e in graph.edges_from(v) {
+        for e in graph.edges_out(v) {
             match prev.entry(e.other) {
                 hash_map::Entry::Occupied(_) => {}
                 hash_map::Entry::Vacant(entry) => {
@@ -47,7 +47,7 @@ pub fn bfs_distances<'g, VP, EP: 'g>(
     queue.push_back(from);
     while let Some(v) = queue.pop_front() {
         let d = distances[&v];
-        for e in graph.edges_from(v) {
+        for e in graph.edges_out(v) {
             match distances.entry(e.other) {
                 hash_map::Entry::Occupied(_) => {}
                 hash_map::Entry::Vacant(entry) => {

@@ -7,8 +7,8 @@ use crate::graph::{Graph, VertexId, HalfEdge};
 pub struct DirectedGraph<VP, EP> {
     vertices: Vec<VP>,
     edges: HashMap<DirectedEdgeId, EP>,
-    edges_from: Vec<HashSet<VertexId>>,
-    edges_to: Vec<HashSet<VertexId>>,
+    edges_out: Vec<HashSet<VertexId>>,
+    edges_in: Vec<HashSet<VertexId>>,
 }
 
 impl<VP, EP> DirectedGraph<VP, EP> {
@@ -16,16 +16,16 @@ impl<VP, EP> DirectedGraph<VP, EP> {
         Self {
             vertices: Vec::new(),
             edges: HashMap::new(),
-            edges_from: Vec::new(),
-            edges_to: Vec::new(),
+            edges_out: Vec::new(),
+            edges_in: Vec::new(),
         }
     }
 
     pub fn add_vertex_p(&mut self, payload: VP) -> VertexId {
         let id = VertexId::from_0_based(self.vertices.len().try_into().unwrap());
         self.vertices.push(payload);
-        self.edges_from.push(HashSet::new());
-        self.edges_to.push(HashSet::new());
+        self.edges_out.push(HashSet::new());
+        self.edges_in.push(HashSet::new());
         id
     }
 
@@ -33,15 +33,15 @@ impl<VP, EP> DirectedGraph<VP, EP> {
     pub fn add_edge_p(&mut self, from: VertexId, to: VertexId, payload: EP) {
         let id = DirectedEdgeId::new(from, to);
         self.edges.insert(id, payload);
-        self.edges_from[from.to_0_based() as usize].insert(to);
-        self.edges_to[to.to_0_based() as usize].insert(from);
+        self.edges_out[from.to_0_based() as usize].insert(to);
+        self.edges_in[to.to_0_based() as usize].insert(from);
     }
 
     pub fn remove_edge(&mut self, from: VertexId, to: VertexId) -> Option<EP> {
         let id = DirectedEdgeId::new(from, to);
         let payload = self.edges.remove(&id);
-        self.edges_from[from.to_0_based() as usize].remove(&to);
-        self.edges_to[to.to_0_based() as usize].remove(&from);
+        self.edges_out[from.to_0_based() as usize].remove(&to);
+        self.edges_in[to.to_0_based() as usize].remove(&from);
         payload
     }
 
@@ -107,21 +107,21 @@ impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for DirectedGraph<VP, EP> {
         self.in_degree(v) + self.out_degree(v)
     }
     fn out_degree(&'g self, v: VertexId) -> u32 {
-        self.edges_from[v.to_0_based() as usize].len() as u32
+        self.edges_out[v.to_0_based() as usize].len() as u32
     }
     fn in_degree(&'g self, v: VertexId) -> u32 {
-        self.edges_to[v.to_0_based() as usize].len() as u32
+        self.edges_in[v.to_0_based() as usize].len() as u32
     }
 
-    fn edges_from(&'g self, from: VertexId) -> Self::HalfEdgeIter {
-        Box::new(self.edges_from[from.to_0_based() as usize]
-            .iter()
-            .map(move |&to| HalfEdge { other: to, payload: self.get_payload(from, to).unwrap() }))
-    }
-    fn edges_to(&'g self, to: VertexId) -> Self::HalfEdgeIter {
-        Box::new(self.edges_to[to.to_0_based() as usize]
+    fn edges_in(&'g self, to: VertexId) -> Self::HalfEdgeIter {
+        Box::new(self.edges_in[to.to_0_based() as usize]
             .iter()
             .map(move |&from| HalfEdge { other: from, payload: self.get_payload(from, to).unwrap() }))
+    }
+    fn edges_out(&'g self, from: VertexId) -> Self::HalfEdgeIter {
+        Box::new(self.edges_out[from.to_0_based() as usize]
+            .iter()
+            .map(move |&to| HalfEdge { other: to, payload: self.get_payload(from, to).unwrap() }))
     }
 }
 

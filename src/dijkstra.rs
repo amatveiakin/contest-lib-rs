@@ -55,7 +55,7 @@ pub fn dijkstra_path<'g, VP, EP: 'g>(
         if visited.get(&v).map_or(false, |prior_visit| prior_visit.cost < cost) {
             continue;
         }
-        for e in graph.edges_from(v) {
+        for e in graph.edges_out(v) {
             let new_cost = cost + edge_cost(e.payload);
             match visited.entry(e.other) {
                 hash_map::Entry::Occupied(mut entry) => {
@@ -87,7 +87,7 @@ pub fn dijkstra_distances<'g, VP, EP: 'g>(
         if visited.get(&v).map_or(false, |prior_visit| prior_visit.cost < cost) {
             continue;
         }
-        for e in graph.edges_from(v) {
+        for e in graph.edges_out(v) {
             let new_cost = cost + edge_cost(e.payload);
             match visited.entry(e.other) {
                 hash_map::Entry::Occupied(mut entry) => {
