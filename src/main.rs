@@ -5,6 +5,7 @@
 pub mod bfs;
 pub mod binary_heaps;
 pub mod bitset;
+pub mod counting_set;
 pub mod dfs;
 pub mod dijkstra;
 pub mod directed_graph;
@@ -23,6 +24,7 @@ pub mod undirected_graph;
 use bfs::*;
 use binary_heaps::*;
 use bitset::*;
+use counting_set::*;
 use dfs::*;
 use dijkstra::*;
 use directed_graph::*;
