@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::graph::{Graph, VertexId, HalfEdge};
+use crate::io;
 
 
 #[derive(Clone, Debug)]
@@ -76,6 +77,22 @@ impl<VP> DirectedGraph<VP, ()> {
     }
 }
 
+impl DirectedGraph<(), ()> {
+    // Reads number of vertices, then number of edges, then edges as 1-based vertex pairs.
+    pub fn from_edges<R: std::io::BufRead>(read: &mut io::Reader<R>) -> Self {
+        let n = read.usize();
+        let m = read.usize();
+        let mut graph = Self::new();
+        graph.add_vertices(n);
+        for _ in 0..m {
+            let from = read.u32();
+            let to = read.u32();
+            graph.add_edge(VertexId::from_1_based(from), VertexId::from_1_based(to));
+        }
+        graph
+    }
+}
+
 impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for DirectedGraph<VP, EP> {
     type VertexIter = Box<dyn Iterator<Item = VertexId>>;
     type HalfEdgeIter = Box<dyn Iterator<Item = HalfEdge<'g, EP>> + 'g>;
@@ -123,4 +140,35 @@ struct DirectedEdgeId {
 
 impl DirectedEdgeId {
     pub fn new(from: VertexId, to: VertexId) -> Self { Self { from, to } }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretty_assertions::assert_eq;
+
+    #[test]
+    fn read_graph() {
+        let input = "\
+            4
+            3
+            1 3
+            3 2
+            3 4
+        ";
+        let mut read = io::Reader::new(std::io::Cursor::new(input.to_owned().into_bytes()));
+        let g = DirectedGraph::from_edges(&mut read);
+        assert_eq!(g.num_vertices(), 4);
+        assert_eq!(g.num_edges(), 3);
+        let v1 = VertexId::from_1_based(1);
+        let v2 = VertexId::from_1_based(2);
+        let v3 = VertexId::from_1_based(3);
+        let v4 = VertexId::from_1_based(4);
+        assert!(g.edge(v1, v3).is_some());
+        assert!(g.edge(v3, v2).is_some());
+        assert!(g.edge(v3, v4).is_some());
+        assert!(g.edge(v1, v2).is_none());
+        assert!(g.edge(v3, v1).is_none());
+    }
 }
