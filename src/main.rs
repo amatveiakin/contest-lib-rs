@@ -11,8 +11,8 @@ pub mod dijkstra;
 pub mod directed_graph;
 pub mod graph;
 pub mod internal_testing;
-#[macro_use]
-pub mod io;
+#[macro_use] pub mod io;
+pub mod iterutils;
 pub mod mod_ring;
 pub mod num;
 pub mod partial_sums;
@@ -31,6 +31,7 @@ use dijkstra::*;
 use directed_graph::*;
 use graph::*;
 use io::*;
+use iterutils::*;
 use mod_ring::*;
 use num::*;
 use partial_sums::*;
