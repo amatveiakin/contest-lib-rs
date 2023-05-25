@@ -20,7 +20,10 @@ pub fn trim_lines(s: &str) -> String {
 #[macro_export]
 macro_rules! assert_trimmed_eq {
     ( $left:expr, $right:expr ) => {
-        assert_eq!(crate::testing::trim_lines($left), crate::testing::trim_lines($right));
+        assert_eq!(
+            crate::solution_testing::trim_lines($left),
+            crate::solution_testing::trim_lines($right)
+        );
     };
 }
 

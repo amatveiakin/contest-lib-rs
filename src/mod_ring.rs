@@ -6,84 +6,98 @@ use std::{fmt, ops};
 use crate::io::Emittable;
 
 
-const M: i32 = 1_000_000_007;
+pub const CODEFORCES_MOD: i32 = 1_000_000_007;
 
+// M must:
+//   - be positive;
+//   - be smaller than (i32::MAX / 2), because addition and subtraction are done with i32.
+// These conditions are checked at compile time.
+// M does not have to be prime, but if it's not, division may panic at runtime.
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
-pub struct ModNum {
+pub struct ModNumber<const M: i32> {
     val: i32,  // always in [0, M)
 }
 
-impl ModNum {
-    pub fn new_unchecked(x: i32) -> Self { ModNum { val: x } }
+impl<const M: i32> ModNumber<M> {
+    pub fn new_unchecked(x: i32) -> Self {
+        // This is a compile-time assertion, but it must be located in a function that is called
+        // at least once.
+        Self::assert_mod_ok();
+        ModNumber { val: x }
+    }
     pub fn val(&self) -> i32 { self.val }
+
+    fn assert_mod_ok() { let () = AssertModOk::<M>::OK; }
 }
 
-impl From<i32> for ModNum {
-    fn from(x: i32) -> Self { ModNum { val: x.rem_euclid(M) } }
+impl<const M: i32> From<i32> for ModNumber<M> {
+    fn from(x: i32) -> Self { ModNumber::new_unchecked(x.rem_euclid(M)) }
 }
-impl From<u32> for ModNum {
-    fn from(x: u32) -> Self { ModNum { val: x.rem_euclid(M as u32) as i32 } }
+impl<const M: i32> From<u32> for ModNumber<M> {
+    fn from(x: u32) -> Self { ModNumber::new_unchecked(x.rem_euclid(M as u32) as i32) }
 }
-impl From<i64> for ModNum {
-    fn from(x: i64) -> Self { ModNum { val: x.rem_euclid(M as i64) as i32 } }
+impl<const M: i32> From<i64> for ModNumber<M> {
+    fn from(x: i64) -> Self { ModNumber::new_unchecked(x.rem_euclid(M as i64) as i32) }
 }
-impl From<u64> for ModNum {
-    fn from(x: u64) -> Self { ModNum { val: x.rem_euclid(M as u64) as i32 } }
+impl<const M: i32> From<u64> for ModNumber<M> {
+    fn from(x: u64) -> Self { ModNumber::new_unchecked(x.rem_euclid(M as u64) as i32) }
 }
 
-impl fmt::Display for ModNum {
+impl<const M: i32> fmt::Display for ModNumber<M> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.val) }
 }
-simple_emittable!(ModNum);
+trait_for_value_and_ref!(impl<{const M: i32}> Emittable for ModNumber<M> {
+    fn emit(&self, writer: &mut impl std::io::Write) { write!(writer, "{} ", self).unwrap(); }
+});
 
-impl ops::Neg for ModNum {
-    type Output = ModNum;
-    fn neg(self) -> ModNum {
-        ModNum::new_unchecked(if self.val == 0 { 0 } else { M - self.val })
+impl<const M: i32> ops::Neg for ModNumber<M> {
+    type Output = Self;
+    fn neg(self) -> Self {
+        ModNumber::new_unchecked(if self.val == 0 { 0 } else { M - self.val })
     }
 }
 
-impl ops::Add for ModNum {
-    type Output = ModNum;
-    fn add(self, rhs: ModNum) -> ModNum {
+impl<const M: i32> ops::Add for ModNumber<M> {
+    type Output = Self;
+    fn add(self, rhs: Self) -> Self {
         // On `if x < M` vs multiplying by `(x < M) as i32`. Both compile to the exact same assembly
         // relying on `cmovll` instead of branching or multiplication:
         // https://play.rust-lang.org/?version=stable&mode=release&edition=2021&gist=d452dd3eb9c4b2b0060a800579a076bc
         let x = self.val + rhs.val;
-        ModNum::new_unchecked(if x < M { x } else { x - M })
+        ModNumber::new_unchecked(if x < M { x } else { x - M })
     }
 }
-impl ops::Sub for ModNum {
-    type Output = ModNum;
-    fn sub(self, rhs: ModNum) -> ModNum {
+impl<const M: i32> ops::Sub for ModNumber<M> {
+    type Output = Self;
+    fn sub(self, rhs: Self) -> Self {
         let x = self.val - rhs.val;
-        ModNum::new_unchecked(if x < 0 { x + M } else { x })
+        ModNumber::new_unchecked(if x < 0 { x + M } else { x })
     }
 }
-impl ops::Mul for ModNum {
-    type Output = ModNum;
-    fn mul(self, rhs: ModNum) -> ModNum {
-        ModNum::from((self.val as i64) * (rhs.val as i64))
+impl<const M: i32> ops::Mul for ModNumber<M> {
+    type Output = Self;
+    fn mul(self, rhs: Self) -> Self {
+        ModNumber::from((self.val as i64) * (rhs.val as i64))
     }
 }
-impl ops::Div for ModNum {
-    type Output = ModNum;
-    fn div(self, rhs: ModNum) -> ModNum {
-        ModNum::from((self.val as i64) * (mod_inverse(rhs.val, M).unwrap() as i64))
+impl<const M: i32> ops::Div for ModNumber<M> {
+    type Output = Self;
+    fn div(self, rhs: Self) -> Self {
+        ModNumber::from((self.val as i64) * (mod_inverse(rhs.val, M).unwrap() as i64))
     }
 }
 
-impl ops::AddAssign for ModNum {
-    fn add_assign(&mut self, rhs: ModNum) { *self = *self + rhs; }
+impl<const M: i32> ops::AddAssign for ModNumber<M> {
+    fn add_assign(&mut self, rhs: Self) { *self = *self + rhs; }
 }
-impl ops::SubAssign for ModNum {
-    fn sub_assign(&mut self, rhs: ModNum) { *self = *self - rhs; }
+impl<const M: i32> ops::SubAssign for ModNumber<M> {
+    fn sub_assign(&mut self, rhs: Self) { *self = *self - rhs; }
 }
-impl ops::MulAssign for ModNum {
-    fn mul_assign(&mut self, rhs: ModNum) { *self = *self * rhs; }
+impl<const M: i32> ops::MulAssign for ModNumber<M> {
+    fn mul_assign(&mut self, rhs: Self) { *self = *self * rhs; }
 }
-impl ops::DivAssign for ModNum {
-    fn div_assign(&mut self, rhs: ModNum) { *self = *self / rhs; }
+impl<const M: i32> ops::DivAssign for ModNumber<M> {
+    fn div_assign(&mut self, rhs: Self) { *self = *self / rhs; }
 }
 
 fn egcd(a: i32, b: i32) -> (i32, i32, i32) {
@@ -104,12 +118,23 @@ fn mod_inverse(a: i32, m: i32) -> Option<i32> {
     }
 }
 
+#[allow(dead_code)]
+struct AssertModOk<const M: i32>;
+impl<const M: i32> AssertModOk<M> {
+    // TODO: Better static assertion: this fails with `cargo build`, but not with `cargo check`.
+    #[allow(dead_code)]
+    const OK: () = assert!(0 < M && M <= i32::MAX / 2);
+}
+
 
 #[cfg(test)]
 mod tests {
+    use crate::internal_testing::*;
     use super::*;
 
+    const M: i32 = CODEFORCES_MOD;
     const M1: i32 = M - 1;
+    type ModNum = ModNumber<M>;
 
     #[test]
     fn creation() {
@@ -193,5 +218,17 @@ mod tests {
                 assert_eq!((a * b) / b, a);
             }
         }
+    }
+
+    #[test]
+    fn non_prime_nod() {
+        type Num6 = ModNumber<6>;
+        assert_eq!(Num6::from(2) + Num6::from(8), Num6::from(4));
+        assert_eq!(Num6::from(2) - Num6::from(3), Num6::from(5));
+        assert_eq!(Num6::from(2) * Num6::from(5), Num6::from(4));
+        assert_eq!(Num6::from(2) * Num6::from(3), Num6::from(0));
+        assert_eq!(Num6::from(1) / Num6::from(5), Num6::from(5));
+        let result = catch_unwind_silent(|| Num6::from(1) / Num6::from(4));
+        assert!(result.is_err());
     }
 }

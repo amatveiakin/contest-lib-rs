@@ -10,13 +10,14 @@ pub mod dfs;
 pub mod dijkstra;
 pub mod directed_graph;
 pub mod graph;
+pub mod internal_testing;
 #[macro_use]
 pub mod io;
 pub mod mod_ring;
 pub mod num;
 pub mod partial_sums;
 pub mod segment_tree;
-pub mod testing;
+pub mod solution_testing;
 pub mod topological_sort;
 pub mod u32_index;
 pub mod undirected_graph;
@@ -55,7 +56,7 @@ fn main() {
 mod tests {
     use super::*;
     use pretty_assertions::assert_eq;
-    use testing::run_solver;
+    use solution_testing::run_solver;
 
     #[test]
     fn test() {
