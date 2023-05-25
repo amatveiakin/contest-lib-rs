@@ -9,7 +9,7 @@ use crate::io::Emittable;
 pub const CODEFORCES_MOD: i32 = 1_000_000_007;
 
 // M must:
-//   - be positive;
+//   - be greater than 1;
 //   - be smaller than (i32::MAX / 2), because addition and subtraction are done with i32.
 // These conditions are checked at compile time.
 // M does not have to be prime, but if it's not, division may panic at runtime.
@@ -25,7 +25,19 @@ impl<const M: i32> ModNumber<M> {
         Self::assert_mod_ok();
         ModNumber { val: x }
     }
-    pub fn val(&self) -> i32 { self.val }
+    pub fn val(self) -> i32 { self.val }
+    pub fn pow(self, mut exp: u32) -> Self {
+        let mut res = ModNumber::new_unchecked(1);
+        let mut base = self;
+        while exp > 0 {
+            if exp & 1 == 1 {
+                res *= base;
+            }
+            base *= base;
+            exp >>= 1;
+        }
+        res
+    }
 
     fn assert_mod_ok() { let () = AssertModOk::<M>::OK; }
 }
@@ -123,7 +135,7 @@ struct AssertModOk<const M: i32>;
 impl<const M: i32> AssertModOk<M> {
     // TODO: Better static assertion: this fails with `cargo build`, but not with `cargo check`.
     #[allow(dead_code)]
-    const OK: () = assert!(0 < M && M <= i32::MAX / 2);
+    const OK: () = assert!(1 < M && M <= i32::MAX / 2);
 }
 
 
@@ -218,6 +230,20 @@ mod tests {
                 assert_eq!((a * b) / b, a);
             }
         }
+    }
+
+    #[test]
+    fn pow() {
+        assert_eq!(ModNum::from(2).pow(0), ModNum::from(1));
+        assert_eq!(ModNum::from(2).pow(1), ModNum::from(2));
+        assert_eq!(ModNum::from(2).pow(2), ModNum::from(4));
+        assert_eq!(ModNum::from(2).pow(3), ModNum::from(8));
+        assert_eq!(ModNum::from(2).pow(4), ModNum::from(16));
+        assert_eq!(ModNum::from(2).pow(5), ModNum::from(32));
+        assert_eq!(ModNum::from(2).pow(10), ModNum::from(1024));
+        assert_eq!(ModNum::from(2).pow(30), ModNum::from(73741817));
+        assert_eq!(ModNum::from(0).pow(3), ModNum::from(0));
+        assert_eq!(ModNum::from(10).pow(5), ModNum::from(100000));
     }
 
     #[test]
