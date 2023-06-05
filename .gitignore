@@ -1,1 +1,9 @@
+# Rust
 target
+
+# VS Code extension
+out
+dist
+node_modules
+.vscode-test/
+*.vsix
