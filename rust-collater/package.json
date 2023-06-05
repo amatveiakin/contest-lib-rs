@@ -14,8 +14,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "rust-collater.helloWorld",
-        "title": "Hello World"
+        "command": "rust-collater.collate",
+        "title": "Collate Rust Modules"
       }
     ]
   },
