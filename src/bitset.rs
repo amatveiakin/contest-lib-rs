@@ -22,10 +22,14 @@ impl Bitset {
 
     pub fn len(&self) -> usize { self.len }
 
+    // Unsafe optimization potential: Use `slice::get_unchecked` since index has already been
+    // verified.
+    #[track_caller]
     pub fn get(&self, i: usize) -> bool {
         assert!(i < self.len);
         (self.words[i / 64] & (1 << (i % 64))) != 0
     }
+    #[track_caller]
     pub fn set(&mut self, i: usize, value: bool) {
         assert!(i < self.len);
         if value {
