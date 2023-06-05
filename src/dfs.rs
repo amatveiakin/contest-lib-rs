@@ -1,5 +1,5 @@
 use std::ops;
-use std::collections::{HashSet, HashMap, VecDeque};
+use std::collections::HashSet;
 
 use crate::graph::{Graph, VertexId};
 

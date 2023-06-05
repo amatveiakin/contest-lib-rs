@@ -5,7 +5,7 @@
 // Optimization potential: Rely on index validity check in `U32Index::bound` and do
 //   unchecked array access in tree traversal.
 
-use std::{fmt, ops};
+use std::fmt;
 
 use crate::num::PrimInt;
 use crate::u32_index::U32Index;
@@ -243,7 +243,6 @@ fn vertex_in_segment<T>(v: &Vertex<T>, from: u32, to: u32) -> Containment {
 #[cfg(test)]
 mod tests {
     // TODO: Stress test against naive implementation.
-    use std::cmp;
     use super::*;
 
     fn tree_to_vec<T: Clone, F: Fn(&T, &T, i32) -> T>(tree: &mut SegmentTree<T, F>) -> Vec<T> {

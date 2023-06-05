@@ -1,5 +1,5 @@
 use std::cmp;
-use std::collections::{hash_map, HashSet, HashMap, VecDeque, BinaryHeap};
+use std::collections::{hash_map, HashMap, BinaryHeap};
 
 use crate::graph::{Graph, VertexId};
 

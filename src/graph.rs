@@ -14,7 +14,6 @@
 // `VP: Default` and `EP: Default`.
 
 use std::ops;
-use std::collections::{HashMap, HashSet};
 
 
 // Use `u32` rather than `usize` to reduce memory used for edge storage.

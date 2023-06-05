@@ -1,6 +1,3 @@
-use std::cell::RefCell;
-use std::ops;
-
 use crate::directed_graph::DirectedGraph;
 use crate::graph::{Graph, VertexId};
 
