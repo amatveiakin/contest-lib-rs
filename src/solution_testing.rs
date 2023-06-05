@@ -1,5 +1,3 @@
-#![cfg(test)]
-
 use crate::io;
 
 
@@ -21,8 +19,8 @@ pub fn trim_lines(s: &str) -> String {
 macro_rules! assert_trimmed_eq {
     ( $left:expr, $right:expr ) => {
         assert_eq!(
-            crate::solution_testing::trim_lines($left),
-            crate::solution_testing::trim_lines($right)
+            $crate::solution_testing::trim_lines($left),
+            $crate::solution_testing::trim_lines($right)
         );
     };
 }
@@ -30,10 +28,10 @@ macro_rules! assert_trimmed_eq {
 
 #[cfg(test)]
 mod tests {
-    use crate::io::*;
+    use crate::{io, emitln};
     use super::*;
 
-    fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
+    fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, write: &mut W) {
         let n = read.usize();
         let v = read.vec_i32(n);
         emitln!(write, n);

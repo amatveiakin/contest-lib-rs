@@ -80,6 +80,7 @@ pub trait Emittable {
     fn emit(&self, writer: &mut impl std::io::Write);
 }
 
+#[macro_export]
 macro_rules! trait_for_value_and_ref {
     ( impl<{ $( $cond:tt )* }> $trait_name:ident for $t:ty { $( $body:tt )* } ) => {
         impl<    $( $cond )*> $trait_name for         $t { $( $body )* }
@@ -130,14 +131,14 @@ pub fn emit_impl<T: Emittable>(writer: &mut impl std::io::Write, value: T) {
 #[macro_export]
 macro_rules! emit {
     ( $dst:expr, $( $value:expr ),* ) => {{
-        $( crate::io::emit_impl($dst, $value); )*
+        $( $crate::io::emit_impl($dst, $value); )*
     }};
 }
 
 #[macro_export]
 macro_rules! emitln {
     ( $dst:expr, $($value:expr),* ) => {{
-        emit!($dst, $($value),*);
+        $crate::emit!($dst, $($value),*);
         writeln!($dst).unwrap();
     }};
 }

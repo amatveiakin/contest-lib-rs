@@ -22,6 +22,8 @@ impl Bitset {
 
     pub fn len(&self) -> usize { self.len }
 
+    pub fn words(&self) -> &[u64] { &self.words }
+
     // Unsafe optimization potential: Use `slice::get_unchecked` since index has already been
     // verified.
     #[track_caller]

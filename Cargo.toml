@@ -1,5 +1,12 @@
+[workspace]
+members = [
+    ".",
+    "playground",
+    "contests/cf-round-877-div-2",
+]
+
 [package]
-name = "contest-lib-rust"
+name = "contest_lib_rs"
 version = "0.1.0"
 authors = ["Andrei Matveiakin <a.matveiakin@gmail.com>"]
 edition = "2021"

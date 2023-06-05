@@ -3,6 +3,7 @@
 
 use std::{fmt, ops};
 
+use crate::trait_for_value_and_ref;
 use crate::io::Emittable;
 
 

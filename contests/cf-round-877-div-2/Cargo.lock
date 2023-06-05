@@ -6,14 +6,7 @@ version = 3
 name = "cf-round-869-div-2-virtual"
 version = "0.1.0"
 dependencies = [
- "contest_lib_rs",
- "pretty_assertions",
-]
-
-[[package]]
-name = "contest_lib_rs"
-version = "0.1.0"
-dependencies = [
+ "itertools",
  "pretty_assertions",
 ]
 
@@ -55,14 +48,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "628223faebab4e3e40667ee0b2336d34a5b960ff60ea743ddfdbcf7770bcfb66"
 dependencies = [
  "winapi",
-]
-
-[[package]]
-name = "playground"
-version = "0.1.0"
-dependencies = [
- "contest_lib_rs",
- "itertools",
 ]
 
 [[package]]
