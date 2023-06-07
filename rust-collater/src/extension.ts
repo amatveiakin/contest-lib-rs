@@ -54,8 +54,9 @@ export function activate(context: vscode.ExtensionContext) {
   ];
   const MACRO_RE = /macro_rules! +(\w+)/g;
 
-  // TODO: Strip tests as well.
   const SKIP_LINE_RE = /^(\/\/.*)?$/g;
+  const TESTS_START_1 = "#[cfg(test)]";
+  const TESTS_START_2 = "mod tests {";
 
   const RUST_SUFFIX = ".rs";
 
@@ -93,13 +94,20 @@ export function activate(context: vscode.ExtensionContext) {
             vscode.Uri.joinPath(srcDir, fileName)
           );
           const moduleText = Buffer.from(moduleData).toString("utf8");
+          const moduleLines = moduleText.split("\n");
           let moduleBody = "";
-          for (const line of moduleText.split("\n")) {
+          for (const [lineIdx, line] of moduleLines.entries()) {
+            if (
+              line.trim() === TESTS_START_1 &&
+              moduleLines[lineIdx + 1].trim() === TESTS_START_2
+            ) {
+              break;
+            }
             if (line.trim().match(SKIP_LINE_RE) === null) {
               moduleBody += line + "\n";
             }
           }
-          moduleBodies.set(moduleName, moduleBody);
+          moduleBodies.set(moduleName, moduleBody.trimEnd());
         }
 
         // Improvement potential: Cache macro mapping.
