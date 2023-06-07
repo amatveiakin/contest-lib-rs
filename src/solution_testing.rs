@@ -12,7 +12,7 @@ pub fn run_solver(
 }
 
 pub fn trim_lines(s: &str) -> String {
-    s.lines().map(|line| line.trim()).collect::<Vec<_>>().join("\n")
+    s.trim().lines().map(|line| line.trim()).collect::<Vec<_>>().join("\n")
 }
 
 #[macro_export]
