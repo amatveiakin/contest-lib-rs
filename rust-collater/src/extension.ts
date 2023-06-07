@@ -79,10 +79,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
         const srcDir = vscode.Uri.joinPath(rootDir, "src");
 
-        // Improvement potential: Cache macro mapping.
-        // Improvement potential: Cache file content. (Check if VSCode does this already.)
-        const macroDefinitions = new Map<string, string>();
-        const moduleDependencies = new Map<string, string[]>();
+        const moduleBodies = new Map<string, string>();
         const srcFiles = await vscode.workspace.fs.readDirectory(srcDir);
         for (const [fileName, fileType] of srcFiles) {
           if (fileType !== vscode.FileType.File) {
@@ -92,16 +89,30 @@ export function activate(context: vscode.ExtensionContext) {
             continue;
           }
           const moduleName = fileName.slice(0, -RUST_SUFFIX.length);
-          const fileData = await vscode.workspace.fs.readFile(
+          const moduleData = await vscode.workspace.fs.readFile(
             vscode.Uri.joinPath(srcDir, fileName)
           );
-          const fileText = Buffer.from(fileData).toString("utf8");
-          for (const match of fileText.matchAll(MACRO_RE)) {
+          const moduleText = Buffer.from(moduleData).toString("utf8");
+          let moduleBody = "";
+          for (const line of moduleText.split("\n")) {
+            if (line.trim().match(SKIP_LINE_RE) === null) {
+              moduleBody += line + "\n";
+            }
+          }
+          moduleBodies.set(moduleName, moduleBody);
+        }
+
+        // Improvement potential: Cache macro mapping.
+        // Improvement potential: Cache file content. (Check if VSCode does this already.)
+        const macroDefinitions = new Map<string, string>();
+        const moduleDependencies = new Map<string, string[]>();
+        for (const [moduleName, moduleBody] of moduleBodies.entries()) {
+          for (const match of moduleBody.matchAll(MACRO_RE)) {
             macroDefinitions.set(match[1], moduleName);
           }
           let thisModuleDependencies: string[] = [];
           for (const re of MODULE_DEPENDENCY_RE) {
-            for (const match of fileText.matchAll(re)) {
+            for (const match of moduleBody.matchAll(re)) {
               thisModuleDependencies.push(...match.slice(1));
             }
           }
@@ -131,16 +142,8 @@ export function activate(context: vscode.ExtensionContext) {
           .flatMap(simplifyUseStatement)
           .join("\n");
         for (const moduleName of modulesToInclude) {
-          const fileName = moduleName + RUST_SUFFIX;
-          const fileData = await vscode.workspace.fs.readFile(
-            vscode.Uri.joinPath(srcDir, fileName)
-          );
-          const fileText = Buffer.from(fileData).toString("utf8");
-          const compressedText = fileText
-            .split("\n")
-            .filter((line) => line.trim().match(SKIP_LINE_RE) === null)
-            .join("\n");
-          outputText += `\nmod ${moduleName} {\n${compressedText}\n} // ${moduleName}\n`;
+          const body = moduleBodies.get(moduleName)!;
+          outputText += `\nmod ${moduleName} {\n${body}\n} // ${moduleName}\n`;
         }
         vscode.env.clipboard.writeText(outputText.trimStart());
 
