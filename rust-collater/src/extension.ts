@@ -48,7 +48,10 @@ export function activate(context: vscode.ExtensionContext) {
     /use contest_lib_rs::\{(\w+)(?:::\w+)*(?:, *(\w+)(?:::\w+)*)*\}/g,
     /use contest_lib_rs::(\w+)/g,
   ];
-  const USE_DETECT_RE = /^use contest_lib_rs::/g;
+  const MODULE_DEPENDENCY_RE = [
+    /use crate::\{(\w+)(?:::\w+)*(?:, *(\w+)(?:::\w+)*)*\}/g,
+    /use crate::(\w+)/g,
+  ];
   const MACRO_RE = /macro_rules! +(\w+)/g;
 
   // TODO: Strip tests as well.
@@ -79,6 +82,7 @@ export function activate(context: vscode.ExtensionContext) {
         // Improvement potential: Cache macro mapping.
         // Improvement potential: Cache file content. (Check if VSCode does this already.)
         const macroDefinitions = new Map<string, string>();
+        const moduleDependencies = new Map<string, string[]>();
         const srcFiles = await vscode.workspace.fs.readDirectory(srcDir);
         for (const [fileName, fileType] of srcFiles) {
           if (fileType !== vscode.FileType.File) {
@@ -95,29 +99,32 @@ export function activate(context: vscode.ExtensionContext) {
           for (const match of fileText.matchAll(MACRO_RE)) {
             macroDefinitions.set(match[1], moduleName);
           }
+          let thisModuleDependencies: string[] = [];
+          for (const re of MODULE_DEPENDENCY_RE) {
+            for (const match of fileText.matchAll(re)) {
+              thisModuleDependencies.push(...match.slice(1));
+            }
+          }
+          moduleDependencies.set(moduleName, thisModuleDependencies);
         }
 
         let currentText = editor.document.getText();
-        const uses: string[] = [];
+        const dependencies: string[] = [];
         for (const re of USE_MODULE_RE) {
           for (const match of currentText.matchAll(re)) {
-            uses.push(...match.slice(1));
+            dependencies.push(...match.slice(1));
           }
         }
-        // vscode.window.showInformationMessage(uses.join(", "));
 
         const modulesToInclude = new Set<string>();
-        for (const use of uses) {
-          const macroOwner = macroDefinitions.get(use);
-          if (macroOwner) {
-            modulesToInclude.add(macroOwner);
-          } else {
-            modulesToInclude.add(use);
+        while (dependencies.length > 0) {
+          const dep = dependencies.pop()!;
+          const module = macroDefinitions.get(dep) || dep;
+          if (!modulesToInclude.has(module)) {
+            modulesToInclude.add(module);
+            dependencies.push(...(moduleDependencies.get(module) || []));
           }
         }
-        // vscode.window.showInformationMessage(
-        //   Array.from(modules.values()).join(", ")
-        // );
 
         let outputText = currentText
           .split("\n")
