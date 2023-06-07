@@ -12,6 +12,7 @@ pub mod iterutils;
 pub mod mod_ring;
 pub mod num;
 pub mod partial_sums;
+pub mod relax;
 pub mod segment_tree;
 pub mod solution_testing;
 pub mod topological_sort;
