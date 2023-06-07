@@ -1,6 +1,15 @@
 import { performance } from "perf_hooks";
 import * as vscode from "vscode";
 
+async function fileExists(uri: vscode.Uri): Promise<boolean> {
+  try {
+    await vscode.workspace.fs.stat(uri);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 // TODO: Support nested uses, e.g.
 //   use contest_lib_rs::{io, emitln, graph::{VertexId, Graph}};
 function simplifyUseStatement(line: string): string[] {
@@ -58,9 +67,13 @@ export function activate(context: vscode.ExtensionContext) {
       }
 
       try {
-        // Discard last four path components:
-        //   contests/<contest_name>/src/<problem_name>.rs
-        const rootDir = vscode.Uri.joinPath(editor.document.uri, "../../../..");
+        // Skip `<contest_name>/src/<problem_name>.rs` and find the next Rust folder.
+        let rootDir = vscode.Uri.joinPath(editor.document.uri, "../../..");
+        while (
+          !(await fileExists(vscode.Uri.joinPath(rootDir, "Cargo.toml")))
+        ) {
+          rootDir = vscode.Uri.joinPath(rootDir, "..");
+        }
         const srcDir = vscode.Uri.joinPath(rootDir, "src");
 
         // Improvement potential: Cache macro mapping.
