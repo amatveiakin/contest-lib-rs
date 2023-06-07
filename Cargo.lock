@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "cf-educational-148-div-2"
+name = "cf-educational-148"
 version = "0.1.0"
 dependencies = [
  "contest_lib_rs",
@@ -11,7 +11,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "cf-educational-149-div-2"
+name = "cf-educational-149"
 version = "0.1.0"
 dependencies = [
  "contest_lib_rs",

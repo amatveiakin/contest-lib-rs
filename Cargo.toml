@@ -2,8 +2,8 @@
 members = [
     ".",
     "playground",
-    "contests/cf-educational-148-div-2",
-    "contests/cf-educational-149-div-2",
+    "contests/cf-educational-148",
+    "contests/cf-educational-149",
     "contests/cf-round-869-div-2",
     "contests/cf-round-870-div-2",
     "contests/cf-round-872-div-2",
