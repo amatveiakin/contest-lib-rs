@@ -10,3 +10,13 @@ fn main() {
     let mut write = std::io::stdout().lock();
     solve(&mut read, &mut write);
 }
+
+
+// use std::time::Instant;
+//
+// fn main() {
+//     let start_time = Instant::now();
+//     // ...
+//     let duration = start_time.elapsed();
+//     println!("Done in {duration:?}");
+// }
