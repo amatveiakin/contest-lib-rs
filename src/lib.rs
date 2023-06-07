@@ -5,6 +5,7 @@ pub mod counting_set;
 pub mod dfs;
 pub mod dijkstra;
 pub mod directed_graph;
+pub mod factors;
 pub mod graph;
 pub mod internal_testing;
 pub mod io;
