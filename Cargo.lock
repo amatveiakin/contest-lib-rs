@@ -3,7 +3,63 @@
 version = 3
 
 [[package]]
-name = "cf-round-869-div-2-virtual"
+name = "cf-educational-148-div-2"
+version = "0.1.0"
+dependencies = [
+ "contest_lib_rs",
+ "pretty_assertions",
+]
+
+[[package]]
+name = "cf-educational-149-div-2"
+version = "0.1.0"
+dependencies = [
+ "contest_lib_rs",
+ "pretty_assertions",
+]
+
+[[package]]
+name = "cf-round-869-div-2"
+version = "0.1.0"
+dependencies = [
+ "contest_lib_rs",
+ "pretty_assertions",
+]
+
+[[package]]
+name = "cf-round-870-div-2"
+version = "0.1.0"
+dependencies = [
+ "contest_lib_rs",
+ "pretty_assertions",
+]
+
+[[package]]
+name = "cf-round-872-div-2"
+version = "0.1.0"
+dependencies = [
+ "contest_lib_rs",
+ "pretty_assertions",
+]
+
+[[package]]
+name = "cf-round-873-div-2"
+version = "0.1.0"
+dependencies = [
+ "contest_lib_rs",
+ "pretty_assertions",
+]
+
+[[package]]
+name = "cf-round-875-div-2"
+version = "0.1.0"
+dependencies = [
+ "contest_lib_rs",
+ "pretty_assertions",
+]
+
+[[package]]
+name = "cf-round-877-div-2"
 version = "0.1.0"
 dependencies = [
  "contest_lib_rs",

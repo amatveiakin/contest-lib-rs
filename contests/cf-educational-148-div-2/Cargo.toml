@@ -1,5 +1,5 @@
 [package]
-name = "cf-round-877-div-2"
+name = "cf-educational-148-div-2"
 version = "0.1.0"
 edition = "2021"
 
@@ -22,8 +22,12 @@ name = "c"
 path = "src/c.rs"
 
 [[bin]]
-name = "d"
-path = "src/d.rs"
+name = "d1"
+path = "src/d1.rs"
+
+[[bin]]
+name = "d2"
+path = "src/d2.rs"
 
 [[bin]]
 name = "e"
