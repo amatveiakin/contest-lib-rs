@@ -14,8 +14,12 @@
   "contributes": {
     "commands": [
       {
+        "command": "rust-collater.new-contest",
+        "title": "Competitive Rust: New Contest"
+      },
+      {
         "command": "rust-collater.collate",
-        "title": "Collate Rust Modules"
+        "title": "Competitive Rust: Collate Modules"
       }
     ]
   },

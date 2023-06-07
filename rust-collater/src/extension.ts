@@ -1,5 +1,11 @@
+// TODO: Rename the extension to reflect the fact that it does more than
+// collation.
+
+import { assert } from "console";
 import { performance } from "perf_hooks";
 import * as vscode from "vscode";
+
+const CONTESTS_DIR = "contests";
 
 async function fileExists(uri: vscode.Uri): Promise<boolean> {
   try {
@@ -8,6 +14,68 @@ async function fileExists(uri: vscode.Uri): Promise<boolean> {
   } catch (e) {
     return false;
   }
+}
+
+async function getFileContent(uri: vscode.Uri): Promise<string> {
+  const data = await vscode.workspace.fs.readFile(uri);
+  return Buffer.from(data).toString("utf8");
+}
+
+async function setFileContent(uri: vscode.Uri, content: string) {
+  await vscode.workspace.fs.writeFile(uri, Buffer.from(content, "utf8"));
+}
+
+async function guessWorkspaceRoot(): Promise<vscode.Uri | undefined> {
+  const folders = vscode.workspace.workspaceFolders;
+  if (!folders) {
+    return undefined;
+  }
+  if (folders.length === 1) {
+    return folders[0].uri;
+  }
+  for (const f of folders) {
+    if (await fileExists(vscode.Uri.joinPath(f.uri, CONTESTS_DIR))) {
+      return f.uri;
+    }
+  }
+  return undefined;
+}
+
+function addCargoWorkspaceMember(
+  cargoInput: string,
+  member: string
+): string | undefined {
+  const SECTION_RE = /^\[(\w+)\]$/;
+  let cargoLines = cargoInput.split("\n");
+  let currentSection: string | undefined;
+  let membersStart: number | undefined;
+  let membersEnd: number | undefined;
+  for (const [lineIdx, line] of cargoLines.entries()) {
+    const lineTrimmed = line.trim();
+    const sectionMatch = lineTrimmed.match(SECTION_RE);
+    if (sectionMatch) {
+      currentSection = sectionMatch[1];
+    }
+    if (currentSection === "workspace" && lineTrimmed === "members = [") {
+      assert(membersStart === undefined);
+      membersStart = lineIdx + 1;
+    }
+    if (
+      membersStart !== undefined &&
+      membersEnd === undefined &&
+      lineTrimmed === "]"
+    ) {
+      membersEnd = lineIdx;
+    }
+  }
+  if (membersStart === undefined || membersEnd === undefined) {
+    return undefined;
+  }
+  const memberLines = cargoLines.slice(membersStart!, membersEnd!);
+  memberLines.push(`    "${member}",`);
+  memberLines.sort();
+  cargoLines.splice(membersStart!, membersEnd! - membersStart!, ...memberLines);
+  return cargoLines.join("\n");
 }
 
 // TODO: Support nested uses, e.g.
@@ -60,9 +128,8 @@ export function activate(context: vscode.ExtensionContext) {
 
   const RUST_SUFFIX = ".rs";
 
-  let disposable = vscode.commands.registerCommand(
-    "rust-collater.collate",
-    async () => {
+  context.subscriptions.push(
+    vscode.commands.registerCommand("rust-collater.collate", async () => {
       const startTime = performance.now();
 
       const editor = vscode.window.activeTextEditor;
@@ -71,7 +138,12 @@ export function activate(context: vscode.ExtensionContext) {
       }
 
       try {
-        // Skip `<contest_name>/src/<problem_name>.rs` and find the next Rust folder.
+        // Skip `<contest_name>/src/<problem_name>.rs` and find the next Rust
+        // folder.
+        //
+        // Improvement potential: Unify with `guessWorkspaceRoot` (but keep in
+        // mind that `editor` should be taken into account here, but probably
+        // not when creating a new contest).
         let rootDir = vscode.Uri.joinPath(editor.document.uri, "../../..");
         while (
           !(await fileExists(vscode.Uri.joinPath(rootDir, "Cargo.toml")))
@@ -90,10 +162,9 @@ export function activate(context: vscode.ExtensionContext) {
             continue;
           }
           const moduleName = fileName.slice(0, -RUST_SUFFIX.length);
-          const moduleData = await vscode.workspace.fs.readFile(
+          const moduleText = await getFileContent(
             vscode.Uri.joinPath(srcDir, fileName)
           );
-          const moduleText = Buffer.from(moduleData).toString("utf8");
           const moduleLines = moduleText.split("\n");
           let moduleBody = "";
           for (const [lineIdx, line] of moduleLines.entries()) {
@@ -111,7 +182,8 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         // Improvement potential: Cache macro mapping.
-        // Improvement potential: Cache file content. (Check if VSCode does this already.)
+        // Improvement potential: Cache file content. (Check if VSCode does this
+        // already.)
         const macroDefinitions = new Map<string, string>();
         const moduleDependencies = new Map<string, string[]>();
         for (const [moduleName, moduleBody] of moduleBodies.entries()) {
@@ -165,10 +237,86 @@ export function activate(context: vscode.ExtensionContext) {
         //   - for missing module (also highlight the `use` statement)
         vscode.window.showErrorMessage(`Collation error: ${e}`);
       }
-    }
+    })
   );
 
-  context.subscriptions.push(disposable);
+  // Improvement potential: Download tests from Codeforces.
+  context.subscriptions.push(
+    vscode.commands.registerCommand("rust-collater.new-contest", async () => {
+      const rootDir = await guessWorkspaceRoot();
+      if (rootDir === undefined) {
+        vscode.window.showErrorMessage("Workspace root not found.");
+        return;
+      }
+      const contestsRootDir = vscode.Uri.joinPath(rootDir, CONTESTS_DIR);
+      const tmplDir = vscode.Uri.joinPath(contestsRootDir, "template");
+      const cargoTmplPath = vscode.Uri.joinPath(tmplDir, "Cargo.toml.tmpl");
+      const codeTmplPath = vscode.Uri.joinPath(tmplDir, "code.rs");
+      const rootCargoPath = vscode.Uri.joinPath(rootDir, "Cargo.toml");
+      let cargoTmpl, codeTmpl, rootCargo;
+      try {
+        cargoTmpl = await getFileContent(cargoTmplPath);
+        codeTmpl = await getFileContent(codeTmplPath);
+        rootCargo = await getFileContent(rootCargoPath);
+      } catch (e: any) {
+        vscode.window.showErrorMessage(e.toString());
+        return;
+      }
+
+      const division = await vscode.window.showQuickPick([
+        "Div. 1",
+        "Div. 2",
+        "Div. 3",
+        "Div. 4",
+        "Educational",
+      ]);
+      if (division === undefined) {
+        return;
+      }
+      const contestID = await vscode.window.showInputBox({
+        placeHolder: "Contest ID",
+      });
+      if (contestID === undefined) {
+        return;
+      }
+
+      const contestName =
+        division === "Educational"
+          ? `cf-educational-${contestID}`
+          : `cf-round-${contestID}-${division.replace("Div. ", "div-")}`;
+      const contestDir = vscode.Uri.joinPath(contestsRootDir, contestName);
+      const contestSrcDir = vscode.Uri.joinPath(contestDir, "src");
+
+      vscode.workspace.fs.createDirectory(contestDir);
+      vscode.workspace.fs.createDirectory(contestSrcDir);
+      const problemSet = ["a", "b", "c", "d", "e", "f"];
+      for (const problem of problemSet) {
+        setFileContent(
+          vscode.Uri.joinPath(contestSrcDir, `${problem}.rs`),
+          codeTmpl
+        );
+      }
+      const cargoBinaries = problemSet.map((problem) => {
+        return `[[bin]]\nname = "${problem}"\npath = "src/${problem}.rs"`;
+      });
+      setFileContent(
+        vscode.Uri.joinPath(contestDir, "Cargo.toml"),
+        cargoTmpl
+          .replace("{{contest_name}}", contestName)
+          .replace("{{binaries}}", cargoBinaries.join("\n\n"))
+      );
+      const rootCargoUpdated = addCargoWorkspaceMember(
+        rootCargo,
+        `${CONTESTS_DIR}/${contestName}`
+      );
+      if (rootCargoUpdated === undefined) {
+        vscode.window.showErrorMessage("Failed to update root Cargo.toml.");
+        return;
+      }
+      setFileContent(rootCargoPath, rootCargoUpdated);
+      vscode.window.showInformationMessage(`Contest created: ${contestName}`);
+    })
+  );
 }
 
 // Called when the extension is deactivated.

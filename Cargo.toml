@@ -1,7 +1,6 @@
 [workspace]
 members = [
     ".",
-    "playground",
     "contests/cf-educational-148",
     "contests/cf-educational-149",
     "contests/cf-round-869-div-2",
@@ -10,6 +9,7 @@ members = [
     "contests/cf-round-873-div-2",
     "contests/cf-round-875-div-2",
     "contests/cf-round-877-div-2",
+    "playground",
 ]
 
 [package]
