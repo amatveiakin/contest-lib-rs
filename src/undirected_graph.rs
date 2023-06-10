@@ -6,7 +6,8 @@ use crate::io;
 
 // TODO: Don't waste space on edge payloads when they are empty.
 //   Consider having two separate neighbour mappings: one with payloads (when first vertex index is
-//   smaller) and the other one without.
+//   smaller) and the other one without (for the other direction).
+//   Or simply omit the `edges` map when `EP` is `()`.
 #[derive(Clone, Debug)]
 pub struct UndirectedGraph<VP, EP> {
     vertices: Vec<VP>,
@@ -104,7 +105,6 @@ impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for UndirectedGraph<VP, EP> {
     type HalfEdgeIter = Box<dyn Iterator<Item = HalfEdge<'g, EP>> + 'g>;
 
     fn num_vertices(&self) -> usize { self.vertices.len() }
-    fn num_edges(&self) -> usize { self.edges.len() }
 
     fn vertex_ids(&self) -> Self::VertexIter {
         Box::new((0..self.vertices.len()).map(|i| VertexId::from_0_based(i.try_into().unwrap())))
@@ -161,7 +161,6 @@ mod tests {
         let mut read = io::Reader::new(std::io::Cursor::new(input.to_owned().into_bytes()));
         let g = UndirectedGraph::from_edges(&mut read);
         assert_eq!(g.num_vertices(), 4);
-        assert_eq!(g.num_edges(), 3);
         let v1 = VertexId::from_1_based(1);
         let v2 = VertexId::from_1_based(2);
         let v3 = VertexId::from_1_based(3);

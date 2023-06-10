@@ -4,12 +4,10 @@ use crate::graph::{Graph, VertexId, HalfEdge};
 use crate::io;
 
 
-// TODO: Store edge payloads inside edges.
 #[derive(Clone, Debug)]
 pub struct DirectedGraph<VP, EP> {
     vertices: Vec<VP>,
-    edges: HashMap<DirectedEdgeId, EP>,
-    edges_out: Vec<HashSet<VertexId>>,
+    edges_out: Vec<HashMap<VertexId, EP>>,
     edges_in: Vec<HashSet<VertexId>>,
 }
 
@@ -17,7 +15,6 @@ impl<VP, EP> DirectedGraph<VP, EP> {
     pub fn new() -> Self {
         Self {
             vertices: Vec::new(),
-            edges: HashMap::new(),
             edges_out: Vec::new(),
             edges_in: Vec::new(),
         }
@@ -26,30 +23,21 @@ impl<VP, EP> DirectedGraph<VP, EP> {
     pub fn add_vertex_p(&mut self, payload: VP) -> VertexId {
         let id = VertexId::from_0_based(self.vertices.len().try_into().unwrap());
         self.vertices.push(payload);
-        self.edges_out.push(HashSet::new());
+        self.edges_out.push(HashMap::new());
         self.edges_in.push(HashSet::new());
         id
     }
 
     // Inserts an edge. Overwrites previous edge, if any.
     pub fn add_edge_p(&mut self, from: VertexId, to: VertexId, payload: EP) {
-        let id = DirectedEdgeId::new(from, to);
-        self.edges.insert(id, payload);
-        self.edges_out[from].insert(to);
+        self.edges_out[from].insert(to, payload);
         self.edges_in[to].insert(from);
     }
 
     pub fn remove_edge(&mut self, from: VertexId, to: VertexId) -> Option<EP> {
-        let id = DirectedEdgeId::new(from, to);
-        let payload = self.edges.remove(&id);
-        self.edges_out[from].remove(&to);
+        let payload = self.edges_out[from].remove(&to);
         self.edges_in[to].remove(&from);
         payload
-    }
-
-    fn get_payload<'g>(&'g self, from: VertexId, to: VertexId) -> Option<&'g EP> {
-        let id = DirectedEdgeId::new(from, to);
-        self.edges.get(&id)
     }
 }
 
@@ -99,7 +87,6 @@ impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for DirectedGraph<VP, EP> {
     type HalfEdgeIter = Box<dyn Iterator<Item = HalfEdge<'g, EP>> + 'g>;
 
     fn num_vertices(&self) -> usize { self.vertices.len() }
-    fn num_edges(&self) -> usize { self.edges.len() }
 
     fn vertex_ids(&self) -> Self::VertexIter {
         Box::new((0..self.vertices.len()).map(|i| VertexId::from_0_based(i.try_into().unwrap())))
@@ -109,12 +96,10 @@ impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for DirectedGraph<VP, EP> {
     fn vertex_mut(&'g mut self, v: VertexId) -> &'g mut VP { &mut self.vertices[v] }
 
     fn edge(&'g self, from: VertexId, to: VertexId) -> Option<&'g EP> {
-        let id = DirectedEdgeId::new(from, to);
-        self.edges.get(&id)
+        self.edges_out[from].get(&to)
     }
     fn edge_mut(&'g mut self, from: VertexId, to: VertexId) -> Option<&'g mut EP> {
-        let id = DirectedEdgeId::new(from, to);
-        self.edges.get_mut(&id)
+        self.edges_out[from].get_mut(&to)
     }
 
     fn degree(&'g self, v: VertexId) -> u32 { self.in_degree(v) + self.out_degree(v) }
@@ -124,23 +109,13 @@ impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for DirectedGraph<VP, EP> {
     fn edges_in(&'g self, to: VertexId) -> Self::HalfEdgeIter {
         Box::new(self.edges_in[to]
             .iter()
-            .map(move |&from| HalfEdge { other: from, payload: self.get_payload(from, to).unwrap() }))
+            .map(move |&from| HalfEdge { other: from, payload: self.edge(from, to).unwrap() }))
     }
     fn edges_out(&'g self, from: VertexId) -> Self::HalfEdgeIter {
         Box::new(self.edges_out[from]
             .iter()
-            .map(move |&to| HalfEdge { other: to, payload: self.get_payload(from, to).unwrap() }))
+            .map(move |(&to, payload)| HalfEdge { other: to, payload }))
     }
-}
-
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
-struct DirectedEdgeId {
-    pub from: VertexId,
-    pub to: VertexId,
-}
-
-impl DirectedEdgeId {
-    pub fn new(from: VertexId, to: VertexId) -> Self { Self { from, to } }
 }
 
 
@@ -161,7 +136,6 @@ mod tests {
         let mut read = io::Reader::new(std::io::Cursor::new(input.to_owned().into_bytes()));
         let g = DirectedGraph::from_edges(&mut read);
         assert_eq!(g.num_vertices(), 4);
-        assert_eq!(g.num_edges(), 3);
         let v1 = VertexId::from_1_based(1);
         let v2 = VertexId::from_1_based(2);
         let v3 = VertexId::from_1_based(3);

@@ -56,7 +56,6 @@ pub trait Graph<'g, VP, EP: 'g> {
     type HalfEdgeIter: Iterator<Item = HalfEdge<'g, EP>>;
 
     fn num_vertices(&self) -> usize;
-    fn num_edges(&self) -> usize;
 
     // Vertex IDs always range from 0 to (num_vertices() - 1).
     fn vertex_ids(&self) -> Self::VertexIter;

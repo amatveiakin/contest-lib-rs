@@ -28,15 +28,13 @@ impl<VP: Clone, EP: Clone> Tree<VP, EP> {
         if graph.num_vertices() == 0 {
             return Err(TreeConstructionError::EmptyGraph);
         }
-        if graph.num_edges() < graph.num_vertices() - 1 {
-            return Err(TreeConstructionError::NotConnected);
-        }
         let root = VertexId::from_0_based(0);
         let mut vertices = graph.vertex_ids().map(|v| TreeVertex {
             payload: graph.vertex(v).clone(),
             parent: None,
             children: Vec::new(),
         }).collect::<Vec<_>>();
+        let mut found_vertices = 1;  // root is already ok
         let mut stack = vec![(root, None)];
         while let Some((v, p)) = stack.pop() {
             for HalfEdge{ other: u, payload } in graph.edges_adj(v) {
@@ -49,8 +47,12 @@ impl<VP: Clone, EP: Clone> Tree<VP, EP> {
                 }
                 vertices[u].parent = Some((v, payload.clone()));
                 vertices[v].children.push(u);
+                found_vertices += 1;
                 stack.push((u, Some(v)));
             }
+        }
+        if found_vertices < graph.num_vertices() {
+            return Err(TreeConstructionError::NotConnected);
         }
         return Ok(Tree { vertices, root });
     }
@@ -86,7 +88,6 @@ impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for Tree<VP, EP> {
     type HalfEdgeIter = Box<dyn Iterator<Item = HalfEdge<'g, EP>> + 'g>;
 
     fn num_vertices(&self) -> usize { self.vertices.len() }
-    fn num_edges(&self) -> usize { self.num_vertices() - 1 }
 
     fn vertex_ids(&self) -> Self::VertexIter {
         Box::new((0..self.vertices.len()).map(|i| VertexId::from_0_based(i.try_into().unwrap())))
