@@ -19,5 +19,6 @@ pub mod relax;
 pub mod segment_tree;
 pub mod solution_testing;
 pub mod topological_sort;
+pub mod tree;
 pub mod u32_index;
 pub mod undirected_graph;

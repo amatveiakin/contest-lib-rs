@@ -58,6 +58,7 @@ pub trait Graph<'g, VP, EP: 'g> {
     fn num_vertices(&self) -> usize;
     fn num_edges(&self) -> usize;
 
+    // Vertex IDs always range from 0 to (num_vertices() - 1).
     fn vertex_ids(&self) -> Self::VertexIter;
 
     fn vertex(&'g self, v: VertexId) -> &'g VP;

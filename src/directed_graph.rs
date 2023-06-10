@@ -4,6 +4,7 @@ use crate::graph::{Graph, VertexId, HalfEdge};
 use crate::io;
 
 
+// TODO: Store edge payloads inside edges.
 #[derive(Clone, Debug)]
 pub struct DirectedGraph<VP, EP> {
     vertices: Vec<VP>,

@@ -4,6 +4,9 @@ use crate::graph::{Graph, VertexId, HalfEdge};
 use crate::io;
 
 
+// TODO: Don't waste space on edge payloads when they are empty.
+//   Consider having two separate neighbour mappings: one with payloads (when first vertex index is
+//   smaller) and the other one without.
 #[derive(Clone, Debug)]
 pub struct UndirectedGraph<VP, EP> {
     vertices: Vec<VP>,

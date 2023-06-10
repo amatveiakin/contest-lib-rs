@@ -70,6 +70,7 @@ dependencies = [
 name = "contest_lib_rs"
 version = "0.1.0"
 dependencies = [
+ "itertools",
  "pretty_assertions",
 ]
 
