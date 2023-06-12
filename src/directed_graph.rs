@@ -121,8 +121,9 @@ impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for DirectedGraph<VP, EP> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use pretty_assertions::assert_eq;
+    use crate::internal_testing::reader_from_string;
+    use super::*;
 
     #[test]
     fn read_graph() {
@@ -133,7 +134,7 @@ mod tests {
             3 2
             3 4
         ";
-        let mut read = io::Reader::new(std::io::Cursor::new(input.to_owned().into_bytes()));
+        let mut read = reader_from_string(input);
         let g = DirectedGraph::from_edges(&mut read);
         assert_eq!(g.num_vertices(), 4);
         let v1 = VertexId::from_1_based(1);

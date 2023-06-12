@@ -1,4 +1,7 @@
+use std::io::BufRead;
 use std::panic;
+
+use crate::io;
 
 
 // With regular `catch_unwind` the test succeeds, but the panic is still printed. This is confusing
@@ -10,4 +13,8 @@ pub fn catch_unwind_silent<F: FnOnce() -> R + panic::UnwindSafe, R>(f: F) -> std
     let result = panic::catch_unwind(f);
     panic::set_hook(prev_hook);
     result
+}
+
+pub fn reader_from_string(input: impl ToString) -> io::Reader<impl BufRead> {
+    io::Reader::new(std::io::Cursor::new(input.to_string().into_bytes()))
 }

@@ -1,3 +1,4 @@
+pub mod array_2d;
 pub mod bfs;
 pub mod binary_heaps;
 pub mod bitset;

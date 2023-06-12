@@ -1,19 +1,20 @@
 // Similar to Itertools in the spirit, but a different set of utilities.
 
-use std::mem;
+use std::{fmt, mem};
 
 
 pub trait Iterutils
 where
     Self: Sized + Iterator,
-    Self::Item: PartialEq,
 {
-    type GroupIdentical: Iterator<Item = (Self::Item, usize)>;
+    type GroupIdentical: Iterator<Item = (Self::Item, usize)> where Self::Item: PartialEq;
 
     // Similar to `Itertools::group_by`, but:
     //   - returns the first element and count;
     //   - returns an iterator; does not need to be stored in a temporary variable.
-    fn group_identical(self) -> Self::GroupIdentical;
+    fn group_identical(self) -> Self::GroupIdentical where Self::Item: PartialEq;
+
+    fn join(self, sep: &str) -> String where Self::Item: fmt::Display;
 }
 
 
@@ -60,18 +61,26 @@ where
     }
 }
 
-impl<I: Iterator> Iterutils for I
-where
-    I::Item: PartialEq,
-{
-    type GroupIdentical = GroupIdentical<I>;
+impl<I: Iterator> Iterutils for I {
+    type GroupIdentical = GroupIdentical<Self> where Self::Item: PartialEq;
 
-    fn group_identical(self) -> Self::GroupIdentical {
+    fn group_identical(self) -> Self::GroupIdentical where Self::Item: PartialEq {
         GroupIdentical {
             iter: self,
             last: None,
             count: 0,
         }
+    }
+
+    fn join(self, sep: &str) -> String where Self::Item: fmt::Display {
+        let mut ret = String::new();
+        for (i, item) in self.enumerate() {
+            if i > 0 {
+                ret += sep;
+            }
+            ret += &item.to_string();
+        }
+        ret
     }
 }
 
@@ -92,5 +101,11 @@ mod tests {
         let v = [String::from("foo"), String::from("foo"), String::from("bar")];
         let grouped: Vec<_> = v.iter().group_identical().collect();
         assert!(grouped == vec![(&String::from("foo"), 2), (&String::from("bar"), 1)]);
+    }
+
+    #[test]
+    fn join() {
+        let v = [1, 2, 3];
+        assert!(v.iter().join(", ") == "1, 2, 3");
     }
 }
