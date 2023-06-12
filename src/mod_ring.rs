@@ -1,8 +1,8 @@
 // Improvement potential: Add benchmarks.
-// Improvement potential: Add `PrimInt` parent trait and implement it for `ModNum`.
 
 use std::{fmt, ops};
 
+use crate::num::IntegerRing;
 use crate::trait_for_value_and_ref;
 use crate::io::Emittable;
 
@@ -41,6 +41,11 @@ impl<const M: i32> ModNumber<M> {
     }
 
     fn assert_mod_ok() { let () = AssertModOk::<M>::OK; }
+}
+
+impl<const M: i32> IntegerRing for ModNumber<M> {
+    fn zero() -> Self { ModNumber::new_unchecked(0) }
+    fn one() -> Self { ModNumber::new_unchecked(1) }
 }
 
 impl<const M: i32> From<i32> for ModNumber<M> {
