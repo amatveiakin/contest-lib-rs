@@ -5,7 +5,7 @@
 use std::collections::{BTreeMap, btree_map};
 
 
-#[derive(Debug)]
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct CountingSet<T: Ord + Clone> {
     map: BTreeMap<T, usize>,
 }
@@ -46,16 +46,42 @@ impl<T: Ord + Clone> CountingSet<T> {
     }
 
     pub fn remove(&mut self, x: T) -> bool {
+        self.remove_up_to(x, 1) > 0
+    }
+    pub fn remove_up_to(&mut self, x: T, n: usize) -> usize {
         match self.map.entry(x) {
             btree_map::Entry::Occupied(mut e) => {
-                *e.get_mut() -= 1;
-                if *e.get() == 0 {
+                let count = *e.get();
+                if count <= n {
                     e.remove_entry();
+                    count
+                } else {
+                    *e.get_mut() -= n;
+                    n
                 }
-                true
+            }
+            btree_map::Entry::Vacant(_) => 0,
+        }
+    }
+    pub fn remove_exact(&mut self, x: T, n: usize) -> bool {
+        match self.map.entry(x) {
+            btree_map::Entry::Occupied(mut e) => {
+                let count = *e.get();
+                if count > n {
+                    *e.get_mut() -= n;
+                    true
+                } else if count == n {
+                    e.remove_entry();
+                    true
+                } else {
+                    false
+                }
             }
             btree_map::Entry::Vacant(_) => false,
         }
+    }
+    pub fn remove_group(&mut self, x: &T) -> usize {
+        self.map.remove(x).unwrap_or(0)
     }
 
     pub fn pop_first(&mut self) -> Option<T> {
@@ -100,7 +126,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_multiset() {
+    fn basic() {
         let mut s = CountingSet::new();
         assert!(s.is_empty());
         assert_eq!(s.len_slow(), 0);
@@ -132,5 +158,54 @@ mod tests {
         assert_eq!(s.pop_first(), Some("a"));
         assert_eq!(s.pop_last(), Some("c"));
         assert_eq!(s.iter().collect::<Vec<_>>(), vec![&"b", &"c", &"c"]);
+    }
+
+    #[test]
+    fn removal() {
+        let mut s = CountingSet::new();
+        s.push_multiple("foo", 3);
+        {
+            let mut s = s.clone();
+            assert!(s.remove("foo"));
+            assert!(s.remove("foo"));
+            assert!(s.remove("foo"));
+            assert!(!s.remove("foo"));
+            assert!(!s.remove("foo"));
+        }
+        {
+            let mut s = s.clone();
+            assert_eq!(s.remove_group(&"foo"), 3);
+            assert!(s.is_empty());
+        }
+        {
+            let mut s = s.clone();
+            assert!(s.remove_exact("foo", 2));
+            assert_eq!(s.len_slow(), 1);
+        }
+        {
+            let mut s = s.clone();
+            assert!(s.remove_exact("foo", 3));
+            assert_eq!(s.len_slow(), 0);
+        }
+        {
+            let mut s = s.clone();
+            assert!(!s.remove_exact("foo", 4));
+            assert_eq!(s.len_slow(), 3);
+        }
+        {
+            let mut s = s.clone();
+            assert_eq!(s.remove_up_to("foo", 2), 2);
+            assert_eq!(s.len_slow(), 1);
+        }
+        {
+            let mut s = s.clone();
+            assert_eq!(s.remove_up_to("foo", 3), 3);
+            assert_eq!(s.len_slow(), 0);
+        }
+        {
+            let mut s = s.clone();
+            assert_eq!(s.remove_up_to("foo", 4), 3);
+            assert_eq!(s.len_slow(), 0);
+        }
     }
 }
