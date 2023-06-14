@@ -90,11 +90,24 @@ mod tests {
         assert_eq!(sorted[5], f);
     }
 
+    //   →
+    // a   b
+    //   ←
+    #[test]
+    fn topological_sort_cycle2() {
+        let mut graph = DirectedGraph::new();
+        let [a, b] = graph.add_vertex_array();
+        graph.add_edge(a, b);
+        graph.add_edge(b, a);
+        let sorted = topological_sort(&graph);
+        assert!(sorted.is_none());
+    }
+
     // a → b  →  c
     //      ↖   ↙
     //        d
     #[test]
-    fn topological_sort_cycle() {
+    fn topological_sort_cycle3() {
         let mut graph = DirectedGraph::new();
         let [a, b, c, d] = graph.add_vertex_array();
         graph.add_edge(a, b);

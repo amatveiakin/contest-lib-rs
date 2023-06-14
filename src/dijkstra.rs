@@ -14,7 +14,7 @@ struct VisitedVertex {
     cost: u64,
 }
 
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 struct QueuedVertex {
     v: VertexId,
     cost: u64,
