@@ -1,6 +1,7 @@
 pub mod bfs;
 pub mod binary_heaps;
 pub mod bitset;
+pub mod btreeset_util;
 pub mod combinatorics;
 pub mod counting_set;
 pub mod dfs;

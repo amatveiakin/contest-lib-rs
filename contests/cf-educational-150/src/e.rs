@@ -1,16 +1,8 @@
 use std::collections::BTreeSet;
 
+use contest_lib_rs::btreeset_util::OrderedSetNeighborValues;
 use contest_lib_rs::counting_set::CountingSet;
 use contest_lib_rs::{io, emitln};
-
-fn neighbors(tree: &BTreeSet<i32>, val: i32) -> (Option<&i32>, Option<&i32>) {
-    use std::ops::Bound::*;
-
-    let mut before = tree.range((Unbounded, Excluded(val)));
-    let mut after = tree.range((Excluded(val), Unbounded));
-
-    (before.next_back(), after.next())
-}
 
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, write: &mut W) {
@@ -31,9 +23,8 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, 
         while (ap as i64) < n && a[ap].0 >= row {
             let p = a[ap].1 as i32;
             cols.insert(p);
-            let (prev, next) = neighbors(&cols, p);
-            let prev = *prev.unwrap_or(&-1);
-            let next = *next.unwrap_or(&(n as i32));
+            let prev = *cols.prev_value(&p).unwrap_or(&-1);
+            let next = *cols.next_value(&p).unwrap_or(&(n as i32));
             let len = next - prev - 1;
             if len > 1 {
                 row_segments.remove(len);
