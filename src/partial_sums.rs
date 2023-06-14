@@ -21,7 +21,7 @@ where
     }
 
     pub fn sum(&self, idx: impl U32Index) -> T {
-        let (begin, end) = idx.bounds(self.sums.len() as u32);
+        let (begin, end) = idx.bounds(self.sums.len() as u32 - 1);
         self.sums[end as usize] - self.sums[begin as usize]
     }
 }
@@ -33,12 +33,15 @@ mod tests {
 
     #[test]
     fn test() {
-        let v = vec![1, -1, 2, -2, 3, -3];
+        let v = vec![1, -1, 2, -2, 3, -3, 4];
         let sums = PartialSums::new(&v);
-        assert_eq!(sums.sum(0..6), 0);
+        assert_eq!(sums.sum(0..7), 4);
         assert_eq!(sums.sum(0..0), 0);
         assert_eq!(sums.sum(1..4), -1);
         assert_eq!(sums.sum(1..=4), 2);
         assert_eq!(sums.sum(3..=3), -2);
+        assert_eq!(sums.sum(3..), 2);
+        assert_eq!(sums.sum(..3), 2);
+        assert_eq!(sums.sum(..), 4);
     }
 }
