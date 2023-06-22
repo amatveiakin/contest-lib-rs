@@ -21,6 +21,7 @@ pub mod rand;
 pub mod relax;
 pub mod segment_tree;
 pub mod solution_testing;
+pub mod sort_array;
 pub mod topological_sort;
 pub mod tree;
 pub mod u32_index;
