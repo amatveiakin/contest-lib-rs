@@ -269,6 +269,7 @@ export function activate(context: vscode.ExtensionContext) {
         "Div. 3",
         "Div. 4",
         "Educational",
+        // TODO: Add "Custom" option (e.g. for CodeTON).
       ]);
       if (division === undefined) {
         return;
