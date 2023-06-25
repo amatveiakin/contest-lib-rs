@@ -3,7 +3,6 @@
 use contest_lib_rs::graph::VertexId;
 use contest_lib_rs::io;
 use contest_lib_rs::tree::Tree;
-use contest_lib_rs::undirected_graph::UndirectedGraph;
 
 fn compute_subtree_sizes(v: VertexId, tree: &Tree<(), ()>, subtree_sizes: &mut Vec<usize>) -> usize {
     let mut size = 1;
@@ -41,14 +40,7 @@ fn dfs(v: VertexId, tree: &Tree<(), ()>, subtree_sizes: &mut Vec<usize>, black: 
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, write: &mut W) {
     let n = read.usize();
-    let mut graph = UndirectedGraph::new();
-    graph.add_vertices(n);
-    for _ in 0..n {
-        let from = read.u32();
-        let to = read.u32();
-        graph.add_edge(VertexId::from_1_based(from), VertexId::from_1_based(to));
-    }
-    let tree = Tree::from(&graph).unwrap();
+    let tree = Tree::from_read_edges(n, read).unwrap();
     let mut subtree_sizes = vec![0; n];
     let mut transitive_children = vec![vec![]; n];
     compute_subtree_sizes(tree.root(), &tree, &mut subtree_sizes);

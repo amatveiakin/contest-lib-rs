@@ -1,4 +1,5 @@
 use crate::graph::{VertexId, Graph, HalfEdge};
+use crate::io;
 use crate::undirected_graph::UndirectedGraph;
 
 
@@ -22,9 +23,34 @@ pub struct TreeVertex<VP, EP> {
     pub children: Vec<VertexId>,
 }
 
+impl<VP, EP> Tree<VP, EP> {
+    pub fn root(&self) -> VertexId { self.root }
+
+    pub fn children(&self, v: VertexId) -> &[VertexId] { &self.vertices[v].children }
+    pub fn child_edges(&self, v: VertexId) -> impl ExactSizeIterator<Item = HalfEdge<'_, EP>> {
+        self.vertices[v].children.iter().map(|&u| HalfEdge {
+            other: u,
+            payload: &self.vertices[u].parent.as_ref().unwrap().1
+        })
+    }
+    pub fn parent(&self, v: VertexId) -> Option<VertexId> {
+        self.vertices[v].parent.as_ref().map(|(p, _)| *p)
+    }
+    pub fn parent_edge(&self, v: VertexId) -> Option<HalfEdge<'_, EP>> {
+        self.vertices[v].parent.as_ref().map(|(p, payload)| HalfEdge {
+            other: *p,
+            payload,
+        })
+    }
+
+    pub fn edges_adj(&self, v: VertexId) -> impl Iterator<Item = HalfEdge<'_, EP>> {
+        self.child_edges(v).chain(self.parent_edge(v).into_iter())
+    }
+}
+
 impl<VP: Clone, EP: Clone> Tree<VP, EP> {
-    // Note using `From` trait because it expects a value, not a reference.
-    pub fn from(graph: &UndirectedGraph<VP, EP>) -> Result<Self, TreeConstructionError> {
+    // Note using `TryFrom` trait because it expects a value, not a reference.
+    pub fn try_from(graph: &UndirectedGraph<VP, EP>) -> Result<Self, TreeConstructionError> {
         if graph.num_vertices() == 0 {
             return Err(TreeConstructionError::EmptyGraph);
         }
@@ -55,31 +81,6 @@ impl<VP: Clone, EP: Clone> Tree<VP, EP> {
             return Err(TreeConstructionError::NotConnected);
         }
         return Ok(Tree { vertices, root });
-    }
-}
-
-impl<VP, EP> Tree<VP, EP> {
-    pub fn root(&self) -> VertexId { self.root }
-
-    pub fn children(&self, v: VertexId) -> &[VertexId] { &self.vertices[v].children }
-    pub fn child_edges(&self, v: VertexId) -> impl ExactSizeIterator<Item = HalfEdge<'_, EP>> {
-        self.vertices[v].children.iter().map(|&u| HalfEdge {
-            other: u,
-            payload: &self.vertices[u].parent.as_ref().unwrap().1
-        })
-    }
-    pub fn parent(&self, v: VertexId) -> Option<VertexId> {
-        self.vertices[v].parent.as_ref().map(|(p, _)| *p)
-    }
-    pub fn parent_edge(&self, v: VertexId) -> Option<HalfEdge<'_, EP>> {
-        self.vertices[v].parent.as_ref().map(|(p, payload)| HalfEdge {
-            other: *p,
-            payload,
-        })
-    }
-
-    pub fn edges_adj(&self, v: VertexId) -> impl Iterator<Item = HalfEdge<'_, EP>> {
-        self.child_edges(v).chain(self.parent_edge(v).into_iter())
     }
 }
 
@@ -126,6 +127,16 @@ impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for Tree<VP, EP> {
     fn edges_out(&'g self, from: VertexId) -> Self::HalfEdgeIter { Box::new(self.edges_adj(from)) }
 }
 
+impl Tree<(), ()> {
+    // Reads edges as 1-based vertex pairs.
+    pub fn from_read_edges<R: std::io::BufRead>(num_vertices: usize, read: &mut io::Reader<R>)
+        -> Result<Self, TreeConstructionError>
+    {
+        let graph = UndirectedGraph::from_read_edges(num_vertices, num_vertices - 1, read);
+        Tree::try_from(&graph)
+    }
+}
+
 
 #[cfg(test)]
 mod tests {
@@ -142,7 +153,7 @@ mod tests {
         g.add_edge(v3, v4);
         g.add_edge(v6, v3);
         g.add_edge(v4, v5);
-        let tree = Tree::from(&g).unwrap();
+        let tree = Tree::try_from(&g).unwrap();
         assert_eq!(tree.root(), v1);
         assert_eq!(tree.parent(v1), None);
         assert_eq!(tree.children(v1), &[v3]);
@@ -159,7 +170,7 @@ mod tests {
         g.add_edge(v1, v2);
         g.add_edge(v1, v3);
         g.add_edge(v2, v3);
-        assert_eq!(Tree::from(&g).err(), Some(TreeConstructionError::HasCycle));
+        assert_eq!(Tree::try_from(&g).err(), Some(TreeConstructionError::HasCycle));
     }
 
     #[test]
@@ -168,7 +179,7 @@ mod tests {
         let [v1, v2, v3, v4] = g.add_vertex_array();
         g.add_edge(v1, v3);
         g.add_edge(v2, v4);
-        assert_eq!(Tree::from(&g).err(), Some(TreeConstructionError::NotConnected));
+        assert_eq!(Tree::try_from(&g).err(), Some(TreeConstructionError::NotConnected));
     }
 
     #[test]
@@ -177,7 +188,7 @@ mod tests {
         let v1 = g.add_vertex_p("first");
         let v2 = g.add_vertex_p("second");
         g.add_edge_p(v1, v2, "first-second");
-        let tree = Tree::from(&g).unwrap();
+        let tree = Tree::try_from(&g).unwrap();
         assert_eq!(tree.vertex(v1), &"first");
         assert_eq!(tree.vertex(v2), &"second");
         assert_eq!(tree.parent_edge(v2).unwrap().payload, &"first-second");

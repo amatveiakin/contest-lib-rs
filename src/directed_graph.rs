@@ -68,12 +68,12 @@ impl<VP> DirectedGraph<VP, ()> {
 
 impl DirectedGraph<(), ()> {
     // Reads number of vertices, then number of edges, then edges as 1-based vertex pairs.
-    pub fn from_edges<R: std::io::BufRead>(read: &mut io::Reader<R>) -> Self {
-        let n = read.usize();
-        let m = read.usize();
+    pub fn from_read_edges<R: std::io::BufRead>(
+        num_vertices: usize, num_edges: usize, read: &mut io::Reader<R>
+    ) -> Self {
         let mut graph = Self::new();
-        graph.add_vertices(n);
-        for _ in 0..m {
+        graph.add_vertices(num_vertices);
+        for _ in 0..num_edges {
             let from = read.u32();
             let to = read.u32();
             graph.add_edge(VertexId::from_1_based(from), VertexId::from_1_based(to));
@@ -135,7 +135,9 @@ mod tests {
             3 4
         ";
         let mut read = reader_from_string(input);
-        let g = DirectedGraph::from_edges(&mut read);
+        let n = read.usize();
+        let m = read.usize();
+        let g = DirectedGraph::from_read_edges(n, m, &mut read);
         assert_eq!(g.num_vertices(), 4);
         let v1 = VertexId::from_1_based(1);
         let v2 = VertexId::from_1_based(2);
