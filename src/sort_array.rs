@@ -1,6 +1,16 @@
-pub fn sort_array<T: Ord, const N: usize>(mut a: [T; N]) -> [T; N] {
-    a.sort();
-    a
+// Unfortunately, Rust does not geenrate optimal machine code for sorting small arrays:
+// https://play.rust-lang.org/?version=stable&mode=release&edition=2021&gist=3cb9d99a80cabf0651d45c1eec96de89
+pub fn sort_array<T: Ord, const N: usize>(mut v: [T; N]) -> [T; N] {
+    match N {
+        0 | 1 => {},
+        2 => {
+            if v[1] < v[0] {
+                v.swap(0, 1);
+            }
+        },
+        _ => v.sort(),
+    }
+    v
 }
 
 
