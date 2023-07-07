@@ -4,31 +4,11 @@ use contest_lib_rs::graph::VertexId;
 use contest_lib_rs::io;
 use contest_lib_rs::tree::Tree;
 
-fn compute_subtree_sizes(v: VertexId, tree: &Tree<(), ()>, subtree_sizes: &mut Vec<usize>) -> usize {
-    let mut size = 1;
-    for &u in tree.children(v) {
-        size += compute_subtree_sizes(u, tree, subtree_sizes);
-    }
-    subtree_sizes[v] = size;
-    size
-}
-
-fn compute_transitive_children(v: VertexId, tree: &Tree<(), ()>, transitive_children: &mut Vec<Vec<VertexId>>) {
-    let mut children = Vec::new();
-    for &u in tree.children(v) {
-        compute_transitive_children(u, tree, transitive_children);
-        children.push(u);
-        children.extend(transitive_children[u].iter().copied());
-    }
-    assert!(transitive_children[v].is_empty());
-    transitive_children[v] = children;
-}
-
-fn dfs(v: VertexId, tree: &Tree<(), ()>, subtree_sizes: &mut Vec<usize>, black: &mut Vec<bool>, k: usize) {
+fn dfs(v: VertexId, tree: &Tree<(), ()>, subtree_sizes: &[i64], black: &mut Vec<bool>, k: usize) {
     // also include `v`
     // also invert (?)
 
-    if subtree_sizes[v] == k {
+    if subtree_sizes[v] == k as i64 {
         black.fill(false);
 
     }
@@ -41,13 +21,20 @@ fn dfs(v: VertexId, tree: &Tree<(), ()>, subtree_sizes: &mut Vec<usize>, black: 
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, write: &mut W) {
     let n = read.usize();
     let tree = Tree::from_read_edges(n, read).unwrap();
-    let mut subtree_sizes = vec![0; n];
-    let mut transitive_children = vec![vec![]; n];
-    compute_subtree_sizes(tree.root(), &tree, &mut subtree_sizes);
-    compute_transitive_children(tree.root(), &tree, &mut transitive_children);
+    let subtree_sizes = tree.compute_recursively(|ch_sizes, _| {
+        1 + ch_sizes.iter().copied().sum::<i64>()
+    });
+    let subtrees = tree.compute_recursively(|ch_subtrees, v| {
+        let mut ret = vec![v];
+        for ch in ch_subtrees {
+            ret.extend(*ch);
+        }
+        ret.sort();
+        ret
+    });
     let mut black = vec![false; n];
     for k in 0..=n {
-        dfs(tree.root(), &tree, &mut subtree_sizes, &mut black, k)
+        dfs(tree.root(), &tree, &subtree_sizes, &mut black, k)
     }
 }
 

@@ -1,5 +1,5 @@
 use crate::graph::{VertexId, Graph, HalfEdge};
-use crate::io;
+use crate::{io, ivec};
 use crate::undirected_graph::UndirectedGraph;
 
 
@@ -45,6 +45,30 @@ impl<VP, EP> Tree<VP, EP> {
 
     pub fn edges_adj(&self, v: VertexId) -> impl Iterator<Item = HalfEdge<'_, EP>> {
         self.child_edges(v).chain(self.parent_edge(v).into_iter())
+    }
+
+    pub fn compute_recursively<R, F>(&self, f: F) -> Vec<R>
+    where
+        F: Fn(&[&R], VertexId) -> R,
+    {
+        let mut result = ivec![None; self.vertices.len()];
+        self.compute_recursively_impl(&f, self.root, &mut result);
+        result.into_iter().map(|v| v.unwrap()).collect()
+    }
+
+    fn compute_recursively_impl<F, R>(&self, f: &F, v: VertexId, result: &mut Vec<Option<R>>)
+    where
+        F: Fn(&[&R], VertexId) -> R,
+    {
+        for &u in self.children(v) {
+            self.compute_recursively_impl(f, u, result);
+        }
+        // Improvement potential: Pass an iterator instead of collecting to a vector.
+        let children_results = self.children(v).iter()
+            .map(|&u| result[u].as_ref().unwrap())
+            .collect::<Vec<_>>();
+        assert!(result[v].is_none());
+        result[v] = Some(f(&children_results, v));
     }
 }
 
@@ -192,5 +216,48 @@ mod tests {
         assert_eq!(tree.vertex(v1), &"first");
         assert_eq!(tree.vertex(v2), &"second");
         assert_eq!(tree.parent_edge(v2).unwrap().payload, &"first-second");
+    }
+
+    #[test]
+    fn recursive_computation() {
+        let mut graph = UndirectedGraph::new();
+        let [a, b, c, d, e, f, g, h] = graph.add_vertex_array();
+        graph.add_edge(a, b);
+        graph.add_edge(a, c);
+        graph.add_edge(a, d);
+        graph.add_edge(c, e);
+        graph.add_edge(c, f);
+        graph.add_edge(d, g);
+        graph.add_edge(g, h);
+        let tree = Tree::try_from(&graph).unwrap();
+
+        let subtree_sizes = tree.compute_recursively(|ch_sizes, _| {
+            1 + ch_sizes.iter().copied().sum::<i64>()
+        });
+        assert_eq!(subtree_sizes[a], 8);
+        assert_eq!(subtree_sizes[b], 1);
+        assert_eq!(subtree_sizes[c], 3);
+        assert_eq!(subtree_sizes[d], 3);
+        assert_eq!(subtree_sizes[e], 1);
+        assert_eq!(subtree_sizes[f], 1);
+        assert_eq!(subtree_sizes[g], 2);
+        assert_eq!(subtree_sizes[h], 1);
+
+        let subtrees = tree.compute_recursively(|ch_subtrees, v| {
+            let mut ret = vec![v];
+            for ch in ch_subtrees {
+                ret.extend(*ch);
+            }
+            ret.sort();
+            ret
+        });
+        assert_eq!(subtrees[a], vec![a, b, c, d, e, f, g, h]);
+        assert_eq!(subtrees[b], vec![b]);
+        assert_eq!(subtrees[c], vec![c, e, f]);
+        assert_eq!(subtrees[d], vec![d, g, h]);
+        assert_eq!(subtrees[e], vec![e]);
+        assert_eq!(subtrees[f], vec![f]);
+        assert_eq!(subtrees[g], vec![g, h]);
+        assert_eq!(subtrees[h], vec![h]);
     }
 }
