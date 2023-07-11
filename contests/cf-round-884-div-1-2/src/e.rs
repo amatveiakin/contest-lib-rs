@@ -14,11 +14,11 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, 
         let xmin = x1.min(x2);
         let ymin = y1.min(y2);
         assert_eq!(xmin, x1);
-        if p[(xmin, ymin)].is_some() {
+        if p[[xmin, ymin]].is_some() {
             failure = true;
         }
         let v = y1 < y2;
-        p[(xmin, ymin)] = Some(v);
+        p[[xmin, ymin]] = Some(v);
 
         // ...
     }

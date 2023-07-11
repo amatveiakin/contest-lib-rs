@@ -11,7 +11,7 @@ use crate::iterutils::Iterutils;
 use crate::relax::RelaxMinMax;
 
 
-pub trait Array2D<T> : ops::Index<(usize, usize), Output = T> + ops::IndexMut<(usize, usize)> {
+pub trait Array2D<T> : ops::Index<[usize; 2], Output = T> + ops::IndexMut<[usize; 2]> {
     type MapResult<U>: Array2D<U>;
     type TransposeResult: Array2D<T>;
 
@@ -20,7 +20,7 @@ pub trait Array2D<T> : ops::Index<(usize, usize), Output = T> + ops::IndexMut<(u
     fn shape(&self) -> (usize, usize);
 
     fn map<U>(self, f: impl Fn(T) -> U) -> Self::MapResult<U>;
-    fn map_enumerated<U>(self, f: impl Fn((usize, usize), T) -> U) -> Self::MapResult<U>;
+    fn map_enumerated<U>(self, f: impl Fn([usize; 2], T) -> U) -> Self::MapResult<U>;
 
     // Improvement potential: Move `iter_enumerated` here.
 
@@ -34,7 +34,7 @@ pub trait Array2D<T> : ops::Index<(usize, usize), Output = T> + ops::IndexMut<(u
     {
         (0..self.num_rows()).map(|i| {
             (0..self.num_cols()).map(|j| {
-                self[(i, j)].to_string()
+                self[[i, j]].to_string()
             }).join("")
         }).join("\n")
     }
@@ -45,7 +45,7 @@ pub trait Array2D<T> : ops::Index<(usize, usize), Output = T> + ops::IndexMut<(u
     {
         (0..self.num_rows()).map(|i| {
             (0..self.num_cols()).map(|j| {
-                self[(i, j)].to_string()
+                self[[i, j]].to_string()
             }).join(sep)
         }).join("\n")
     }
@@ -57,12 +57,12 @@ pub trait Array2D<T> : ops::Index<(usize, usize), Output = T> + ops::IndexMut<(u
         let mut max_col_len = vec![0; self.num_cols()];
         for i in 0..self.num_rows() {
             for j in 0..self.num_cols() {
-                max_col_len[j].relax_max(self[(i, j)].to_string().len());
+                max_col_len[j].relax_max(self[[i, j]].to_string().len());
             }
         }
         (0..self.num_rows()).map(|i| {
             (0..self.num_cols()).map(|j| {
-                format!("{:>width$}", self[(i, j)], width = max_col_len[j])
+                format!("{:>width$}", self[[i, j]], width = max_col_len[j])
             }).join(" ")
         }).join("\n")
     }
@@ -97,10 +97,10 @@ impl<T> DynArray2D<T> {
         Self { data, shape: (n_rows, n_cols) }
     }
 
-    pub fn iter_enumerated(&self) -> impl Iterator<Item = ((usize, usize), &T)> {
+    pub fn iter_enumerated(&self) -> impl Iterator<Item = ([usize; 2], &T)> {
         let (_, n_cols) = self.shape;
         self.data.iter().enumerate().map(move |(i, x)| {
-            ((i / n_cols, i % n_cols), x)
+            ([i / n_cols, i % n_cols], x)
         })
     }
 }
@@ -113,10 +113,10 @@ impl<T, const ROWS: usize, const COLS: usize> FixedArray2D<T, ROWS, COLS> {
         Self { data: [[T::default(); COLS]; ROWS] }
     }
 
-    pub fn iter_enumerated(&self) -> impl Iterator<Item = ((usize, usize), &T)> {
+    pub fn iter_enumerated(&self) -> impl Iterator<Item = ([usize; 2], &T)> {
         (0..self.num_rows()).flat_map(move |row| {
             (0..self.num_cols()).map(move |col| {
-                ((row, col), &self[(row, col)])
+                ([row, col], &self[[row, col]])
             })
         })
     }
@@ -134,9 +134,9 @@ impl<T> Array2D<T> for DynArray2D<T> {
         let data = self.data.into_iter().map(|x| f(x)).collect();
         DynArray2D { data, shape: self.shape }
     }
-    fn map_enumerated<U>(self, f: impl Fn((usize, usize), T) -> U) -> DynArray2D<U> {
+    fn map_enumerated<U>(self, f: impl Fn([usize; 2], T) -> U) -> DynArray2D<U> {
         let (_, n_cols) = self.shape;
-        let data = self.data.into_iter().enumerate().map(|(i, x)| f((i / n_cols, i % n_cols), x)).collect();
+        let data = self.data.into_iter().enumerate().map(|(i, x)| f([i / n_cols, i % n_cols], x)).collect();
         DynArray2D { data, shape: self.shape }
     }
 
@@ -165,12 +165,12 @@ impl<T, const ROWS: usize, const COLS: usize> Array2D<T> for FixedArray2D<T, ROW
         let data = self.data.map(|row_data| row_data.map(|x| f(x)));
         FixedArray2D { data }
     }
-    fn map_enumerated<U>(self, f: impl Fn((usize, usize), T) -> U) -> FixedArray2D<U, ROWS, COLS> {
+    fn map_enumerated<U>(self, f: impl Fn([usize; 2], T) -> U) -> FixedArray2D<U, ROWS, COLS> {
         let mut row = 0;
         let mut col = 0;
         let data = self.data.map(|row_data| {
             let ret = row_data.map(|x| {
-                let ret = f((row, col), x);
+                let ret = f([row, col], x);
                 col += 1;
                 ret
             });
@@ -199,7 +199,7 @@ fn debug_print_array2d<T: fmt::Debug>(title: &str, a: &impl Array2D<T>, f: &mut 
     -> fmt::Result
 {
     write!(f, "{title}[{}]", (0..a.num_rows()).map(|row|
-        format!("[{}]", (0..a.num_cols()).map(|col| format!("{:?}", a[(row, col)])).join(", "))
+        format!("[{}]", (0..a.num_cols()).map(|col| format!("{:?}", a[[row, col]])).join(", "))
     ).join(", "))
 }
 
@@ -231,31 +231,31 @@ impl<T, const ROWS: usize, const COLS: usize> From<[[T; COLS]; ROWS]> for FixedA
     }
 }
 
-impl<T> ops::Index<(usize, usize)> for DynArray2D<T> {
+impl<T> ops::Index<[usize; 2]> for DynArray2D<T> {
     type Output = T;
-    fn index(&self, (row, col): (usize, usize)) -> &Self::Output {
+    fn index(&self, [row, col]: [usize; 2]) -> &Self::Output {
         let (n_rows, n_cols) = self.shape;
         assert!(row < n_rows && col < n_cols);
         &self.data[row * n_cols + col]
     }
 }
-impl<T> ops::IndexMut<(usize, usize)> for DynArray2D<T> {
-    fn index_mut(&mut self, (row, col): (usize, usize)) -> &mut Self::Output {
+impl<T> ops::IndexMut<[usize; 2]> for DynArray2D<T> {
+    fn index_mut(&mut self, [row, col]: [usize; 2]) -> &mut Self::Output {
         let (n_rows, n_cols) = self.shape;
         assert!(row < n_rows && col < n_cols);
         &mut self.data[row * n_cols + col]
     }
 }
 
-impl<T, const ROWS: usize, const COLS: usize> ops::Index<(usize, usize)> for FixedArray2D<T, ROWS, COLS> {
+impl<T, const ROWS: usize, const COLS: usize> ops::Index<[usize; 2]> for FixedArray2D<T, ROWS, COLS> {
     type Output = T;
-    fn index(&self, (row, col): (usize, usize)) -> &Self::Output {
+    fn index(&self, [row, col]: [usize; 2]) -> &Self::Output {
         assert!(row < ROWS && col < COLS);
         &self.data[row][col]
     }
 }
-impl<T, const ROWS: usize, const COLS: usize> ops::IndexMut<(usize, usize)> for FixedArray2D<T, ROWS, COLS> {
-    fn index_mut(&mut self, (row, col): (usize, usize)) -> &mut Self::Output {
+impl<T, const ROWS: usize, const COLS: usize> ops::IndexMut<[usize; 2]> for FixedArray2D<T, ROWS, COLS> {
+    fn index_mut(&mut self, [row, col]: [usize; 2]) -> &mut Self::Output {
         assert!(row < ROWS && col < COLS);
         &mut self.data[row][col]
     }
@@ -323,8 +323,8 @@ mod tests {
     fn read_char_array() {
         let mut reader = reader_from_string("abc\ndef\n");
         let a: DynArray2D<char> = reader.char_array2d(2, 3);
-        assert_eq!(a[(0, 0)], 'a');
-        assert_eq!(a[(1, 2)], 'f');
+        assert_eq!(a[[0, 0]], 'a');
+        assert_eq!(a[[1, 2]], 'f');
     }
 
     #[test]
@@ -332,7 +332,7 @@ mod tests {
         let a: DynArray2D<_> = vec![vec![1, 2, 3], vec![4, 5, 6]].into();
         let b = a.clone().map(|x| x * 2);
         assert_eq!(b, vec![vec![2, 4, 6], vec![8, 10, 12]].into());
-        let c = a.map_enumerated(|(r, c), x| r * 100 + c * 10 + x);
+        let c = a.map_enumerated(|[r, c], x| r * 100 + c * 10 + x);
         assert_eq!(c, vec![vec![1, 12, 23], vec![104, 115, 126]].into());
     }
 
@@ -341,7 +341,7 @@ mod tests {
         let a: FixedArray2D<_, 2, 3> = [[1, 2, 3], [4, 5, 6]].into();
         let b = a.clone().map(|x| x * 2);
         assert_eq!(b, [[2, 4, 6], [8, 10, 12]].into());
-        let c = a.map_enumerated(|(r, c), x| r * 100 + c * 10 + x);
+        let c = a.map_enumerated(|[r, c], x| r * 100 + c * 10 + x);
         assert_eq!(c, [[1, 12, 23], [104, 115, 126]].into());
     }
 
@@ -349,12 +349,12 @@ mod tests {
     fn iteration() {
         let a: DynArray2D<_> = vec![vec![1, 2, 3], vec![4, 5, 6]].into();
         let mut rows = a.iter_enumerated();
-        assert_eq!(rows.next(), Some(((0, 0), &1)));
-        assert_eq!(rows.next(), Some(((0, 1), &2)));
-        assert_eq!(rows.next(), Some(((0, 2), &3)));
-        assert_eq!(rows.next(), Some(((1, 0), &4)));
-        assert_eq!(rows.next(), Some(((1, 1), &5)));
-        assert_eq!(rows.next(), Some(((1, 2), &6)));
+        assert_eq!(rows.next(), Some(([0, 0], &1)));
+        assert_eq!(rows.next(), Some(([0, 1], &2)));
+        assert_eq!(rows.next(), Some(([0, 2], &3)));
+        assert_eq!(rows.next(), Some(([1, 0], &4)));
+        assert_eq!(rows.next(), Some(([1, 1], &5)));
+        assert_eq!(rows.next(), Some(([1, 2], &6)));
         assert_eq!(rows.next(), None);
     }
 
@@ -373,7 +373,7 @@ mod tests {
     #[test]
     fn index_check() {
         let mut a = DynArray2D::<i32>::new(2, 2);
-        assert!(catch_unwind_silent(move || a[(0, 2)] = 1).is_err());
+        assert!(catch_unwind_silent(move || a[[0, 2]] = 1).is_err());
     }
 
     #[test]
