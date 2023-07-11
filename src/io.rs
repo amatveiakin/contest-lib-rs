@@ -32,10 +32,26 @@ impl<R: std::io::BufRead> Reader<R> {
     pub fn i64(&mut self) -> i64 { self.atom() }
     pub fn u64(&mut self) -> u64 { self.atom() }
     pub fn usize(&mut self) -> usize { self.atom() }
+    pub fn f32(&mut self) -> f32 { self.atom() }
+    pub fn f64(&mut self) -> f64 { self.atom() }
+    pub fn word(&mut self) -> String { self.atom() }
 
-    pub fn word(&mut self) -> String {
-        self.atom()
+    pub fn atoms<T, const N: usize>(&mut self) -> [T; N]
+    where
+        T: str::FromStr,
+        <T as str::FromStr>::Err: fmt::Debug,
+    {
+        [(); N].map(|()| self.atom())
     }
+
+    pub fn i32s<const N: usize>(&mut self) -> [i32; N] { self.atoms() }
+    pub fn u32s<const N: usize>(&mut self) -> [u32; N] { self.atoms() }
+    pub fn i64s<const N: usize>(&mut self) -> [i64; N] { self.atoms() }
+    pub fn u64s<const N: usize>(&mut self) -> [u64; N] { self.atoms() }
+    pub fn usizes<const N: usize>(&mut self) -> [usize; N] { self.atoms() }
+    pub fn f32s<const N: usize>(&mut self) -> [f32; N] { self.atoms() }
+    pub fn f64s<const N: usize>(&mut self) -> [f64; N] { self.atoms() }
+    pub fn words<const N: usize>(&mut self) -> [String; N] { self.atoms() }
 
     // Reads the whole inline (including whitespace) until '\n'. If other `read`s were used earlier,
     // reads the rest of the previous line first, even if it's empty. You probably want to skip
@@ -62,6 +78,10 @@ impl<R: std::io::BufRead> Reader<R> {
     pub fn vec_u32(&mut self, len: usize) -> Vec<u32> { self.vec(len) }
     pub fn vec_i64(&mut self, len: usize) -> Vec<i64> { self.vec(len) }
     pub fn vec_u64(&mut self, len: usize) -> Vec<u64> { self.vec(len) }
+    pub fn vec_usize(&mut self, len: usize) -> Vec<usize> { self.vec(len) }
+    pub fn vec_f32(&mut self, len: usize) -> Vec<f32> { self.vec(len) }
+    pub fn vec_f64(&mut self, len: usize) -> Vec<f64> { self.vec(len) }
+    pub fn vec_word(&mut self, len: usize) -> Vec<String> { self.vec(len) }
 
     fn get_next_line(&mut self) {
         // Reuse allocated memory from the previous line: `clear` sets length to zero, but keeps
@@ -114,7 +134,7 @@ simple_emittable!(
     u8, u16, u32, u64, u128, usize,
     i8, i16, i32, i64, i128, isize,
     f64, f32,
-    String, str,
+    String, str, char
 );
 
 trait_for_value_and_ref!(impl<{T: Emittable}> Emittable for Vec<T> {
@@ -176,5 +196,49 @@ impl InputBuffer {
         self.pos = self.line.len();
         self.line_in_progress = false;
         &self.line[start..]
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn read_single() {
+        let input = "hi 1 3 2.25 1e4\nbye\n";
+        let mut read = Reader::new(std::io::Cursor::new(input.to_string().into_bytes()));
+        assert_eq!(read.word(), "hi");
+        assert_eq!(read.i32(), 1);
+        assert_eq!(read.u32(), 3);
+        assert_eq!(read.f64(), 2.25);
+        assert_eq!(read.f64(), 1e4);
+        assert_eq!(read.word(), "bye");
+    }
+
+    #[test]
+    fn read_multi() {
+        let input = "hello world 1 2 3 7.77";
+        let mut read = Reader::new(std::io::Cursor::new(input.to_string().into_bytes()));
+        let [x, y] = read.words();
+        assert_eq!(x, "hello");
+        assert_eq!(y, "world");
+        let [a, b, c] = read.i32s();
+        assert_eq!(a, 1);
+        assert_eq!(b, 2);
+        assert_eq!(c, 3);
+        let [f] = read.f32s();
+        assert_eq!(f, 7.77);
+    }
+
+    #[test]
+    fn read_vec() {
+        let input = "4\nwhoa so many words\n4 2 4 5";
+        let mut read = Reader::new(std::io::Cursor::new(input.to_string().into_bytes()));
+        let n = read.usize();
+        let w = read.vec_word(n);
+        let l = read.vec_usize(n);
+        assert_eq!(w, vec!["whoa", "so", "many", "words"]);
+        assert_eq!(l, vec![4, 2, 4, 5]);
     }
 }

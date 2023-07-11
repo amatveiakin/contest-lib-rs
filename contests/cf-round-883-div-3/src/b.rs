@@ -7,25 +7,25 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, 
     for row in 0..3 {
         let p = a[(row, 0)];
         if p != '.' && a[(row, 1)] == p && a[(row, 2)] == p {
-            emitln!(write, p.to_string());
+            emitln!(write, p);
             return;
         }
     }
     for col in 0..3 {
         let p = a[(0, col)];
         if p != '.' && a[(1, col)] == p && a[(2, col)] == p {
-            emitln!(write, p.to_string());
+            emitln!(write, p);
             return;
         }
     }
     let p = a[(0, 0)];
     if p != '.' && a[(1, 1)] == p && a[(2, 2)] == p {
-        emitln!(write, p.to_string());
+        emitln!(write, p);
         return;
     }
     let p = a[(0, 2)];
     if p != '.' && a[(1, 1)] == p && a[(2, 0)] == p {
-        emitln!(write, p.to_string());
+        emitln!(write, p);
         return;
     }
     emitln!(write, "DRAW");
