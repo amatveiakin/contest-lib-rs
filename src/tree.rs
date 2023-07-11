@@ -108,9 +108,9 @@ impl<VP: Clone, EP: Clone> Tree<VP, EP> {
     }
 }
 
-impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for Tree<VP, EP> {
+impl<VP, EP> Graph<VP, EP> for Tree<VP, EP> {
     type VertexIter = Box<dyn Iterator<Item = VertexId>>;
-    type HalfEdgeIter = Box<dyn Iterator<Item = HalfEdge<'g, EP>> + 'g>;
+    type HalfEdgeIter<'g> = Box<dyn Iterator<Item = HalfEdge<'g, EP>> + 'g> where Self: 'g, EP: 'g;
 
     fn num_vertices(&self) -> usize { self.vertices.len() }
 
@@ -118,10 +118,10 @@ impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for Tree<VP, EP> {
         Box::new((0..self.vertices.len()).map(|i| VertexId::from_0_based(i.try_into().unwrap())))
     }
 
-    fn vertex(&'g self, v: VertexId) -> &'g VP { &self.vertices[v].payload }
-    fn vertex_mut(&'g mut self, v: VertexId) -> &'g mut VP { &mut self.vertices[v].payload }
+    fn vertex(&self, v: VertexId) -> &VP { &self.vertices[v].payload }
+    fn vertex_mut(&mut self, v: VertexId) -> &mut VP { &mut self.vertices[v].payload }
 
-    fn edge(&'g self, from: VertexId, to: VertexId) -> Option<&'g EP> {
+    fn edge(&self, from: VertexId, to: VertexId) -> Option<&EP> {
         if self.parent(from) == Some(to) {
             Some(&self.vertices[from].parent.as_ref().unwrap().1)
         } else if self.parent(to) == Some(from) {
@@ -130,7 +130,7 @@ impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for Tree<VP, EP> {
             None
         }
     }
-    fn edge_mut(&'g mut self, from: VertexId, to: VertexId) -> Option<&'g mut EP> {
+    fn edge_mut(&mut self, from: VertexId, to: VertexId) -> Option<&mut EP> {
         if self.parent(from) == Some(to) {
             Some(&mut self.vertices[from].parent.as_mut().unwrap().1)
         } else if self.parent(to) == Some(from) {
@@ -140,15 +140,15 @@ impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for Tree<VP, EP> {
         }
     }
 
-    fn degree(&'g self, v: VertexId) -> u32 {
+    fn degree(&self, v: VertexId) -> u32 {
         let vertex = &self.vertices[v];
         (vertex.children.len() + vertex.parent.iter().count()) as u32
     }
-    fn out_degree(&'g self, v: VertexId) -> u32 { self.degree(v) }
-    fn in_degree(&'g self, v: VertexId) -> u32 { self.degree(v) }
+    fn out_degree(&self, v: VertexId) -> u32 { self.degree(v) }
+    fn in_degree(&self, v: VertexId) -> u32 { self.degree(v) }
 
-    fn edges_in(&'g self, to: VertexId) -> Self::HalfEdgeIter { Box::new(self.edges_adj(to)) }
-    fn edges_out(&'g self, from: VertexId) -> Self::HalfEdgeIter { Box::new(self.edges_adj(from)) }
+    fn edges_in<'g>(&'g self, to: VertexId) -> Self::HalfEdgeIter<'g> { Box::new(self.edges_adj(to)) }
+    fn edges_out<'g>(&'g self, from: VertexId) -> Self::HalfEdgeIter<'g> { Box::new(self.edges_adj(from)) }
 }
 
 impl Tree<(), ()> {

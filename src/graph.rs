@@ -51,34 +51,34 @@ pub struct HalfEdge<'g, EP> {
 // in a directed graph the edge (a, b) will remain alive. If you need to mutate a graph you almost
 // certainly need to take either a `&mut DirectedGraph` or a `&mut UndirectedGraph`.
 //
-pub trait Graph<'g, VP, EP: 'g> {
+pub trait Graph<VP, EP> {
     type VertexIter: Iterator<Item = VertexId>;
-    type HalfEdgeIter: Iterator<Item = HalfEdge<'g, EP>>;
+    type HalfEdgeIter<'g>: Iterator<Item = HalfEdge<'g, EP>> where Self: 'g, EP: 'g;
 
     fn num_vertices(&self) -> usize;
 
     // Vertex IDs always range from 0 to (num_vertices() - 1).
     fn vertex_ids(&self) -> Self::VertexIter;
 
-    fn vertex(&'g self, v: VertexId) -> &'g VP;
-    fn vertex_mut(&'g mut self, v: VertexId) -> &'g mut VP;
+    fn vertex(&self, v: VertexId) -> &VP;
+    fn vertex_mut(&mut self, v: VertexId) -> &mut VP;
 
-    fn edge(&'g self, from: VertexId, to: VertexId) -> Option<&'g EP>;
-    fn edge_mut(&'g mut self, from: VertexId, to: VertexId) -> Option<&'g mut EP>;
+    fn edge(&self, from: VertexId, to: VertexId) -> Option<&EP>;
+    fn edge_mut(&mut self, from: VertexId, to: VertexId) -> Option<&mut EP>;
 
     // For directed graphs: `degree` == `in_degree` + `out_degree`.
     // For undirected graphs: `degree` == `in_degree` == `out_degree`.
-    fn degree(&'g self, v: VertexId) -> u32;
-    fn out_degree(&'g self, v: VertexId) -> u32;
-    fn in_degree(&'g self, v: VertexId) -> u32;
+    fn degree(&self, v: VertexId) -> u32;
+    fn out_degree(&self, v: VertexId) -> u32;
+    fn in_degree(&self, v: VertexId) -> u32;
 
     // Guarantees:
     //   - `edges_in().count()` == `in_degree()`;
     //   - `edges_out().count()` == `out_degree()`;
     // Iteration order is unspecified. (Note. It's easy to fix it if necessary by replacing
     // `HashSet` with `BTreeSet`.)
-    fn edges_in(&'g self, to: VertexId) -> Self::HalfEdgeIter;
-    fn edges_out(&'g self, from: VertexId) -> Self::HalfEdgeIter;
+    fn edges_in<'g>(&'g self, to: VertexId) -> Self::HalfEdgeIter<'g>;
+    fn edges_out<'g>(&'g self, from: VertexId) -> Self::HalfEdgeIter<'g>;
 }
 
 impl VertexId {

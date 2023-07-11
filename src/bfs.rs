@@ -4,8 +4,8 @@ use crate::graph::{Graph, VertexId};
 
 
 // Shortest path from `from` to `to` in an unweighted graph.
-pub fn bfs_path<'g, VP, EP: 'g>(
-    graph: &'g impl Graph<'g, VP, EP>, from: VertexId, to: VertexId,
+pub fn bfs_path<VP, EP>(
+    graph: &impl Graph<VP, EP>, from: VertexId, to: VertexId,
 ) -> Option<Vec<VertexId>> {
     let mut queue = VecDeque::new();
     let mut prev = HashMap::new();
@@ -37,8 +37,8 @@ pub fn bfs_path<'g, VP, EP: 'g>(
 }
 
 // Distances from `from` to reachable vertices in an unweighted graph.
-pub fn bfs_distances<'g, VP, EP: 'g>(
-    graph: &'g impl Graph<'g, VP, EP>, from: VertexId,
+pub fn bfs_distances<VP, EP>(
+    graph: &impl Graph<VP, EP>, from: VertexId,
 ) -> HashMap<VertexId, u32> {
     let mut queue = VecDeque::new();
     let mut distances = HashMap::new();

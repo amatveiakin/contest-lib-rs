@@ -32,8 +32,8 @@ impl PartialOrd for QueuedVertex {
 
 // Shortest path from `from` to `to` in an weighted graph.
 // Complexity: O(|E| + |V| log |V|).
-pub fn dijkstra_path<'g, VP, EP: 'g>(
-    graph: &'g impl Graph<'g, VP, EP>, from: VertexId, to: VertexId,
+pub fn dijkstra_path<VP, EP>(
+    graph: &impl Graph<VP, EP>, from: VertexId, to: VertexId,
     edge_cost: impl Fn(&EP) -> u64,
 ) -> Option<DijkstraPath> {
     let mut queue = BinaryHeap::new();
@@ -76,8 +76,8 @@ pub fn dijkstra_path<'g, VP, EP: 'g>(
 
 // Distances from `from` to reachable vertices in an weighted graph.
 // Complexity: O(|E| + |V| log |V|).
-pub fn dijkstra_distances<'g, VP, EP: 'g>(
-    graph: &'g impl Graph<'g, VP, EP>, from: VertexId, edge_cost: impl Fn(&EP) -> u64,
+pub fn dijkstra_distances<VP, EP>(
+    graph: &impl Graph<VP, EP>, from: VertexId, edge_cost: impl Fn(&EP) -> u64,
 ) -> HashMap<VertexId, u64> {
     let mut queue = BinaryHeap::new();
     let mut visited = HashMap::new();

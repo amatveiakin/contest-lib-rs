@@ -100,9 +100,9 @@ impl UndirectedGraph<(), ()> {
     }
 }
 
-impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for UndirectedGraph<VP, EP> {
+impl<VP, EP> Graph<VP, EP> for UndirectedGraph<VP, EP> {
     type VertexIter = Box<dyn Iterator<Item = VertexId>>;
-    type HalfEdgeIter = Box<dyn Iterator<Item = HalfEdge<'g, EP>> + 'g>;
+    type HalfEdgeIter<'g> = Box<dyn Iterator<Item = HalfEdge<'g, EP>> + 'g> where Self: 'g, EP: 'g;
 
     fn num_vertices(&self) -> usize { self.vertices.len() }
 
@@ -110,24 +110,24 @@ impl<'g, VP, EP: 'g> Graph<'g, VP, EP> for UndirectedGraph<VP, EP> {
         Box::new((0..self.vertices.len()).map(|i| VertexId::from_0_based(i.try_into().unwrap())))
     }
 
-    fn vertex(&'g self, v: VertexId) -> &'g VP { &self.vertices[v] }
-    fn vertex_mut(&'g mut self, v: VertexId) -> &'g mut VP { &mut self.vertices[v] }
+    fn vertex(&self, v: VertexId) -> &VP { &self.vertices[v] }
+    fn vertex_mut(&mut self, v: VertexId) -> &mut VP { &mut self.vertices[v] }
 
-    fn edge(&'g self, from: VertexId, to: VertexId) -> Option<&'g EP> {
+    fn edge(&self, from: VertexId, to: VertexId) -> Option<&EP> {
         let id = UndirectedEdgeId::new(from, to);
         self.edges.get(&id)
     }
-    fn edge_mut(&'g mut self, from: VertexId, to: VertexId) -> Option<&'g mut EP> {
+    fn edge_mut(&mut self, from: VertexId, to: VertexId) -> Option<&mut EP> {
         let id = UndirectedEdgeId::new(from, to);
         self.edges.get_mut(&id)
     }
 
-    fn degree(&'g self, v: VertexId) -> u32 { self.neighbours[v].len() as u32 }
-    fn out_degree(&'g self, v: VertexId) -> u32 { self.degree(v) }
-    fn in_degree(&'g self, v: VertexId) -> u32 { self.degree(v) }
+    fn degree(&self, v: VertexId) -> u32 { self.neighbours[v].len() as u32 }
+    fn out_degree(&self, v: VertexId) -> u32 { self.degree(v) }
+    fn in_degree(&self, v: VertexId) -> u32 { self.degree(v) }
 
-    fn edges_in(&'g self, to: VertexId) -> Self::HalfEdgeIter { Box::new(self.edges_adj(to)) }
-    fn edges_out(&'g self, from: VertexId) -> Self::HalfEdgeIter { Box::new(self.edges_adj(from)) }
+    fn edges_in<'g>(&'g self, to: VertexId) -> Self::HalfEdgeIter<'g> { Box::new(self.edges_adj(to)) }
+    fn edges_out<'g>(&'g self, from: VertexId) -> Self::HalfEdgeIter<'g> { Box::new(self.edges_adj(from)) }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]

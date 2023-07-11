@@ -14,8 +14,8 @@ use crate::graph::{Graph, VertexId};
 //
 // TODO: Manual vertex stack (be careful about callback order!)
 //
-pub fn dfs<'g, VP, EP: 'g, R>(
-    graph: &'g impl Graph<'g, VP, EP>, from: VertexId,
+pub fn dfs<VP, EP, R>(
+    graph: &impl Graph<VP, EP>, from: VertexId,
     mut on_see: impl FnMut(VertexId) -> ops::ControlFlow<R, ()>,
     mut on_enter: impl FnMut(VertexId) -> ops::ControlFlow<R, ()>,
     mut on_exit: impl FnMut(VertexId) -> ops::ControlFlow<R, ()>,
@@ -27,8 +27,8 @@ pub fn dfs<'g, VP, EP: 'g, R>(
     }
 }
 
-fn dfs_impl<'g, VP, EP: 'g, R>(
-    graph: &'g impl Graph<'g, VP, EP>,
+fn dfs_impl<VP, EP, R>(
+    graph: &impl Graph<VP, EP>,
     v: VertexId,
     visited: &mut HashSet<VertexId>,
     on_see: &mut impl FnMut(VertexId) -> ops::ControlFlow<R, ()>,
