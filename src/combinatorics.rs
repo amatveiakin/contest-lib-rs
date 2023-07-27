@@ -112,6 +112,7 @@ pub fn num_permutations_mod<const M: i32>(n: i32, k: i32) -> ModNumber<M> {
 
 #[cfg(test)]
 mod tests {
+    use crate::internal_testing::catch_unwind_silent;
     use crate::mod_ring::ModNumber;
     use super::*;
 
@@ -142,6 +143,18 @@ mod tests {
         assert_eq!(factorial_mod(3), Mod101::from(6));
         assert_eq!(factorial_mod(4), Mod101::from(24));
         assert_eq!(factorial_mod(5), Mod101::from(19));
+    }
+
+    #[test]
+    fn factorial_all() {
+        let mut product: i64 = 1;
+        let mut n: i32 = 1;
+        while let Some(new_product) = product.checked_mul(n as i64) {
+            product = new_product;
+            assert_eq!(factorial(n), product);
+            n += 1;
+        }
+        assert!(catch_unwind_silent(|| factorial(n)).is_err());
     }
 
     #[test]
