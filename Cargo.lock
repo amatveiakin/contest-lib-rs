@@ -27,6 +27,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "cf-educational-152"
+version = "0.1.0"
+dependencies = [
+ "contest_lib_rs",
+ "pretty_assertions",
+]
+
+[[package]]
 name = "cf-round-869-div-2"
 version = "0.1.0"
 dependencies = [

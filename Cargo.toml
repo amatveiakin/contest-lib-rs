@@ -5,6 +5,7 @@ members = [
     "contests/cf-educational-148",
     "contests/cf-educational-149",
     "contests/cf-educational-150",
+    "contests/cf-educational-152",
     "contests/cf-round-869-div-2",
     "contests/cf-round-870-div-2",
     "contests/cf-round-872-div-2",
