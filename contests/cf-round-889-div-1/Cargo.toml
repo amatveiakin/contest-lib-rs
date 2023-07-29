@@ -1,0 +1,38 @@
+[package]
+name = "cf-round-889-div-1"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+contest_lib_rs = { path = "../.." }
+
+[dev-dependencies]
+pretty_assertions = "1.3.0"
+
+[[bin]]
+name = "a1"
+path = "src/a1.rs"
+
+[[bin]]
+name = "a2"
+path = "src/a2.rs"
+
+[[bin]]
+name = "b"
+path = "src/b.rs"
+
+[[bin]]
+name = "c"
+path = "src/c.rs"
+
+[[bin]]
+name = "d"
+path = "src/d.rs"
+
+[[bin]]
+name = "e"
+path = "src/e.rs"
+
+[[bin]]
+name = "f"
+path = "src/f.rs"
