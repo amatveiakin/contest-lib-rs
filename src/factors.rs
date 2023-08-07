@@ -5,6 +5,7 @@ use crate::primes::primes;
 //   - p_i is prime,
 //   - p_i < p_{i+1},
 pub fn factors(mut x: u32) -> Vec<(u32, u32)> {
+    assert!(x > 0);
     let mut ret = vec![];
     for p in primes() {
         if x == 1 {
@@ -29,10 +30,13 @@ pub fn factors(mut x: u32) -> Vec<(u32, u32)> {
 
 #[cfg(test)]
 mod tests {
+    use crate::internal_testing::catch_unwind_silent;
+
     use super::*;
 
     #[test]
     fn basic() {
+        assert!(catch_unwind_silent(|| factors(0)).is_err());
         assert_eq!(factors(1), vec![]);
         assert_eq!(factors(2), vec![(2, 1)]);
         assert_eq!(factors(3), vec![(3, 1)]);
