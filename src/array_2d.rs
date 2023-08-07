@@ -307,7 +307,8 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::internal_testing::{reader_from_string, catch_unwind_silent};
+    use crate::assert_panics;
+    use crate::internal_testing::reader_from_string;
     use super::*;
 
     #[test]
@@ -373,7 +374,7 @@ mod tests {
     #[test]
     fn index_check() {
         let mut a = DynArray2D::<i32>::new(2, 2);
-        assert!(catch_unwind_silent(move || a[[0, 2]] = 1).is_err());
+        assert_panics!(move || a[[0, 2]] = 1);
     }
 
     #[test]

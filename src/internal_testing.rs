@@ -18,3 +18,10 @@ pub fn catch_unwind_silent<F: FnOnce() -> R + panic::UnwindSafe, R>(f: F) -> std
 pub fn reader_from_string(input: impl ToString) -> io::Reader<impl BufRead> {
     io::Reader::new(std::io::Cursor::new(input.to_string().into_bytes()))
 }
+
+#[macro_export]
+macro_rules! assert_panics {
+    ($e:expr) => {
+        assert!($crate::internal_testing::catch_unwind_silent($e).is_err());
+    };
+}

@@ -30,13 +30,12 @@ pub fn factors(mut x: u32) -> Vec<(u32, u32)> {
 
 #[cfg(test)]
 mod tests {
-    use crate::internal_testing::catch_unwind_silent;
-
+    use crate::assert_panics;
     use super::*;
 
     #[test]
     fn basic() {
-        assert!(catch_unwind_silent(|| factors(0)).is_err());
+        assert_panics!(|| factors(0));
         assert_eq!(factors(1), vec![]);
         assert_eq!(factors(2), vec![(2, 1)]);
         assert_eq!(factors(3), vec![(3, 1)]);

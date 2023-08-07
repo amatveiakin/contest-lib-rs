@@ -112,7 +112,7 @@ pub fn num_permutations_mod<const M: i32>(n: i32, k: i32) -> ModNumber<M> {
 
 #[cfg(test)]
 mod tests {
-    use crate::internal_testing::catch_unwind_silent;
+    use crate::assert_panics;
     use crate::mod_ring::ModNumber;
     use super::*;
 
@@ -154,7 +154,7 @@ mod tests {
             assert_eq!(factorial(n), product);
             n += 1;
         }
-        assert!(catch_unwind_silent(|| factorial(n)).is_err());
+        assert_panics!(|| factorial(n));
     }
 
     #[test]

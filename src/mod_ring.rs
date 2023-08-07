@@ -147,7 +147,7 @@ impl<const M: i32> AssertModOk<M> {
 
 #[cfg(test)]
 mod tests {
-    use crate::internal_testing::*;
+    use crate::assert_panics;
     use super::*;
 
     const M: i32 = CODEFORCES_MOD;
@@ -260,7 +260,6 @@ mod tests {
         assert_eq!(Num6::from(2) * Num6::from(5), Num6::from(4));
         assert_eq!(Num6::from(2) * Num6::from(3), Num6::from(0));
         assert_eq!(Num6::from(1) / Num6::from(5), Num6::from(5));
-        let result = catch_unwind_silent(|| Num6::from(1) / Num6::from(4));
-        assert!(result.is_err());
+        assert_panics!(|| Num6::from(1) / Num6::from(4));
     }
 }
