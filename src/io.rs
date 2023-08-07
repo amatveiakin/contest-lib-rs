@@ -1,5 +1,10 @@
 use std::{fmt, mem, str};
 
+pub mod prelude {
+    pub use crate::{emit, emitln};
+    pub use super::Reader;
+}
+
 pub struct Reader<R: std::io::BufRead> {
     reader: R,
     buf: InputBuffer,
