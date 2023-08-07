@@ -82,7 +82,8 @@ function addCargoWorkspaceMember(
 //   use contest_lib_rs::{io, emitln, graph::{VertexId, Graph}};
 export function simplifyUseStatement(line: string): string[] {
   const INDENTATION_RE = /^(\s*)/;
-  const SINGLE_USE_RE = /use contest_lib_rs::([\w:]+);/;
+  const SINGLE_USE_RE = /use contest_lib_rs::\w+;/;
+  const NESTED_USE_RE = /use contest_lib_rs::(\w+::.*);/;
   const MULTI_USE_RE = /use contest_lib_rs::\{(.*)\};/;
 
   const trimmedLine = line.trim();
@@ -91,20 +92,26 @@ export function simplifyUseStatement(line: string): string[] {
   let match;
 
   if ((match = trimmedLine.match(SINGLE_USE_RE))) {
+    // skip
+  } else if ((match = trimmedLine.match(NESTED_USE_RE))) {
     uses.push(match[1]);
   } else if ((match = trimmedLine.match(MULTI_USE_RE))) {
-    uses.push(...match[1].split(",").map((s) => s.trim()));
+    uses.push(
+      ...match[1]
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s.includes("::"))
+    );
   } else {
     return [line];
   }
 
-  const nestedUses = uses.filter((s) => s.includes("::"));
-  if (nestedUses.length === 0) {
+  if (uses.length === 0) {
     return [];
-  } else if (nestedUses.length === 1) {
-    return [`${indentation}use ${nestedUses[0]};`];
+  } else if (uses.length === 1) {
+    return [`${indentation}use ${uses[0]};`];
   } else {
-    return [`${indentation}use {${nestedUses.join(", ")}};`];
+    return [`${indentation}use {${uses.join(", ")}};`];
   }
 }
 
