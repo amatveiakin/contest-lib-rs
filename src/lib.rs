@@ -4,6 +4,7 @@ pub mod binary_heaps;
 pub mod bitset;
 pub mod btreeset_util;
 pub mod combinatorics;
+pub mod combinatorics_mod;
 pub mod counting_set;
 pub mod dfs;
 pub mod dijkstra;
