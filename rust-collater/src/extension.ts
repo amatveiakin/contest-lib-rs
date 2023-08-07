@@ -80,7 +80,7 @@ function addCargoWorkspaceMember(
 
 // TODO: Support nested uses, e.g.
 //   use contest_lib_rs::{io, emitln, graph::{VertexId, Graph}};
-function simplifyUseStatement(line: string): string[] {
+export function simplifyUseStatement(line: string): string[] {
   const INDENTATION_RE = /^(\s*)/;
   const SINGLE_USE_RE = /use contest_lib_rs::([\w:]+);/;
   const MULTI_USE_RE = /use contest_lib_rs::\{(.*)\};/;
