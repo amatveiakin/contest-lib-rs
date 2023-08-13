@@ -6,7 +6,7 @@ Keeps the main file intact (expect for the `use` statements), while compressing
 the auxiliary modules:
 
 * Strips away comments;
-* (TBD) Strips away tests;
+* Strips away tests;
 
 ## Requirements
 
