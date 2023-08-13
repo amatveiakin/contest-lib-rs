@@ -7,6 +7,41 @@ import * as vscode from "vscode";
 
 const CONTESTS_DIR = "contests";
 
+const CONTEST_KINDS = [
+  ["Codeforces Div. 1", "cf-round-{{id}}-div-1"],
+  ["Codeforces Div. 2", "cf-round-{{id}}-div-2"],
+  ["Codeforces Div. 3", "cf-round-{{id}}-div-3"],
+  ["Codeforces Div. 4", "cf-round-{{id}}-div-4"],
+  ["Codeforces Div. 1 + Div. 2", "cf-round-{{id}}-div-1-2"],
+  ["Codeforces Educational", "cf-educational-{{id}}"],
+  ["Codeforces Custom", "cf-{{kind}}-{{id}}"],
+  ["Fully Custom", "{{full-name}}"],
+];
+
+const CONTEST_PLACEHOLDERS: {
+  src: string;
+  inputBoxOptions: vscode.InputBoxOptions;
+}[] = [
+  {
+    src: "{{full-name}}",
+    inputBoxOptions: {
+      prompt: "Contest Folder Name, e.g. 'cf-round-123-div-1'",
+    },
+  },
+  {
+    src: "{{kind}}",
+    inputBoxOptions: {
+      prompt: "Contest Kind, e.g. 'codeton', 'april-fools'",
+    },
+  },
+  {
+    src: "{{id}}",
+    inputBoxOptions: {
+      prompt: "Contest ID",
+    },
+  },
+];
+
 async function fileExists(uri: vscode.Uri): Promise<boolean> {
   try {
     await vscode.workspace.fs.stat(uri);
@@ -270,28 +305,24 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
 
-      const division = await vscode.window.showQuickPick([
-        "Div. 1",
-        "Div. 2",
-        "Div. 3",
-        "Div. 4",
-        "Educational",
-        // TODO: Add "Custom" option (e.g. for CodeTON).
-      ]);
-      if (division === undefined) {
+      const kind = await vscode.window.showQuickPick(
+        CONTEST_KINDS.map(([label, _]) => label)
+      );
+      if (kind === undefined) {
         return;
       }
-      const contestID = await vscode.window.showInputBox({
-        placeHolder: "Contest ID",
-      });
-      if (contestID === undefined) {
-        return;
+      let contestName = CONTEST_KINDS.find(([label, _]) => label === kind)![1];
+
+      for (const { src, inputBoxOptions } of CONTEST_PLACEHOLDERS) {
+        if (contestName.includes(src)) {
+          const value = await vscode.window.showInputBox(inputBoxOptions);
+          if (value === undefined) {
+            return;
+          }
+          contestName = contestName.replace(src, value);
+        }
       }
 
-      const contestName =
-        division === "Educational"
-          ? `cf-educational-${contestID}`
-          : `cf-round-${contestID}-${division.replace("Div. ", "div-")}`;
       const contestDir = vscode.Uri.joinPath(contestsRootDir, contestName);
       const contestSrcDir = vscode.Uri.joinPath(contestDir, "src");
 
