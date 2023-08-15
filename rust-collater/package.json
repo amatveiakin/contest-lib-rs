@@ -3,6 +3,11 @@
   "displayName": "Rust Collater",
   "description": "Combines multiple Rust modules into a single source file. Useful for online judge systems.",
   "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amatveiakin/contest-lib-rs",
+    "directory": "rust-collater"
+  },
   "engines": {
     "vscode": "^1.78.0"
   },
