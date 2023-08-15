@@ -37,22 +37,9 @@ export function simplifyUseStatement(line: string): string[] {
   }
 }
 
-export function collateDocument(
-  currentText: string,
+export function moduleTextsToModuleBodies(
   moduleTexts: Map<string, string>
-) {
-  // TODO: Support multiline use statements and macro definitions.
-  // Better yet: proper Rust parser.
-  const USE_MODULE_RE = [
-    /use contest_lib_rs::\{(\w+)(?:::\w+)*(?:, *(\w+)(?:::\w+)*)*\}/g,
-    /use contest_lib_rs::(\w+)/g,
-  ];
-  const MODULE_DEPENDENCY_RE = [
-    /use crate::\{(\w+)(?:::\w+)*(?:, *(\w+)(?:::\w+)*)*\}/g,
-    /use crate::(\w+)/g,
-  ];
-  const MACRO_RE = /macro_rules! +(\w+)/g;
-
+): Map<string, string> {
   const SKIP_LINE_RE = /^(\/\/.*)?$/g;
   const TESTS_START_1 = "#[cfg(test)]";
   const TESTS_START_2 = "mod tests {";
@@ -74,6 +61,24 @@ export function collateDocument(
     }
     moduleBodies.set(moduleName, moduleBody.trimEnd());
   }
+  return moduleBodies;
+}
+
+export function getModulesToInclude(
+  currentText: string,
+  moduleBodies: Map<string, string>
+): Set<string> {
+  // TODO: Support multiline use statements and macro definitions.
+  // Better yet: proper Rust parser.
+  const USE_MODULE_RE = [
+    /use contest_lib_rs::\{(\w+)(?:::\w+)*(?:, *(\w+)(?:::\w+)*)*\}/g,
+    /use contest_lib_rs::(\w+)/g,
+  ];
+  const MODULE_DEPENDENCY_RE = [
+    /use crate::\{(\w+)(?:::\w+)*(?:, *(\w+)(?:::\w+)*)*\}/g,
+    /use crate::(\w+)/g,
+  ];
+  const MACRO_RE = /macro_rules! +(\w+)/g;
 
   // Improvement potential: Cache macro mapping.
   // Improvement potential: Cache file content. (Check if VSCode does this
@@ -109,11 +114,21 @@ export function collateDocument(
       dependencies.push(...(moduleDependencies.get(module) || []));
     }
   }
+  return modulesToInclude;
+}
+
+export function collateDocument(
+  currentText: string,
+  moduleTexts: Map<string, string>
+): string {
+  const moduleBodies = moduleTextsToModuleBodies(moduleTexts);
+  const modulesToInclude = getModulesToInclude(currentText, moduleBodies);
 
   let outputText = currentText
     .split("\n")
     .flatMap(simplifyUseStatement)
     .join("\n");
+  outputText = outputText.trim() + "\n";
   for (const moduleName of modulesToInclude) {
     const body = moduleBodies.get(moduleName)!;
     outputText += `\nmod ${moduleName} {\n${body}\n} // ${moduleName}\n`;
