@@ -11,6 +11,7 @@ pub mod dijkstra;
 pub mod directed_graph;
 pub mod factors;
 pub mod graph;
+pub mod indexer;
 pub mod internal_testing;
 pub mod io;
 pub mod iterutils;
