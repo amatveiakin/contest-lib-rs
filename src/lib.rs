@@ -15,6 +15,7 @@ pub mod indexer;
 pub mod internal_testing;
 pub mod io;
 pub mod iterutils;
+pub mod memoize;
 pub mod mod_ring;
 pub mod num;
 pub mod partial_sums;

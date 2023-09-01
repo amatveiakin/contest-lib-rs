@@ -2,6 +2,7 @@
 
 use contest_lib_rs::combinatorics_mod::factorial_mod;
 use contest_lib_rs::io::prelude::*;
+use contest_lib_rs::memoize::{memoize, Callable};
 use contest_lib_rs::mod_ring::ModNumber;
 
 type M = ModNumber<998244353>;
@@ -10,13 +11,13 @@ type M = ModNumber<998244353>;
 fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let [n, k] = read.i32s();
     let kmod = M::from(k);
-    let mut a = vec![M::from(0); k as usize];
-    for i in k..=n {
-        let v = factorial_mod(k) * (kmod.pow((i - k) as u32) + a[(i - k) as usize])
-            + a[(i - 1) as usize];
-        a.push(v);
-    }
-    emitln!(write, a.last().unwrap());
+    let f = memoize(|i: i32, f| {
+        if i < k {
+            return M::from(0);
+        }
+        return factorial_mod(k) * (kmod.pow((i - k) as u32) + f.call(i - k)) + f.call(i - 1);
+    });
+    emitln!(write, f.call(n));
 }
 
 fn main() {
