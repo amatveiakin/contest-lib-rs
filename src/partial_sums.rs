@@ -12,12 +12,16 @@ impl<T> PartialSums<T>
 where
     T: Default + Clone + Copy + std::ops::Add<Output = T> + std::ops::Sub<Output = T>
 {
-    pub fn new(v: &[T]) -> Self {
-        let mut sums = vec![T::default(); v.len() + 1];
-        for i in 0..v.len() {
-            sums[i + 1] = sums[i] + v[i];
+    pub fn from_iter(iter: impl ExactSizeIterator<Item = T>) -> Self {
+        let mut sums = vec![T::default(); iter.len() + 1];
+        for (i, v) in iter.enumerate() {
+            sums[i + 1] = sums[i] + v;
         }
         Self { sums }
+    }
+
+    pub fn from_slice(slice: &[T]) -> Self {
+        Self::from_iter(slice.iter().copied())
     }
 
     pub fn sum(&self, idx: impl U32Index) -> T {
@@ -34,7 +38,7 @@ mod tests {
     #[test]
     fn test() {
         let v = vec![1, -1, 2, -2, 3, -3, 4];
-        let sums = PartialSums::new(&v);
+        let sums = PartialSums::from_slice(&v);
         assert_eq!(sums.sum(0..7), 4);
         assert_eq!(sums.sum(0..0), 0);
         assert_eq!(sums.sum(1..4), -1);

@@ -1,42 +1,24 @@
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::relax::RelaxMinMax;
+use contest_lib_rs::segment_bucket_counter::SegmentBucketCounter;
 
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
+    use std::cmp::Ordering::*;
     let n = read.usize();
     let a = read.vec_i32(n);
-
-    let mut prefix_lt = vec![0; n];
-    let mut prefix_eq = vec![0; n];
-    let mut prefix_gt = vec![0; n];
-    let mut suffix_lt = vec![0; n];
-    let mut suffix_eq = vec![0; n];
-    let mut suffix_gt = vec![0; n];
-
+    let d = a.windows(2).map(|w| w[1].cmp(&w[0])).collect::<Vec<_>>();
+    let c = SegmentBucketCounter::new(&d);
+    let mut answer = c.count(Less, ..) + c.count(Equal, ..);
     for i in 1..n {
-        prefix_lt[i] = prefix_lt[i - 1];
-        prefix_eq[i] = prefix_eq[i - 1];
-        prefix_gt[i] = prefix_gt[i - 1];
-        match a[i].cmp(&a[i - 1]) {
-            std::cmp::Ordering::Less => prefix_lt[i] += 1,
-            std::cmp::Ordering::Equal => prefix_eq[i] += 1,
-            std::cmp::Ordering::Greater => prefix_gt[i] += 1,
-        }
-    }
-    for i in (0..(n - 1)).rev() {
-        suffix_lt[i] = suffix_lt[i + 1];
-        suffix_eq[i] = suffix_eq[i + 1];
-        suffix_gt[i] = suffix_gt[i + 1];
-        match a[i + 1].cmp(&a[i]) {
-            std::cmp::Ordering::Less => suffix_lt[i] += 1,
-            std::cmp::Ordering::Equal => suffix_eq[i] += 1,
-            std::cmp::Ordering::Greater => suffix_gt[i] += 1,
-        }
-    }
-
-    let mut answer = prefix_lt[n - 1] + prefix_eq[n - 1];
-    for i in 1..n {
-        answer.relax_min(1 + prefix_gt[i - 1] + prefix_eq[i - 1] + suffix_lt[i] + suffix_eq[i]);
+        let i = i as u32;
+        answer.relax_min(
+            1
+            + c.count(Greater, ..(i - 1))
+            + c.count(Equal, ..(i - 1))
+            + c.count(Less, i..)
+            + c.count(Equal, i..)
+        );
     }
     emitln!(write, answer);
 }
