@@ -13,6 +13,7 @@
 // Improvement potential: Consider extending `VP == ()` and `EP == ()` specializations to
 // `VP: Default` and `EP: Default`.
 
+use std::fmt;
 use std::ops;
 
 
@@ -82,8 +83,20 @@ pub trait Graph<VP, EP> {
 }
 
 impl VertexId {
-    pub fn from_0_based(index: u32) -> Self { Self { index } }
-    pub fn from_1_based(index: u32) -> Self { Self { index: index.checked_sub(1).unwrap() } }
+    pub fn from_0_based<T>(index: T) -> Self
+    where
+        T: TryInto<u32>,
+        <T as TryInto<u32>>::Error: fmt::Debug,
+    {
+        Self { index: index.try_into().unwrap() }
+    }
+    pub fn from_1_based<T>(index: T) -> Self
+    where
+        T: TryInto<u32>,
+        <T as TryInto<u32>>::Error: fmt::Debug,
+    {
+        Self { index: index.try_into().unwrap().checked_sub(1).unwrap() }
+    }
     pub fn to_0_based(&self) -> u32 { self.index }
     pub fn to_1_based(&self) -> u32 { self.index + 1 }
 }

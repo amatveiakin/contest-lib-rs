@@ -22,8 +22,8 @@ fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &m
     for i in 0..(n - 2) {
         let p1 = (s[i],   s[i+1]);
         let p2 = (s[i+1], s[i+2]);
-        let idx1 = *pairs.get(&p1).unwrap() as u32;
-        let idx2 = *pairs.get(&p2).unwrap() as u32;
+        let idx1 = *pairs.get(&p1).unwrap();
+        let idx2 = *pairs.get(&p2).unwrap();
         g.add_edge(VertexId::from_0_based(idx1), VertexId::from_0_based(idx2));
 
     }
@@ -32,8 +32,8 @@ fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &m
         let [a, b] = read.usizes();
         let p1 = (s[a-1], s[a]);
         let p2 = (s[b-1], s[b]);
-        let idx1 = *pairs.get(&p1).unwrap() as u32;
-        let idx2 = *pairs.get(&p2).unwrap() as u32;
+        let idx1 = *pairs.get(&p1).unwrap();
+        let idx2 = *pairs.get(&p2).unwrap();
         let answer = bfs_path(&g, VertexId::from_0_based(idx1), VertexId::from_0_based(idx2)).unwrap().len();
         // What about cross-cluster moves?
         emitln!(write, answer);

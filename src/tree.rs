@@ -115,7 +115,7 @@ impl<VP, EP> Graph<VP, EP> for Tree<VP, EP> {
     fn num_vertices(&self) -> usize { self.vertices.len() }
 
     fn vertex_ids(&self) -> Self::VertexIter {
-        Box::new((0..self.vertices.len()).map(|i| VertexId::from_0_based(i.try_into().unwrap())))
+        Box::new((0..self.vertices.len()).map(|i| VertexId::from_0_based(i)))
     }
 
     fn vertex(&self, v: VertexId) -> &VP { &self.vertices[v].payload }
