@@ -3,6 +3,14 @@
 version = 3
 
 [[package]]
+name = "cf-compfest-15"
+version = "0.1.0"
+dependencies = [
+ "contest_lib_rs",
+ "pretty_assertions",
+]
+
+[[package]]
 name = "cf-educational-148"
 version = "0.1.0"
 dependencies = [
