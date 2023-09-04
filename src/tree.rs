@@ -141,8 +141,8 @@ impl<VP, EP> Graph<VP, EP> for Tree<VP, EP> {
     fn out_degree(&self, v: VertexId) -> u32 { self.degree(v) }
     fn in_degree(&self, v: VertexId) -> u32 { self.degree(v) }
 
-    fn edges_in<'g>(&'g self, to: VertexId) -> Self::HalfEdgeIter<'g> { Box::new(self.edges_adj(to)) }
-    fn edges_out<'g>(&'g self, from: VertexId) -> Self::HalfEdgeIter<'g> { Box::new(self.edges_adj(from)) }
+    fn edges_in(&self, to: VertexId) -> Self::HalfEdgeIter<'_> { Box::new(self.edges_adj(to)) }
+    fn edges_out(&self, from: VertexId) -> Self::HalfEdgeIter<'_> { Box::new(self.edges_adj(from)) }
 }
 
 impl Tree<(), ()> {

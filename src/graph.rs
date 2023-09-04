@@ -73,8 +73,8 @@ pub trait Graph<VP, EP> {
     //   - `edges_out().count()` == `out_degree()`;
     // Iteration order is unspecified. (Note. It's easy to fix it if necessary by replacing
     // `HashSet` with `BTreeSet`.)
-    fn edges_in<'g>(&'g self, to: VertexId) -> Self::HalfEdgeIter<'g>;
-    fn edges_out<'g>(&'g self, from: VertexId) -> Self::HalfEdgeIter<'g>;
+    fn edges_in(&self, to: VertexId) -> Self::HalfEdgeIter<'_>;
+    fn edges_out(&self, from: VertexId) -> Self::HalfEdgeIter<'_>;
 }
 
 impl VertexId {

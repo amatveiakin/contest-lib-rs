@@ -106,12 +106,12 @@ impl<VP, EP> Graph<VP, EP> for DirectedGraph<VP, EP> {
     fn out_degree(&self, v: VertexId) -> u32 { self.edges_out[v].len() as u32 }
     fn in_degree(&self, v: VertexId) -> u32 { self.edges_in[v].len() as u32 }
 
-    fn edges_in<'g>(&'g self, to: VertexId) -> Self::HalfEdgeIter<'g> {
+    fn edges_in(&self, to: VertexId) -> Self::HalfEdgeIter<'_> {
         Box::new(self.edges_in[to]
             .iter()
             .map(move |&from| (from, self.edge(from, to).unwrap())))
     }
-    fn edges_out<'g>(&'g self, from: VertexId) -> Self::HalfEdgeIter<'g> {
+    fn edges_out(&self, from: VertexId) -> Self::HalfEdgeIter<'_> {
         Box::new(self.edges_out[from]
             .iter()
             .map(move |(&to, payload)| (to, payload)))
