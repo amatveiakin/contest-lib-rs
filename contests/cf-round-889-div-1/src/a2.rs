@@ -75,7 +75,7 @@ mod tests {
     use super::*;
     use contest_lib_rs::rand::random;
     use pretty_assertions::assert_eq;
-    use contest_lib_rs::{solution_testing::run_solver, assert_trimmed_eq};
+    use contest_lib_rs::testing::solution_testing::prelude::*;
 
     fn is_sorted<T>(data: &[T]) -> bool
     where

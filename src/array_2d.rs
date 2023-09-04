@@ -308,7 +308,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::assert_panics;
-    use crate::internal_testing::reader_from_string;
+    use crate::testing::io_utils::reader_from_string;
     use super::*;
 
     #[test]

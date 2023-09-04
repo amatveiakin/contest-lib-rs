@@ -147,7 +147,8 @@ impl UndirectedEdgeId {
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
-    use crate::internal_testing::reader_from_string;
+    use crate::testing::io_utils::reader_from_string;
+
     use super::*;
 
     #[test]

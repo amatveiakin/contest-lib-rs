@@ -86,7 +86,7 @@ mod tests {
     use super::*;
     use contest_lib_rs::rand;
     use pretty_assertions::assert_eq;
-    use contest_lib_rs::{solution_testing::run_solver, assert_trimmed_eq};
+    use contest_lib_rs::testing::solution_testing::prelude::*;
 
     fn dfs_naive(l: &Vec<Vec<u32>>, w: &Vec<Vec<u32>>, i: usize, z: &mut Vec<u32>) {
         for j in 0..l[i].len() {

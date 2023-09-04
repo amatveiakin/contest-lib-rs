@@ -63,7 +63,7 @@ mod tests {
     #![allow(unused_imports)]
     use super::*;
     use pretty_assertions::assert_eq;
-    use contest_lib_rs::{solution_testing::run_solver, assert_trimmed_eq};
+    use contest_lib_rs::testing::solution_testing::prelude::*;
 
     #[test]
     fn test() {

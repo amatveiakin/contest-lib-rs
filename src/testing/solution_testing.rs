@@ -1,11 +1,18 @@
-use crate::io;
+use crate::io::prelude::*;
 
+use super::io_utils::reader_from_string;
+
+
+pub mod prelude {
+    pub use crate::assert_trimmed_eq;
+    pub use super::run_solver;
+}
 
 pub fn run_solver(
-    solve: impl Fn(&mut io::Reader<std::io::Cursor<Vec<u8>>>, &mut std::io::Cursor<Vec<u8>>),
+    solve: impl Fn(&mut Reader<std::io::Cursor<Vec<u8>>>, &mut std::io::Cursor<Vec<u8>>),
     input: &str,
 ) -> String {
-    let mut read = io::Reader::new(std::io::Cursor::new(input.to_owned().into_bytes()));
+    let mut read = reader_from_string(input);
     let mut write = std::io::Cursor::new(vec![]);
     solve(&mut read, &mut write);
     String::from_utf8(write.get_ref().clone()).unwrap()
@@ -19,8 +26,8 @@ pub fn trim_lines(s: &str) -> String {
 macro_rules! assert_trimmed_eq {
     ( $left:expr, $right:expr ) => {
         assert_eq!(
-            $crate::solution_testing::trim_lines($left),
-            $crate::solution_testing::trim_lines($right)
+            $crate::testing::solution_testing::trim_lines($left),
+            $crate::testing::solution_testing::trim_lines($right)
         );
     };
 }
@@ -28,10 +35,9 @@ macro_rules! assert_trimmed_eq {
 
 #[cfg(test)]
 mod tests {
-    use crate::{io, emitln};
     use super::*;
 
-    fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, write: &mut W) {
+    fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
         let n = read.usize();
         let v = read.vec_i32(n);
         emitln!(write, n);
