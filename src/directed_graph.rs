@@ -121,6 +121,7 @@ impl<VP, EP> Graph<VP, EP> for DirectedGraph<VP, EP> {
 
 #[cfg(test)]
 mod tests {
+    use itertools::Itertools;
     use pretty_assertions::assert_eq;
     use crate::testing::io_utils::reader_from_string;
 
@@ -149,5 +150,19 @@ mod tests {
         assert!(g.edge(v3, v4).is_some());
         assert!(g.edge(v1, v2).is_none());
         assert!(g.edge(v3, v1).is_none());
+    }
+
+    #[test]
+    fn loops() {
+        let mut g = DirectedGraph::new();
+        let [v1, v2, v3] = g.add_vertex_array();
+        g.add_edge(v1, v1);
+        g.add_edge(v1, v2);
+        g.add_edge(v3, v3);
+        assert_eq!(g.degree(v1), 3);
+        assert_eq!(g.degree(v2), 1);
+        assert_eq!(g.degree(v3), 2);
+        assert_eq!(g.edges_out(v1).map(|e| e.other).sorted().collect_vec(), vec![v1, v2]);
+        assert_eq!(g.edges_in(v1).map(|e| e.other).sorted().collect_vec(), vec![v1]);
     }
 }

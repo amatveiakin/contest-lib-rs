@@ -35,7 +35,8 @@ pub struct HalfEdge<'g, EP> {
 // Features ([v] supported, [-] not supported):
 //   [v] Directed and undirected graphs.
 //   [v] Vertex and edge payloads.
-//   [-] Parallel edges and loops.
+//   [v] Loops.
+//   [-] Parallel edges.
 //   [v] Edge addition and removal.
 //   [v] Vertex addition.
 //   [-] Vertex removal.
@@ -69,6 +70,8 @@ pub trait Graph<VP, EP> {
 
     // For directed graphs: `degree` == `in_degree` + `out_degree`.
     // For undirected graphs: `degree` == `in_degree` == `out_degree`.
+    // Note. The invariants above always hold, which means that loops are counted twice in directed
+    // graphs and once in undirected graphs.
     fn degree(&self, v: VertexId) -> u32;
     fn out_degree(&self, v: VertexId) -> u32;
     fn in_degree(&self, v: VertexId) -> u32;
