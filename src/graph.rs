@@ -42,15 +42,20 @@ pub struct VertexId { index: u32 }
 //     graph.remove_edge(b, a);
 // ```
 // will return the graph to the original state (assuming that the edge didn't exist beforehand), and
-// in a directed graph the edge (a, b) will remain alive. If you need to mutate a graph you almost
-// certainly need to take either a `&mut DirectedGraph` or a `&mut UndirectedGraph`.
+// in a directed graph the edge (a, b) will remain alive. If you require to mutate graph structure,
+// you almost certainly need to take either a `&mut DirectedGraph` or a `&mut UndirectedGraph`.
 //
 pub trait Graph<VP, EP> {
     type VertexIter: Iterator<Item = VertexId>;
     type HalfEdgeIter<'g>: Iterator<Item = (VertexId, &'g EP)> where Self: 'g, EP: 'g;
     type FullEdgeIter<'g>: Iterator<Item = (VertexId, VertexId, &'g EP)> where Self: 'g, EP: 'g;
 
+    const IS_DIRECTED: bool;
+    fn is_directed(&self) -> bool { Self::IS_DIRECTED }
+
+    // `num_vertices` is always O(1), but `num_edges` could be O(V).
     fn num_vertices(&self) -> usize;
+    fn num_edges(&self) -> usize;
 
     // Vertex IDs always range from 0 to (num_vertices() - 1).
     fn vertex_ids(&self) -> Self::VertexIter;

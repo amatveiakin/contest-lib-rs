@@ -103,7 +103,10 @@ impl<VP, EP> Graph<VP, EP> for Tree<VP, EP> {
     type HalfEdgeIter<'g> = Box<dyn Iterator<Item = (VertexId, &'g EP)> + 'g> where Self: 'g, EP: 'g;
     type FullEdgeIter<'g> = Box<dyn Iterator<Item = (VertexId, VertexId, &'g EP)> + 'g> where Self: 'g, EP: 'g;
 
+    const IS_DIRECTED: bool = false;
+
     fn num_vertices(&self) -> usize { self.vertices.len() }
+    fn num_edges(&self) -> usize { self.num_vertices() - 1 }
 
     fn edges(&self) -> Self::FullEdgeIter<'_> {
         Box::new(self.vertices.iter().enumerate().flat_map(move |(to, vertex)| {
