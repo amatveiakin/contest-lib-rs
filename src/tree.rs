@@ -1,4 +1,4 @@
-use crate::graph::{VertexId, Graph, HalfEdge};
+use crate::graph::{VertexId, Graph};
 use crate::{io, ivec};
 use crate::undirected_graph::UndirectedGraph;
 
@@ -27,23 +27,17 @@ impl<VP, EP> Tree<VP, EP> {
     pub fn root(&self) -> VertexId { self.root }
 
     pub fn children(&self, v: VertexId) -> &[VertexId] { &self.vertices[v].children }
-    pub fn child_edges(&self, v: VertexId) -> impl ExactSizeIterator<Item = HalfEdge<'_, EP>> {
-        self.vertices[v].children.iter().map(|&u| HalfEdge {
-            other: u,
-            payload: &self.vertices[u].parent.as_ref().unwrap().1
-        })
+    pub fn child_edges(&self, v: VertexId) -> impl ExactSizeIterator<Item = (VertexId, &EP)> {
+        self.vertices[v].children.iter().map(|&u| (u, &self.vertices[u].parent.as_ref().unwrap().1))
     }
     pub fn parent(&self, v: VertexId) -> Option<VertexId> {
         self.vertices[v].parent.as_ref().map(|(p, _)| *p)
     }
-    pub fn parent_edge(&self, v: VertexId) -> Option<HalfEdge<'_, EP>> {
-        self.vertices[v].parent.as_ref().map(|(p, payload)| HalfEdge {
-            other: *p,
-            payload,
-        })
+    pub fn parent_edge(&self, v: VertexId) -> Option<(VertexId, &EP)> {
+        self.vertices[v].parent.as_ref().map(|(p, payload)| (*p, payload))
     }
 
-    pub fn edges_adj(&self, v: VertexId) -> impl Iterator<Item = HalfEdge<'_, EP>> {
+    pub fn edges_adj(&self, v: VertexId) -> impl Iterator<Item = (VertexId, &EP)> {
         self.child_edges(v).chain(self.parent_edge(v).into_iter())
     }
 
@@ -87,7 +81,7 @@ impl<VP: Clone, EP: Clone> Tree<VP, EP> {
         let mut found_vertices = 1;  // root is already ok
         let mut stack = vec![(root, None)];
         while let Some((v, p)) = stack.pop() {
-            for HalfEdge{ other: u, payload } in graph.edges_adj(v) {
+            for (u, payload) in graph.edges_adj(v) {
                 if Some(u) == p {
                     continue;
                 }
@@ -110,7 +104,7 @@ impl<VP: Clone, EP: Clone> Tree<VP, EP> {
 
 impl<VP, EP> Graph<VP, EP> for Tree<VP, EP> {
     type VertexIter = Box<dyn Iterator<Item = VertexId>>;
-    type HalfEdgeIter<'g> = Box<dyn Iterator<Item = HalfEdge<'g, EP>> + 'g> where Self: 'g, EP: 'g;
+    type HalfEdgeIter<'g> = Box<dyn Iterator<Item = (VertexId, &'g EP)> + 'g> where Self: 'g, EP: 'g;
 
     fn num_vertices(&self) -> usize { self.vertices.len() }
 
@@ -184,7 +178,7 @@ mod tests {
         assert_eq!(tree.parent(v3), Some(v1));
         assert_eq!(tree.children(v3).len(), 3);
         assert_eq!(tree.degree(v3), 4);
-        assert_eq!(tree.edges_adj(v3).map(|e| e.other).sorted().collect_vec(), [v1, v2, v4, v6]);
+        assert_eq!(tree.edges_adj(v3).map(|(w, _)| w).sorted().collect_vec(), [v1, v2, v4, v6]);
     }
 
     #[test]
@@ -215,7 +209,7 @@ mod tests {
         let tree = Tree::try_from(&g).unwrap();
         assert_eq!(tree.vertex(v1), &"first");
         assert_eq!(tree.vertex(v2), &"second");
-        assert_eq!(tree.parent_edge(v2).unwrap().payload, &"first-second");
+        assert_eq!(tree.parent_edge(v2).unwrap().1, &"first-second");
     }
 
     #[test]

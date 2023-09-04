@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::graph::{Graph, VertexId, HalfEdge};
+use crate::graph::{Graph, VertexId};
 use crate::io;
 
 
@@ -84,7 +84,7 @@ impl DirectedGraph<(), ()> {
 
 impl<VP, EP> Graph<VP, EP> for DirectedGraph<VP, EP> {
     type VertexIter = Box<dyn Iterator<Item = VertexId>>;
-    type HalfEdgeIter<'g> = Box<dyn Iterator<Item = HalfEdge<'g, EP>> + 'g> where Self: 'g, EP: 'g;
+    type HalfEdgeIter<'g> = Box<dyn Iterator<Item = (VertexId, &'g EP)> + 'g> where Self: 'g, EP: 'g;
 
     fn num_vertices(&self) -> usize { self.vertices.len() }
 
@@ -109,12 +109,12 @@ impl<VP, EP> Graph<VP, EP> for DirectedGraph<VP, EP> {
     fn edges_in<'g>(&'g self, to: VertexId) -> Self::HalfEdgeIter<'g> {
         Box::new(self.edges_in[to]
             .iter()
-            .map(move |&from| HalfEdge { other: from, payload: self.edge(from, to).unwrap() }))
+            .map(move |&from| (from, self.edge(from, to).unwrap())))
     }
     fn edges_out<'g>(&'g self, from: VertexId) -> Self::HalfEdgeIter<'g> {
         Box::new(self.edges_out[from]
             .iter()
-            .map(move |(&to, payload)| HalfEdge { other: to, payload }))
+            .map(move |(&to, payload)| (to, payload)))
     }
 }
 
@@ -162,7 +162,7 @@ mod tests {
         assert_eq!(g.degree(v1), 3);
         assert_eq!(g.degree(v2), 1);
         assert_eq!(g.degree(v3), 2);
-        assert_eq!(g.edges_out(v1).map(|e| e.other).sorted().collect_vec(), vec![v1, v2]);
-        assert_eq!(g.edges_in(v1).map(|e| e.other).sorted().collect_vec(), vec![v1]);
+        assert_eq!(g.edges_out(v1).map(|(u, _)| u).sorted().collect_vec(), vec![v1, v2]);
+        assert_eq!(g.edges_in(v1).map(|(u, _)| u).sorted().collect_vec(), vec![v1]);
     }
 }

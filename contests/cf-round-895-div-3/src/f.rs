@@ -19,8 +19,8 @@ fn visit(graph: &DirectedGraph<(), ()>, v: VertexId, vertex_state: &mut Vec<Vert
         return Some(vec![v]);
     }
     vertex_state[v].active = true;
-    for e in graph.edges_out(v) {
-        if let Some(mut cycle) = visit(graph, e.other, vertex_state) {
+    for (w, _) in graph.edges_out(v) {
+        if let Some(mut cycle) = visit(graph, w, vertex_state) {
             cycle.push(v);
             vertex_state[v].active = false;
             vertex_state[v].visited = true;

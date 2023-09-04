@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::graph::{Graph, VertexId, HalfEdge};
+use crate::graph::{Graph, VertexId};
 use crate::io;
 
 
@@ -47,10 +47,10 @@ impl<VP, EP> UndirectedGraph<VP, EP> {
         payload
     }
 
-    pub fn edges_adj(&self, v: VertexId) -> impl Iterator<Item = HalfEdge<'_, EP>> {
+    pub fn edges_adj(&self, v: VertexId) -> impl Iterator<Item = (VertexId, &EP)> {
         self.neighbours[v]
             .iter()
-            .map(move |&u| HalfEdge { other: u, payload: self.get_payload(v, u).unwrap() })
+            .map(move |&u| (u, self.get_payload(v, u).unwrap()))
     }
 
     fn get_payload<'g>(&'g self, from: VertexId, to: VertexId) -> Option<&'g EP> {
@@ -102,7 +102,7 @@ impl UndirectedGraph<(), ()> {
 
 impl<VP, EP> Graph<VP, EP> for UndirectedGraph<VP, EP> {
     type VertexIter = Box<dyn Iterator<Item = VertexId>>;
-    type HalfEdgeIter<'g> = Box<dyn Iterator<Item = HalfEdge<'g, EP>> + 'g> where Self: 'g, EP: 'g;
+    type HalfEdgeIter<'g> = Box<dyn Iterator<Item = (VertexId, &'g EP)> + 'g> where Self: 'g, EP: 'g;
 
     fn num_vertices(&self) -> usize { self.vertices.len() }
 
@@ -186,6 +186,6 @@ mod tests {
         assert_eq!(g.degree(v1), 2);
         assert_eq!(g.degree(v2), 1);
         assert_eq!(g.degree(v3), 1);
-        assert_eq!(g.edges_adj(v1).map(|e| e.other).sorted().collect_vec(), vec![v1, v2]);
+        assert_eq!(g.edges_adj(v1).map(|(w, _)| w).sorted().collect_vec(), vec![v1, v2]);
     }
 }

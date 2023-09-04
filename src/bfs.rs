@@ -23,12 +23,12 @@ pub fn bfs_path<VP, EP>(
             path.reverse();
             return Some(path);
         }
-        for e in graph.edges_out(v) {
-            match prev.entry(e.other) {
+        for (w, _) in graph.edges_out(v) {
+            match prev.entry(w) {
                 hash_map::Entry::Occupied(_) => {}
                 hash_map::Entry::Vacant(entry) => {
                     entry.insert(v);
-                    queue.push_back(e.other);
+                    queue.push_back(w);
                 }
             }
         }
@@ -46,12 +46,12 @@ pub fn bfs_distances<VP, EP>(
     queue.push_back(from);
     while let Some(v) = queue.pop_front() {
         let d = distances[&v];
-        for e in graph.edges_out(v) {
-            match distances.entry(e.other) {
+        for (w, _) in graph.edges_out(v) {
+            match distances.entry(w) {
                 hash_map::Entry::Occupied(_) => {}
                 hash_map::Entry::Vacant(entry) => {
                     entry.insert(d + 1);
-                    queue.push_back(e.other);
+                    queue.push_back(w);
                 }
             }
         }

@@ -36,10 +36,10 @@ fn dfs_impl<VP, EP, R>(
     on_exit: &mut impl FnMut(VertexId) -> ops::ControlFlow<R, ()>,
 ) -> ops::ControlFlow<R, ()> {
     on_enter(v)?;
-    for e in graph.edges_out(v) {
-        on_see(e.other)?;
+    for (w, _) in graph.edges_out(v) {
+        on_see(w)?;
         if visited.insert(v) {
-            dfs_impl(graph, e.other, visited, on_see, on_enter, on_exit);
+            dfs_impl(graph, w, visited, on_see, on_enter, on_exit);
         }
     }
     on_exit(v)?;

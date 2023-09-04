@@ -37,8 +37,8 @@ fn visit<VP, EP>(
         return Err(GraphHasCycles {});
     }
     vertex_state[v].active = true;
-    for e in graph.edges_out(v) {
-        visit(graph, e.other, vertex_state, sorted)?;
+    for (w, _) in graph.edges_out(v) {
+        visit(graph, w, vertex_state, sorted)?;
     }
     vertex_state[v].active = false;
     vertex_state[v].visited = true;

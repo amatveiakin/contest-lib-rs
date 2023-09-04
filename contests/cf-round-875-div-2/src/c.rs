@@ -6,12 +6,10 @@ fn dfs(
 ) {
     visited[v] = true;
     *max_len = std::cmp::max(*max_len, len);
-    for e in g.edges_adj(v) {
-        let u = e.other;
+    for (u, edge_id) in g.edges_adj(v) {
         if !visited[u] {
-            let edge_id = *e.payload;
-            let len_inc = if edge_id > parent_edge_id { 0 } else { 1 };
-            dfs(g, u, edge_id, visited, len + len_inc, max_len);
+            let len_inc = if *edge_id > parent_edge_id { 0 } else { 1 };
+            dfs(g, u, *edge_id, visited, len + len_inc, max_len);
         }
     }
 }

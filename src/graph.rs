@@ -21,14 +21,6 @@ use std::ops;
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub struct VertexId { index: u32 }
 
-// TODO: Consider cloning the payload instead.
-// Edge, as viewed from one vertex (which could be either the head or the tail).
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
-pub struct HalfEdge<'g, EP> {
-    pub other: VertexId,
-    pub payload: &'g EP,
-}
-
 // `Graph` is the common interface between different kinds of graphs (directed and undirected),
 // graph algorithms and the end user.
 //
@@ -55,7 +47,7 @@ pub struct HalfEdge<'g, EP> {
 //
 pub trait Graph<VP, EP> {
     type VertexIter: Iterator<Item = VertexId>;
-    type HalfEdgeIter<'g>: Iterator<Item = HalfEdge<'g, EP>> where Self: 'g, EP: 'g;
+    type HalfEdgeIter<'g>: Iterator<Item = (VertexId, &'g EP)> where Self: 'g, EP: 'g;
 
     fn num_vertices(&self) -> usize;
 

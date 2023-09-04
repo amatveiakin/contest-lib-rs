@@ -16,14 +16,14 @@ struct VisitedVertex {
 
 #[derive(Copy, Clone, PartialEq, Eq)]
 struct QueuedVertex {
-    v: VertexId,
+    vertex: VertexId,
     cost: u64,
 }
 
 impl Ord for QueuedVertex {
     fn cmp(&self, other: &Self) -> cmp::Ordering {
         // Flip cost ordering for min-heap
-        other.cost.cmp(&self.cost).then_with(|| self.v.cmp(&other.v))
+        other.cost.cmp(&self.cost).then_with(|| self.vertex.cmp(&other.vertex))
     }
 }
 impl PartialOrd for QueuedVertex {
@@ -39,8 +39,8 @@ pub fn dijkstra_path<VP, EP>(
     let mut queue = BinaryHeap::new();
     let mut visited = HashMap::new();
     visited.insert(from, VisitedVertex { prev: from, cost: 0 });
-    queue.push(QueuedVertex { v: from, cost: 0 });
-    while let Some(QueuedVertex { v, cost }) = queue.pop() {
+    queue.push(QueuedVertex { vertex: from, cost: 0 });
+    while let Some(QueuedVertex { vertex: v, cost }) = queue.pop() {
         if v == to {
             let mut path = Vec::new();
             let mut v = v;
@@ -55,18 +55,18 @@ pub fn dijkstra_path<VP, EP>(
         if visited.get(&v).map_or(false, |prior_visit| prior_visit.cost < cost) {
             continue;
         }
-        for e in graph.edges_out(v) {
-            let new_cost = cost + edge_cost(e.payload);
-            match visited.entry(e.other) {
+        for (w, payload) in graph.edges_out(v) {
+            let new_cost = cost + edge_cost(payload);
+            match visited.entry(w) {
                 hash_map::Entry::Occupied(mut entry) => {
                     if entry.get().cost > new_cost {
                         entry.insert(VisitedVertex { prev: v, cost: new_cost });
-                        queue.push(QueuedVertex { v: e.other, cost: new_cost });
+                        queue.push(QueuedVertex { vertex: w, cost: new_cost });
                     }
                 }
                 hash_map::Entry::Vacant(entry) => {
                     entry.insert(VisitedVertex { prev: v, cost: new_cost });
-                    queue.push(QueuedVertex { v: e.other, cost: new_cost });
+                    queue.push(QueuedVertex { vertex: w, cost: new_cost });
                 }
             }
         }
@@ -82,23 +82,23 @@ pub fn dijkstra_distances<VP, EP>(
     let mut queue = BinaryHeap::new();
     let mut visited = HashMap::new();
     visited.insert(from, VisitedVertex { prev: from, cost: 0 });
-    queue.push(QueuedVertex { v: from, cost: 0 });
-    while let Some(QueuedVertex { v, cost }) = queue.pop() {
+    queue.push(QueuedVertex { vertex: from, cost: 0 });
+    while let Some(QueuedVertex { vertex: v, cost }) = queue.pop() {
         if visited.get(&v).map_or(false, |prior_visit| prior_visit.cost < cost) {
             continue;
         }
-        for e in graph.edges_out(v) {
-            let new_cost = cost + edge_cost(e.payload);
-            match visited.entry(e.other) {
+        for (w, payload) in graph.edges_out(v) {
+            let new_cost = cost + edge_cost(payload);
+            match visited.entry(w) {
                 hash_map::Entry::Occupied(mut entry) => {
                     if entry.get().cost > new_cost {
                         entry.insert(VisitedVertex { prev: v, cost: new_cost });
-                        queue.push(QueuedVertex { v: e.other, cost: new_cost });
+                        queue.push(QueuedVertex { vertex: w, cost: new_cost });
                     }
                 }
                 hash_map::Entry::Vacant(entry) => {
                     entry.insert(VisitedVertex { prev: v, cost: new_cost });
-                    queue.push(QueuedVertex { v: e.other, cost: new_cost });
+                    queue.push(QueuedVertex { vertex: w, cost: new_cost });
                 }
             }
         }
