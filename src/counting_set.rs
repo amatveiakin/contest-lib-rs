@@ -108,6 +108,15 @@ impl<T: Ord + Clone> CountingSet<T> {
     pub fn clear(&mut self) {
         self.map.clear();
     }
+
+    // Note. No mutable BTreeMap getter to ensure that there are no zero counts.
+    pub fn btree_map(&self) -> &BTreeMap<T, usize> { &self.map }
+    pub fn into_btree_map(self) -> BTreeMap<T, usize> { self.map }
+    pub fn from_btree_map(map: BTreeMap<T, usize>) -> Self {
+        CountingSet {
+            map: BTreeMap::from_iter(map.into_iter().filter(|(_, n)| *n > 0)),
+        }
+    }
 }
 
 impl<T: Ord + Clone> FromIterator<T> for CountingSet<T> {
