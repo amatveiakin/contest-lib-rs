@@ -48,11 +48,14 @@ pub struct VertexId { index: u32 }
 pub trait Graph<VP, EP> {
     type VertexIter: Iterator<Item = VertexId>;
     type HalfEdgeIter<'g>: Iterator<Item = (VertexId, &'g EP)> where Self: 'g, EP: 'g;
+    type FullEdgeIter<'g>: Iterator<Item = (VertexId, VertexId, &'g EP)> where Self: 'g, EP: 'g;
 
     fn num_vertices(&self) -> usize;
 
     // Vertex IDs always range from 0 to (num_vertices() - 1).
     fn vertex_ids(&self) -> Self::VertexIter;
+
+    fn edges(&self) -> Self::FullEdgeIter<'_>;
 
     fn vertex(&self, v: VertexId) -> &VP;
     fn vertex_mut(&mut self, v: VertexId) -> &mut VP;

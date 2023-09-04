@@ -85,11 +85,19 @@ impl DirectedGraph<(), ()> {
 impl<VP, EP> Graph<VP, EP> for DirectedGraph<VP, EP> {
     type VertexIter = Box<dyn Iterator<Item = VertexId>>;
     type HalfEdgeIter<'g> = Box<dyn Iterator<Item = (VertexId, &'g EP)> + 'g> where Self: 'g, EP: 'g;
+    type FullEdgeIter<'g> = Box<dyn Iterator<Item = (VertexId, VertexId, &'g EP)> + 'g> where Self: 'g, EP: 'g;
 
     fn num_vertices(&self) -> usize { self.vertices.len() }
 
     fn vertex_ids(&self) -> Self::VertexIter {
         Box::new((0..self.vertices.len()).map(|i| VertexId::from_0_based(i)))
+    }
+
+    fn edges(&self) -> Self::FullEdgeIter<'_> {
+        Box::new(self.edges_out.iter().enumerate().flat_map(move |(from, edges_out)| {
+            let from = VertexId::from_0_based(from);
+            edges_out.iter().map(move |(to, payload)| (from, *to, payload))
+        }))
     }
 
     fn vertex(&self, v: VertexId) -> &VP { &self.vertices[v] }

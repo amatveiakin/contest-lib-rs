@@ -105,8 +105,16 @@ impl<VP: Clone, EP: Clone> Tree<VP, EP> {
 impl<VP, EP> Graph<VP, EP> for Tree<VP, EP> {
     type VertexIter = Box<dyn Iterator<Item = VertexId>>;
     type HalfEdgeIter<'g> = Box<dyn Iterator<Item = (VertexId, &'g EP)> + 'g> where Self: 'g, EP: 'g;
+    type FullEdgeIter<'g> = Box<dyn Iterator<Item = (VertexId, VertexId, &'g EP)> + 'g> where Self: 'g, EP: 'g;
 
     fn num_vertices(&self) -> usize { self.vertices.len() }
+
+    fn edges(&self) -> Self::FullEdgeIter<'_> {
+        Box::new(self.vertices.iter().enumerate().flat_map(move |(to, vertex)| {
+            let to = VertexId::from_0_based(to);
+            vertex.parent.iter().map(move |(from, payload)| (*from, to, payload))
+        }))
+    }
 
     fn vertex_ids(&self) -> Self::VertexIter {
         Box::new((0..self.vertices.len()).map(|i| VertexId::from_0_based(i)))
