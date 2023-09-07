@@ -37,10 +37,6 @@ impl<VP, EP> Tree<VP, EP> {
         self.vertices[v].parent.as_ref().map(|(p, payload)| (*p, payload))
     }
 
-    pub fn edges_adj(&self, v: VertexId) -> impl Iterator<Item = (VertexId, &EP)> {
-        self.child_edges(v).chain(self.parent_edge(v).into_iter())
-    }
-
     pub fn compute_recursively<R, F>(&self, f: F) -> Vec<R>
     where
         F: Fn(&[&R], VertexId) -> R,
@@ -149,8 +145,11 @@ impl<VP, EP> Graph<VP, EP> for Tree<VP, EP> {
     fn out_degree(&self, v: VertexId) -> u32 { self.degree(v) }
     fn in_degree(&self, v: VertexId) -> u32 { self.degree(v) }
 
-    fn edges_in(&self, to: VertexId) -> Self::HalfEdgeIter<'_> { Box::new(self.edges_adj(to)) }
-    fn edges_out(&self, from: VertexId) -> Self::HalfEdgeIter<'_> { Box::new(self.edges_adj(from)) }
+    fn edges_adj(&self, v: VertexId) -> Self::HalfEdgeIter<'_> {
+        Box::new(self.child_edges(v).chain(self.parent_edge(v).into_iter()))
+    }
+    fn edges_in(&self, to: VertexId) -> Self::HalfEdgeIter<'_> { self.edges_adj(to) }
+    fn edges_out(&self, from: VertexId) -> Self::HalfEdgeIter<'_> { self.edges_adj(from) }
 }
 
 impl Tree<(), ()> {

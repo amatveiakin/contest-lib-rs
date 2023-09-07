@@ -1,4 +1,6 @@
-use contest_lib_rs::{io, emitln, undirected_graph::UndirectedGraph, graph::VertexId};
+use contest_lib_rs::graph::{Graph, VertexId};
+use contest_lib_rs::undirected_graph::UndirectedGraph;
+use contest_lib_rs::{io, emitln};
 
 fn dfs(
     g: &UndirectedGraph<(), i32>, v: VertexId, parent_edge_id: i32,

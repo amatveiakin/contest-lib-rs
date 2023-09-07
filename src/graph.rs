@@ -72,10 +72,12 @@ pub trait Graph<VP, EP> {
     fn in_degree(&self, v: VertexId) -> u32;
 
     // Guarantees:
+    //   - `edges_adj().count()` == `degree()`;
     //   - `edges_in().count()` == `in_degree()`;
     //   - `edges_out().count()` == `out_degree()`;
     // Iteration order is unspecified. (Note. It's easy to fix it if necessary by replacing
     // `HashSet` with `BTreeSet`.)
+    fn edges_adj(&self, from: VertexId) -> Self::HalfEdgeIter<'_>;
     fn edges_in(&self, to: VertexId) -> Self::HalfEdgeIter<'_>;
     fn edges_out(&self, from: VertexId) -> Self::HalfEdgeIter<'_>;
 }
