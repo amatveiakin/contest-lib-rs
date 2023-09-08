@@ -4,7 +4,7 @@
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 
-use crate::partial_sums::PartialSums;
+use crate::prefix_accumulate::PrefixSum;
 use crate::u32_index::U32Index;
 
 
@@ -12,7 +12,7 @@ pub struct SegmentBucketCounter<T>
 where
     T: Clone + Eq + Hash
 {
-    buckets: HashMap<T, PartialSums<u32>>,
+    buckets: HashMap<T, PrefixSum<u32>>,
 }
 
 impl<T> SegmentBucketCounter<T>
@@ -25,13 +25,13 @@ where
         for value in unique_values {
             buckets.insert(
                 value.clone(),
-                PartialSums::from_iter(slice.iter().map(|x| (*x == *value) as u32))
+                PrefixSum::from_iter(slice.iter().map(|x| (*x == *value) as u32))
             );
         }
         Self { buckets }
     }
 
     pub fn count(&self, value: T, idx: impl U32Index) -> u32 {
-        self.buckets.get(&value).map(|s| s.sum(idx)).unwrap_or(0)
+        self.buckets.get(&value).map(|s| s.get(idx)).unwrap_or(0)
     }
 }

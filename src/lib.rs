@@ -18,7 +18,7 @@ pub mod iterutils;
 pub mod memoize;
 pub mod mod_ring;
 pub mod num;
-pub mod partial_sums;
+pub mod prefix_accumulate;
 pub mod primes;
 pub mod rand;
 pub mod relax;

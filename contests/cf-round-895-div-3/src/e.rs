@@ -1,4 +1,5 @@
 use contest_lib_rs::io::prelude::*;
+use contest_lib_rs::prefix_accumulate::PrefixXor;
 
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
@@ -15,22 +16,19 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
         }
     }
 
-    let mut part = vec![0; n + 1];
-    for i in 0..n {
-        part[i + 1] = part[i] ^ a[i];
-    }
+    let part = PrefixXor::from_iter(a);
 
     for _ in 0..q {
         let cmd = read.u32();
         match cmd {
             1 => {
-                let [l, r] = read.usizes();
-                xor ^= part[l - 1] ^ part[r];
+                let [l, r] = read.u32s();
+                xor ^= part.get((l - 1)..r);
             }
             2 => {
                 let g = read.u32();
                 let ans = match g {
-                    0 => xor ^ part[n],
+                    0 => xor ^ part.get(..),
                     1 => xor,
                     _ => unreachable!(),
                 };

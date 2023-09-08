@@ -1,36 +1,5 @@
 use contest_lib_rs::io::prelude::*;
-use contest_lib_rs::num::RegularInteger;
-use contest_lib_rs::partial_sums::PartialSums;
-use contest_lib_rs::u32_index::U32Index;
-
-pub struct PartialProducts<T>
-where
-    T: RegularInteger
-{
-    prod: Vec<T>,
-}
-
-impl<T> PartialProducts<T>
-where
-    T: RegularInteger
-{
-    pub fn from_iter(iter: impl ExactSizeIterator<Item = T>) -> Self {
-        let mut prod = vec![T::one(); iter.len() + 1];
-        for (i, v) in iter.enumerate() {
-            prod[i + 1] = prod[i] * v;
-        }
-        Self { prod }
-    }
-
-    pub fn from_slice(slice: &[T]) -> Self {
-        Self::from_iter(slice.iter().copied())
-    }
-
-    pub fn prod(&self, idx: impl U32Index) -> T {
-        let (begin, end) = idx.bounds(self.prod.len() as u32 - 1);
-        self.prod[end as usize] / self.prod[begin as usize]
-    }
-}
+use contest_lib_rs::prefix_accumulate::{PrefixSum, PrefixProduct};
 
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
@@ -64,8 +33,8 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
         }
     }
 
-    let sums = PartialSums::from_slice(&a);
-    let prods = PartialProducts::from_slice(&a);
+    let sums = PrefixSum::from_iter(a.iter().copied());
+    let prods = PrefixProduct::from_iter(a.iter().copied());
 
     let m = non1.len();
     let mut best_ans = 0;
@@ -74,7 +43,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
         for rp in lp..m {
             let l = non1[lp] as u32;
             let r = non1[rp] as u32;
-            let ans = sums.sum(..l) + prods.prod(l..=r) + sums.sum((r+1)..);
+            let ans = sums.get(..l) + prods.get(l..=r) + sums.get((r+1)..);
             if ans > best_ans {
                 best_ans = ans;
                 best_lr = Some((l, r));
