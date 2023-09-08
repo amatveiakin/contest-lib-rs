@@ -2,26 +2,37 @@ use crate::num::{RegularInteger, IntegerRing};
 use crate::u32_index::U32Index;
 
 
-pub trait AccumulationOperation<T> {
-    fn identity() -> T;
-    fn combine(a: T, b: T) -> T;
-    fn uncombine(a: T, b: T) -> T;
-}
-
 #[macro_export]
 macro_rules! define_prefix_accumulation {
-    ($struct_name:ident for $t:ident : ( $( $t_bounds:tt )* ); with $op_name:ident {
+    ($struct_name:ident for $t:ident : ( $( $t_bounds:tt )* ); with {
         identity() { $identity:expr }
         combine($union_lhs:ident, $union_rhs:ident) { $combine:expr }
         uncombine($difference_lhs:ident, $difference_rhs:ident) { $uncombine:expr }
     }) => {
-        pub struct $op_name<$t> {
-            _v: std::marker::PhantomData<$t>,
+        pub struct $struct_name<$t> {
+            prefixes: Vec<$t>,
         }
-        impl<$t> $crate::prefix_accumulate::AccumulationOperation<$t> for $op_name<$t>
+
+        impl<$t> $struct_name<$t>
         where
-            $t : $( $t_bounds )*,
+            $t: $( $t_bounds )*,
         {
+            pub fn from_iter(iter: impl IntoIterator<Item = $t>) -> Self {
+                let iter = iter.into_iter();
+                let mut prefixes = vec![Self::identity()];
+                prefixes.reserve_exact(iter.size_hint().0);
+                for v in iter {
+                    prefixes.push(Self::combine(*prefixes.last().unwrap(), v));
+                }
+                Self { prefixes }
+            }
+
+            // Note. Would be great to use `Index` instead, but it returns a reference.
+            pub fn get(&self, idx: impl U32Index) -> $t {
+                let (begin, end) = idx.bounds(self.prefixes.len() as u32 - 1);
+                Self::uncombine(self.prefixes[end as usize], self.prefixes[begin as usize])
+            }
+
             fn identity() -> $t {
                 $identity
             }
@@ -32,38 +43,14 @@ macro_rules! define_prefix_accumulation {
                 $uncombine
             }
         }
-        pub type $struct_name<$t> = $crate::prefix_accumulate::PrefixAccumulation<$t, $op_name<$t>>;
     };
 }
 
 
-pub struct PrefixAccumulation<T, Op: AccumulationOperation<T>> {
-    prefixes: Vec<T>,
-    _op: std::marker::PhantomData<Op>,
-}
-
-impl<T: Clone + Copy, Op: AccumulationOperation<T>> PrefixAccumulation<T, Op> {
-    pub fn from_iter(iter: impl IntoIterator<Item = T>) -> Self {
-        let iter = iter.into_iter();
-        let mut prefixes = vec![Op::identity()];
-        prefixes.reserve_exact(iter.size_hint().0);
-        for v in iter {
-            prefixes.push(Op::combine(*prefixes.last().unwrap(), v));
-        }
-        Self { prefixes, _op: std::marker::PhantomData }
-    }
-
-    // Note. Would be great to use `Index` instead, but it returns a reference.
-    pub fn get(&self, idx: impl U32Index) -> T {
-        let (begin, end) = idx.bounds(self.prefixes.len() as u32 - 1);
-        Op::uncombine(self.prefixes[end as usize], self.prefixes[begin as usize])
-    }
-}
-
 define_prefix_accumulation! {
     PrefixSum
     for T: (std::ops::Add<Output = T> + std::ops::Sub<Output = T> + Default + Clone + Copy);
-    with AccumulationSummation {
+    with {
         identity() { T::default() }
         combine(a, b) { a + b }
         uncombine(a, b) { a - b }
@@ -73,7 +60,7 @@ define_prefix_accumulation! {
 define_prefix_accumulation! {
     PrefixProduct
     for T: (IntegerRing);
-    with AccumulationProduct {
+    with {
         identity() { T::one() }
         combine(a, b) { a * b }
         uncombine(a, b) { a / b }
@@ -83,7 +70,7 @@ define_prefix_accumulation! {
 define_prefix_accumulation! {
     PrefixXor
     for T: (RegularInteger);
-    with AccumulationXor {
+    with {
         identity() { T::zero() }
         combine(a, b) { a ^ b }
         uncombine(a, b) { a ^ b }
