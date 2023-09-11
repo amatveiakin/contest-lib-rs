@@ -21,6 +21,7 @@ members = [
     "contests/cf-round-889-div-1",
     "contests/cf-round-895-div-3",
     "contests/cf-round-895-div-3",
+    "contests/cf-round-897-div-2",
     "playground",
 ]
 
