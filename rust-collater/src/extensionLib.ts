@@ -1,5 +1,10 @@
 import { assert } from "console";
 
+interface CollationResult {
+  outputText: string;
+  missingModules: string[];
+}
+
 // TODO: Support nested uses, e.g.
 //   use contest_lib_rs::{io, emitln, graph::{VertexId, Graph}};
 export function simplifyUseStatement(line: string): string[] {
@@ -120,7 +125,7 @@ export function getModulesToInclude(
 export function collateDocument(
   currentText: string,
   moduleTexts: Map<string, string>
-): string {
+): CollationResult {
   const moduleBodies = moduleTextsToModuleBodies(moduleTexts);
   const modulesToInclude = getModulesToInclude(currentText, moduleBodies);
 
@@ -129,11 +134,16 @@ export function collateDocument(
     .flatMap(simplifyUseStatement)
     .join("\n");
   outputText = outputText.trim() + "\n";
+  let missingModules: string[] = [];
   for (const moduleName of modulesToInclude) {
-    const body = moduleBodies.get(moduleName)!;
+    let body = moduleBodies.get(moduleName)!;
+    if (body === undefined) {
+      missingModules.push(moduleName);
+      body = "// NOT FOUND";
+    }
     outputText += `\nmod ${moduleName} {\n${body}\n} // ${moduleName}\n`;
   }
-  return outputText;
+  return { outputText, missingModules };
 }
 
 export function addCargoWorkspaceMember(

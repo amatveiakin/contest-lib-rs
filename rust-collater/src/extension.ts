@@ -116,7 +116,10 @@ async function commandCollate() {
     }
 
     const currentText = editor.document.getText();
-    const outputText = collateDocument(currentText, moduleTexts);
+    const { outputText, missingModules } = collateDocument(
+      currentText,
+      moduleTexts
+    );
 
     vscode.env.clipboard.writeText(outputText.trimStart());
 
@@ -124,6 +127,11 @@ async function commandCollate() {
     vscode.window.showInformationMessage(
       `Collated to clipboard (${timeSpent.toFixed(2)} s).`
     );
+    if (missingModules.length > 0) {
+      vscode.window.showWarningMessage(
+        `The following modules were missing: ${missingModules.join(", ")}`
+      );
+    }
   } catch (e) {
     // Improvement potential: Better error messages:
     //   - for missing src directory;

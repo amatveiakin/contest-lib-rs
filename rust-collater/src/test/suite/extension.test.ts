@@ -127,8 +127,35 @@ suite("Extension Test Suite", () => {
         }
         } // io
     `);
-    const docOutActual = lib.collateDocument(docIn, moduleTexts);
-    assert.equal(docOutActual, docOutExpected);
+    const { outputText, missingModules } = lib.collateDocument(
+      docIn,
+      moduleTexts
+    );
+    assert.equal(outputText, docOutExpected);
+    assert.deepEqual(missingModules, []);
+  });
+
+  test("Collation missing module", () => {
+    const moduleTexts: Map<string, string> = new Map([]);
+
+    const docIn = unindent(`\
+        use contest_lib_rs::foo;
+
+        fn main() {}
+    `);
+    const docOutExpected = unindent(`\
+        fn main() {}
+
+        mod foo {
+        // NOT FOUND
+        } // foo
+    `);
+    const { outputText, missingModules } = lib.collateDocument(
+      docIn,
+      moduleTexts
+    );
+    assert.equal(outputText, docOutExpected);
+    assert.deepEqual(missingModules, ["foo"]);
   });
 
   test("Cargo modification", () => {
