@@ -77,7 +77,7 @@ suite("Extension Test Suite", () => {
       ["qux", ""],
       ["quux", ""],
     ]);
-    const moduleBodies = lib.moduleTextsToModuleBodies(moduleTexts);
+    const modules = lib.parseModules(moduleTexts);
 
     const docIn = unindent(`\
         use contest_lib_rs::{my_macro, bar};
@@ -85,8 +85,9 @@ suite("Extension Test Suite", () => {
         use contest_lib_rs::qux::{smth, smth_else};
 
         fn main() {}
+
     `);
-    const modulesToInclude = lib.getModulesToInclude(docIn, moduleBodies);
+    const modulesToInclude = lib.getModulesToInclude(docIn, modules);
     assert.deepEqual(modulesToInclude, new Set(["foo", "bar", "baz", "qux"]));
   });
 

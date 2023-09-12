@@ -1,5 +1,11 @@
 import { assert } from "console";
 
+interface RustModule {
+  body: string;
+  macros: string[];
+  dependencies: string[];
+}
+
 interface CollationResult {
   outputText: string;
   missingModules: string[];
@@ -42,36 +48,66 @@ export function simplifyUseStatement(line: string): string[] {
   }
 }
 
-export function moduleTextsToModuleBodies(
-  moduleTexts: Map<string, string>
-): Map<string, string> {
-  const SKIP_LINE_RE = /^(\/\/.*)?$/g;
+export function stripTests(moduleText: string): string {
   const TESTS_START_1 = "#[cfg(test)]";
   const TESTS_START_2 = "mod tests {";
-
-  const moduleBodies = new Map<string, string>();
-  for (const [moduleName, moduleText] of moduleTexts.entries()) {
-    const moduleLines = moduleText.split("\n");
-    let moduleBody = "";
-    for (const [lineIdx, line] of moduleLines.entries()) {
-      if (
-        line.trim() === TESTS_START_1 &&
-        moduleLines[lineIdx + 1].trim() === TESTS_START_2
-      ) {
-        break;
-      }
-      if (line.trim().match(SKIP_LINE_RE) === null) {
-        moduleBody += line + "\n";
-      }
-    }
-    moduleBodies.set(moduleName, moduleBody.trimEnd());
+  const moduleLines = moduleText.split("\n");
+  const startIdx = moduleLines.findIndex(
+    (line) => line.trim() === TESTS_START_1
+  );
+  if (startIdx >= 0 && moduleLines[startIdx + 1].trim() === TESTS_START_2) {
+    moduleLines.splice(startIdx);
   }
-  return moduleBodies;
+  return moduleLines.join("\n");
+}
+
+// TODO: Also strip comments on code lines.
+export function stripEmptyLinesAndComments(moduleText: string): string {
+  const SKIP_LINE_RE = /^(\/\/.*)?$/g;
+  return moduleText
+    .split("\n")
+    .filter((line) => line.trim().match(SKIP_LINE_RE) === null)
+    .join("\n");
+}
+
+export function parseModule(moduleText: string): RustModule {
+  const MODULE_DEPENDENCY_RE = [
+    /use crate::\{(\w+)(?:::\w+)*(?:, *(\w+)(?:::\w+)*)*\}/g,
+    /use crate::(\w+)/g,
+  ];
+  const MACRO_RE = /macro_rules! +(\w+)/g;
+
+  let body = stripEmptyLinesAndComments(stripTests(moduleText));
+
+  const macros: string[] = [];
+  for (const match of body.matchAll(MACRO_RE)) {
+    macros.push(match[1]);
+  }
+  const dependencies: string[] = [];
+  for (const re of MODULE_DEPENDENCY_RE) {
+    for (const match of body.matchAll(re)) {
+      dependencies.push(...match.slice(1));
+    }
+  }
+
+  return {
+    body: body,
+    macros: macros,
+    dependencies: dependencies,
+  };
+}
+
+export function parseModules(
+  moduleTexts: Map<string, string>
+): Map<string, RustModule> {
+  return new Map(
+    Array.from(moduleTexts.entries()).map(([k, v]) => [k, parseModule(v)])
+  );
 }
 
 export function getModulesToInclude(
   currentText: string,
-  moduleBodies: Map<string, string>
+  modules: Map<string, RustModule>
 ): Set<string> {
   // TODO: Support multiline use statements and macro definitions.
   // Better yet: proper Rust parser.
@@ -79,28 +115,12 @@ export function getModulesToInclude(
     /use contest_lib_rs::\{(\w+)(?:::\w+)*(?:, *(\w+)(?:::\w+)*)*\}/g,
     /use contest_lib_rs::(\w+)/g,
   ];
-  const MODULE_DEPENDENCY_RE = [
-    /use crate::\{(\w+)(?:::\w+)*(?:, *(\w+)(?:::\w+)*)*\}/g,
-    /use crate::(\w+)/g,
-  ];
-  const MACRO_RE = /macro_rules! +(\w+)/g;
 
-  // Improvement potential: Cache macro mapping.
-  // Improvement potential: Cache file content. (Check if VSCode does this
-  // already.)
   const macroDefinitions = new Map<string, string>();
-  const moduleDependencies = new Map<string, string[]>();
-  for (const [moduleName, moduleBody] of moduleBodies.entries()) {
-    for (const match of moduleBody.matchAll(MACRO_RE)) {
-      macroDefinitions.set(match[1], moduleName);
+  for (const [moduleName, module] of modules.entries()) {
+    for (const macro of module.macros) {
+      macroDefinitions.set(macro, moduleName);
     }
-    let thisModuleDependencies: string[] = [];
-    for (const re of MODULE_DEPENDENCY_RE) {
-      for (const match of moduleBody.matchAll(re)) {
-        thisModuleDependencies.push(...match.slice(1));
-      }
-    }
-    moduleDependencies.set(moduleName, thisModuleDependencies);
   }
 
   const dependencies: string[] = [];
@@ -116,7 +136,7 @@ export function getModulesToInclude(
     const module = macroDefinitions.get(dep) || dep;
     if (!modulesToInclude.has(module)) {
       modulesToInclude.add(module);
-      dependencies.push(...(moduleDependencies.get(module) || []));
+      dependencies.push(...(modules.get(module)?.dependencies || []));
     }
   }
   return modulesToInclude;
@@ -126,8 +146,8 @@ export function collateDocument(
   currentText: string,
   moduleTexts: Map<string, string>
 ): CollationResult {
-  const moduleBodies = moduleTextsToModuleBodies(moduleTexts);
-  const modulesToInclude = getModulesToInclude(currentText, moduleBodies);
+  const modules = parseModules(moduleTexts);
+  const modulesToInclude = getModulesToInclude(currentText, modules);
 
   let outputText = currentText
     .split("\n")
@@ -136,7 +156,7 @@ export function collateDocument(
   outputText = outputText.trim() + "\n";
   let missingModules: string[] = [];
   for (const moduleName of modulesToInclude) {
-    let body = moduleBodies.get(moduleName)!;
+    let body = modules.get(moduleName)?.body;
     if (body === undefined) {
       missingModules.push(moduleName);
       body = "// NOT FOUND";
