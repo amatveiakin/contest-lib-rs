@@ -86,8 +86,17 @@ suite("Extension Test Suite", () => {
 
         fn main() {}
 
+        #[cfg(test)]
+        mod tests {
+            use super::*;
+            use pretty_assertions::assert_eq;
+            use contest_lib_rs::quux;
+        }
     `);
-    const modulesToInclude = lib.getModulesToInclude(docIn, modules);
+    const modulesToInclude = lib.getModulesToInclude(
+      lib.stripTests(docIn),
+      modules
+    );
     assert.deepEqual(modulesToInclude, new Set(["foo", "bar", "baz", "qux"]));
   });
 

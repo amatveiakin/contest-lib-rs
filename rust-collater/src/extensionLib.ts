@@ -147,7 +147,10 @@ export function collateDocument(
   moduleTexts: Map<string, string>
 ): CollationResult {
   const modules = parseModules(moduleTexts);
-  const modulesToInclude = getModulesToInclude(currentText, modules);
+  const modulesToInclude = getModulesToInclude(
+    stripTests(currentText),
+    modules
+  );
 
   let outputText = currentText
     .split("\n")
