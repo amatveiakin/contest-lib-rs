@@ -23,6 +23,7 @@ pub mod directed_graph;
 pub mod factors;
 pub mod graph;
 pub mod indexer;
+pub mod int_ext;
 pub mod io;
 pub mod iterutils;
 pub mod memoize;

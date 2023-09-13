@@ -1,9 +1,10 @@
+use contest_lib_rs::int_ext::IntegerExtension;
 use contest_lib_rs::io::prelude::*;
 
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let [a, b, c] = read.u32s();
-    let ans = (a.abs_diff(b) + 2 * c - 1) / (2 * c);
+    let ans = a.abs_diff(b).div_up(2 * c);
     emitln!(write, ans);
 }
 
