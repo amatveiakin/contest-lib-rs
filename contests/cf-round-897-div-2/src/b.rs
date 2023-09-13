@@ -4,7 +4,7 @@ use contest_lib_rs::iterutils::Iterutils;
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let n = read.usize();
-    let s = read.word().chars().map(|ch| ch.to_digit(10).unwrap()).collect::<Vec<_>>();
+    let s = read.digit_word();
     assert_eq!(s.len(), n);
     let mut m = 0;
     for i in 0..(n/2) {

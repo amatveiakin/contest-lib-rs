@@ -5,7 +5,7 @@ use contest_lib_rs::prefix_accumulate::PrefixXor;
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let n = read.usize();
     let a = read.vec_u32(n);
-    let s = read.word().chars().map(|ch| ch.to_digit(10).unwrap()).collect::<Vec<_>>();
+    let s = read.digit_word();
     assert_eq!(s.len(), n);
     let q = read.usize();
 

@@ -40,6 +40,9 @@ impl<R: std::io::BufRead> Reader<R> {
     pub fn f32(&mut self) -> f32 { self.atom() }
     pub fn f64(&mut self) -> f64 { self.atom() }
     pub fn word(&mut self) -> String { self.atom() }
+    pub fn digit_word(&mut self) -> Vec<u32> {
+        self.word().chars().map(|ch| ch.to_digit(10).unwrap()).collect::<Vec<_>>()
+    }
 
     pub fn atoms<T, const N: usize>(&mut self) -> [T; N]
     where
@@ -245,5 +248,14 @@ mod tests {
         let l = read.vec_usize(n);
         assert_eq!(w, vec!["whoa", "so", "many", "words"]);
         assert_eq!(l, vec![4, 2, 4, 5]);
+    }
+
+    #[test]
+    fn read_digit_word() {
+        let input = "hi 012 48624\nbye\n";
+        let mut read = Reader::new(std::io::Cursor::new(input.to_string().into_bytes()));
+        read.word();
+        assert_eq!(read.digit_word(), vec![0, 1, 2]);
+        assert_eq!(read.digit_word(), vec![4, 8, 6, 2, 4]);
     }
 }
