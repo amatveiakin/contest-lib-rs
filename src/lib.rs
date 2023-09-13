@@ -15,6 +15,7 @@ pub mod bitset;
 pub mod btreeset_util;
 pub mod combinatorics_mod;
 pub mod combinatorics;
+pub mod common_divisors;
 pub mod counting_set;
 pub mod dfs;
 pub mod dijkstra;

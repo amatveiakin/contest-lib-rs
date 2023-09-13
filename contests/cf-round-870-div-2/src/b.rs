@@ -1,18 +1,5 @@
+use contest_lib_rs::common_divisors::gcd;
 use contest_lib_rs::{io, emitln};
-
-fn gcd(a: u64, b: u64) -> u64 {
-    if a == 0 {
-        return b;
-    }
-    if b == 0 {
-        return a;
-    }
-    if a > b {
-        gcd(a % b, b)
-    } else {
-        gcd(a, b % a)
-    }
-}
 
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, write: &mut W) {

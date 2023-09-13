@@ -1,16 +1,5 @@
+use contest_lib_rs::common_divisors::lcm;
 use contest_lib_rs::io::prelude::*;
-
-fn gcd(a: i64, b: i64) -> i64 {
-    if b == 0 {
-        a
-    } else {
-        gcd(b, a % b)
-    }
-}
-
-fn lcm(a: i64, b: i64) -> i64 {
-    a * b / gcd(a, b)
-}
 
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {

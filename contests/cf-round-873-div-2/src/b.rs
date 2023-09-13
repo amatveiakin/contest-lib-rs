@@ -1,12 +1,5 @@
+use contest_lib_rs::common_divisors::gcd;
 use contest_lib_rs::{io, emitln};
-
-fn gcd(a: i32, b: i32) -> i32 {
-    if b == 0 {
-        a
-    } else {
-        gcd(b, a % b)
-    }
-}
 
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, write: &mut W) {
