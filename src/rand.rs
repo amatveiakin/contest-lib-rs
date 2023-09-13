@@ -13,6 +13,8 @@
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use crate::num::RegularInteger;
+
 
 const KX: u32 = 123456789;
 const KY: u32 = 362436069;
@@ -32,9 +34,28 @@ pub trait Rng {
     fn gen<T>(&mut self) -> T where Standard: Distribution<T> {
         Standard.sample(self)
     }
+    // TODO: Proper `gen_range`
+    fn int_range_exclusive<T>(&mut self, from: T, to: T) -> T
+    where
+        Standard: Distribution<T>,
+        T: RegularInteger,
+    {
+        self.int_range_inclusive(from, to - T::one())
+    }
+    fn int_range_inclusive<T>(&mut self, from: T, to: T) -> T
+    where
+        Standard: Distribution<T>,
+        T: RegularInteger,
+    {
+        assert!(from <= to);
+        self.gen() % (to - from + T::one()) + from
+    }
 }
 
 pub trait SliceRandom {
+    type Item;
+
+    fn choose<R: Rng + ?Sized>(&self, rng: &mut R) -> Option<&Self::Item>;
     fn shuffle<R: Rng + ?Sized>(&mut self, rng: &mut R);
 }
 
@@ -125,6 +146,17 @@ impl Distribution<bool> for Standard {
 }
 
 impl<T> SliceRandom for [T] {
+    type Item = T;
+
+    fn choose<R: Rng + ?Sized>(&self, rng: &mut R) -> Option<&Self::Item> {
+        assert!(self.len() <= u32::MAX as usize);
+        if self.is_empty() {
+            None
+        } else {
+            Some(&self[rng.next_u32() as usize % self.len()])
+        }
+    }
+
     fn shuffle<R: Rng + ?Sized>(&mut self, rng: &mut R) {
         assert!(self.len() <= u32::MAX as usize);
         if self.is_empty() {
