@@ -26,6 +26,7 @@ pub mod indexer;
 pub mod io;
 pub mod iterutils;
 pub mod memoize;
+pub mod mex;
 pub mod mod_ring;
 pub mod num;
 pub mod prefix_accumulate;

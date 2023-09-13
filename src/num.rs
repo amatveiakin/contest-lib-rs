@@ -9,6 +9,10 @@ pub trait IntegerRing:
     + ops::Sub<Self, Output = Self>
     + ops::Mul<Self, Output = Self>
     + ops::Div<Self, Output = Self>
+    + ops::AddAssign<Self>
+    + ops::SubAssign<Self>
+    + ops::MulAssign<Self>
+    + ops::DivAssign<Self>
 {
     fn zero() -> Self;
     fn one() -> Self;
@@ -24,6 +28,12 @@ pub trait RegularInteger:
     + ops::BitXor<Output = Self>
     + ops::Shl<usize, Output = Self>
     + ops::Shr<usize, Output = Self>
+    + ops::RemAssign<Self>
+    + ops::BitAndAssign
+    + ops::BitOrAssign
+    + ops::BitXorAssign
+    + ops::ShlAssign<usize>
+    + ops::ShrAssign<usize>
 {
     fn min_value() -> Self;
     fn max_value() -> Self;

@@ -1,27 +1,14 @@
-use std::collections::HashSet;
 use std::process::exit;
 
 use contest_lib_rs::io::prelude::*;
-
-fn get_mex(a: &HashSet<i32>) -> i32 {
-    let mut a = a.iter().copied().collect::<Vec<_>>();
-    a.sort();
-    let n = a.len() as i32;
-    for i in 0..n {
-        if a[i as usize] != i {
-            return i;
-        }
-    }
-    n
-}
+use contest_lib_rs::mex::get_mex;
 
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let n = read.i32();
-    let mut s = read.vec_i32(n as usize).into_iter().collect::<HashSet<_>>();
-    let mex = get_mex(&s);
-    s.insert(mex);
-    emitln!(write, mex);
+    let s = read.vec_i32(n as usize);
+    let m = get_mex(s);
+    emitln!(write, m);
     write.flush().unwrap();
     loop {
         let bob = read.i32();
