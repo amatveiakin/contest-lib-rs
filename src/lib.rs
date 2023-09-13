@@ -1,7 +1,11 @@
 pub mod testing {
+    pub mod graph_generators;
+    pub mod graph_output;
+    pub mod graphviz;
     pub mod io_utils;
     pub mod panic_utils;
     pub mod solution_testing;
+    pub mod type_utils;
 }
 
 pub mod array_2d;

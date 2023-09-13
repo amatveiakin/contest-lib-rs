@@ -7,3 +7,7 @@ dist
 node_modules
 .vscode-test/
 *.vsix
+
+# `save_graph` util
+graph.gv
+graph.txt
