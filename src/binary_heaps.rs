@@ -4,6 +4,7 @@ use std::collections::BinaryHeap;
 
 pub type MaxHeap<T> = BinaryHeap<T>;
 
+#[derive(Clone, Default, Debug)]
 pub struct MinHeap<T: Ord> {
     pub heap: BinaryHeap<cmp::Reverse<T>>,
 }
