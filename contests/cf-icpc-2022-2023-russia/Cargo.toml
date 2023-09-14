@@ -1,0 +1,66 @@
+[package]
+name = "cf-icpc-2022-2023-russia"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+contest_lib_rs = { path = "../.." }
+
+[dev-dependencies]
+pretty_assertions = "1.3.0"
+
+[[bin]]
+name = "a"
+path = "src/a.rs"
+
+[[bin]]
+name = "b"
+path = "src/b.rs"
+
+[[bin]]
+name = "c"
+path = "src/c.rs"
+
+[[bin]]
+name = "d"
+path = "src/d.rs"
+
+[[bin]]
+name = "e"
+path = "src/e.rs"
+
+[[bin]]
+name = "f"
+path = "src/f.rs"
+
+[[bin]]
+name = "g"
+path = "src/g.rs"
+
+[[bin]]
+name = "h"
+path = "src/h.rs"
+
+[[bin]]
+name = "i"
+path = "src/i.rs"
+
+[[bin]]
+name = "j"
+path = "src/j.rs"
+
+[[bin]]
+name = "k"
+path = "src/k.rs"
+
+[[bin]]
+name = "l"
+path = "src/l.rs"
+
+[[bin]]
+name = "m"
+path = "src/m.rs"
+
+[[bin]]
+name = "n"
+path = "src/n.rs"
