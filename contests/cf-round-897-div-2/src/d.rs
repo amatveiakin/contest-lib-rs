@@ -1,5 +1,6 @@
 // UNFINISHED
 
+use contest_lib_rs::base_one::BaseOneConversion;
 use contest_lib_rs::directed_graph::DirectedGraph;
 use contest_lib_rs::graph::VertexId;
 use contest_lib_rs::io::prelude::*;
@@ -8,7 +9,7 @@ use contest_lib_rs::topological_sort::topological_sort;
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let [n, mut k] = read.usizes();
-    let b = read.vec_i32(n).into_iter().map(|x| x - 1).collect::<Vec<_>>();
+    let b = read.vec_i32(n).from1b();
     assert!(b.iter().all(|&x| x >= 0 && x < n as i32));
     let mut s = b.clone();
     let mut r = (0..n).collect::<Vec<_>>();

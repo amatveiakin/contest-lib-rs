@@ -3,12 +3,11 @@
 //   - https://rust-lang.github.io/rfcs/1210-impl-specialization.html
 //   - https://github.com/rust-lang/rust/issues/31844
 
-// TODO: Replace
+// Rust-upgrade (https://github.com/rust-lang/rust/issues/63063): Replace
 //     type VertexIter = Box<dyn Iterator<...>>;
-// with
+// and alike with
 //     type VertexIter = impl Iterator<...>;
-// in `Graph` implementations when "Permit impl Trait in type aliases" is stable:
-//   - https://github.com/rust-lang/rust/issues/63063
+// in `Graph` implementations when "Permit impl Trait in type aliases" is stable.
 
 // Improvement potential: Consider extending `VP == ()` and `EP == ()` specializations to
 // `VP: Default` and `EP: Default`.

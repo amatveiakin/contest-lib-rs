@@ -1,6 +1,7 @@
 use std::collections::{HashSet, BTreeMap};
 use std::vec;
 
+use contest_lib_rs::base_one::{IteratorBaseOneConversion, BaseOneConversion};
 use contest_lib_rs::binary_heaps::MinHeap;
 use contest_lib_rs::bitset::Bitset;
 use contest_lib_rs::io::prelude::*;
@@ -42,11 +43,11 @@ fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &m
         }
         workdays.push(my_workdays);
     }
-    let holidays = read.vec_u64(m).into_iter().map(|d| d - 1).collect::<HashSet<_>>();
+    let holidays = read.vec_u64(m).into_iter().from1b().collect::<HashSet<_>>();
     let mut projects_data = vec![];
     for _ in 0..k {
         let p = read.usize();
-        let a = read.vec_u32(p).into_iter().map(|worker| worker - 1).collect::<Vec<_>>();
+        let a = read.vec_u32(p).from1b();
         projects_data.push(a);
     }
 
