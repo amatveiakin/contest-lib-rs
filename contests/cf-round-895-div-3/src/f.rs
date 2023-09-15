@@ -1,3 +1,4 @@
+use contest_lib_rs::base_one::BaseOneConversion;
 use contest_lib_rs::directed_graph::DirectedGraph;
 use contest_lib_rs::graph::{Graph, VertexId};
 use contest_lib_rs::io::prelude::*;
@@ -35,13 +36,13 @@ fn visit(graph: &DirectedGraph<(), ()>, v: VertexId, vertex_state: &mut Vec<Vert
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let n = read.usize();
-    let a = read.vec_u32(n);
+    let a = read.vec_usize(n).from1b();
     let c = read.vec_u32(n);
 
     let mut g = DirectedGraph::new();
     g.add_vertices(n);
     for i in 0..n {
-        g.add_edge(VertexId::from_0_based(i), VertexId::from_1_based(a[i]));
+        g.add_edge(i, a[i]);
     }
 
     let mut vertex_state = vec![VertexState::default(); n];
@@ -51,12 +52,12 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
                 let p = stack[1..].iter().position(|&w| w == stack[0]).unwrap();
                 let cycle = &stack[..=p];
                 let min = *cycle.iter().min_by_key(|&&w| c[w]).unwrap();
-                assert!(g.remove_edge(min, VertexId::from_1_based(a[min])).is_some());
+                assert!(g.remove_edge(min, a[min]).is_some());
             }
         }
     }
 
-    let order = topological_sort(&g).unwrap().into_iter().map(|v| v.to_1_based()).collect::<Vec<_>>();
+    let order = topological_sort(&g).unwrap().to1b();
     emitln!(write, order);
 }
 

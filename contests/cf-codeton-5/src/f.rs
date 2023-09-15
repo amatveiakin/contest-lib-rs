@@ -12,7 +12,7 @@ fn dfs(v: VertexId, tree: &Tree<(), ()>, subtree_sizes: &[i64], black: &mut Vec<
         black.fill(false);
 
     }
-    for &u in tree.children(v) {
+    for u in tree.children(v) {
         dfs(u, tree, subtree_sizes, black, k);
     }
 }

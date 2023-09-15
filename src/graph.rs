@@ -12,13 +12,12 @@
 // Improvement potential: Consider extending `VP == ()` and `EP == ()` specializations to
 // `VP: Default` and `EP: Default`.
 
-use std::fmt;
-use std::ops;
 
-
-// Use `u32` rather than `usize` to reduce memory used for edge storage.
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
-pub struct VertexId { index: u32 }
+// Vertex IDs must fit in `StorageVertexId`! The latter is used internally by `Graph`
+// implementations in order to save memory. Using `usize` as public interface to reduce the amount
+// of type casting.
+pub type VertexId = usize;
+pub type StorageVertexId = u32;
 
 // `Graph` is the common interface between different kinds of graphs (directed and undirected),
 // graph algorithms and the end user.
@@ -71,9 +70,9 @@ pub trait Graph<VP, EP> {
     // For undirected graphs: `degree` == `in_degree` == `out_degree`.
     // Note. The invariants above always hold, which means that loops are counted twice in directed
     // graphs and once in undirected graphs.
-    fn degree(&self, v: VertexId) -> u32;
-    fn out_degree(&self, v: VertexId) -> u32;
-    fn in_degree(&self, v: VertexId) -> u32;
+    fn degree(&self, v: VertexId) -> usize;
+    fn out_degree(&self, v: VertexId) -> usize;
+    fn in_degree(&self, v: VertexId) -> usize;
 
     // Guarantees:
     //   - `edges_adj().count()` == `degree()`;
@@ -84,49 +83,4 @@ pub trait Graph<VP, EP> {
     fn edges_adj(&self, from: VertexId) -> Self::HalfEdgeIter<'_>;
     fn edges_in(&self, to: VertexId) -> Self::HalfEdgeIter<'_>;
     fn edges_out(&self, from: VertexId) -> Self::HalfEdgeIter<'_>;
-}
-
-impl VertexId {
-    pub fn from_0_based<T>(index: T) -> Self
-    where
-        T: TryInto<u32>,
-        <T as TryInto<u32>>::Error: fmt::Debug,
-    {
-        Self { index: index.try_into().unwrap() }
-    }
-    pub fn from_1_based<T>(index: T) -> Self
-    where
-        T: TryInto<u32>,
-        <T as TryInto<u32>>::Error: fmt::Debug,
-    {
-        Self { index: index.try_into().unwrap().checked_sub(1).unwrap() }
-    }
-    pub fn to_0_based(&self) -> u32 { self.index }
-    pub fn to_1_based(&self) -> u32 { self.index + 1 }
-}
-
-// For output convenience.
-pub trait VertexIdVec {
-    fn to_0_based_vec(&self) -> Vec<u32>;
-    fn to_1_based_vec(&self) -> Vec<u32>;
-}
-impl VertexIdVec for Vec<VertexId> {
-    fn to_0_based_vec(&self) -> Vec<u32> { self.iter().map(|v| v.to_0_based()).collect() }
-    fn to_1_based_vec(&self) -> Vec<u32> { self.iter().map(|v| v.to_1_based()).collect() }
-}
-
-impl<T> ops::Index<VertexId> for [T] {
-    type Output = T;
-    fn index(&self, v: VertexId) -> &T { &self[v.to_0_based() as usize] }
-}
-impl<T> ops::IndexMut<VertexId> for [T] {
-    fn index_mut(&mut self, v: VertexId) -> &mut T { &mut self[v.to_0_based() as usize] }
-}
-
-impl<T> ops::Index<VertexId> for Vec<T> {
-    type Output = T;
-    fn index(&self, v: VertexId) -> &T { &self[v.to_0_based() as usize] }
-}
-impl<T> ops::IndexMut<VertexId> for Vec<T> {
-    fn index_mut(&mut self, v: VertexId) -> &mut T { &mut self[v.to_0_based() as usize] }
 }

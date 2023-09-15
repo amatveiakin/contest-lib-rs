@@ -1,3 +1,4 @@
+use contest_lib_rs::base_one::BaseOneConversion;
 use contest_lib_rs::graph::{Graph, VertexId};
 use contest_lib_rs::undirected_graph::UndirectedGraph;
 use contest_lib_rs::{io, emitln};
@@ -22,13 +23,12 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, 
     let mut g = UndirectedGraph::new();
     g.add_vertices(n);
     for i in 1..n {
-        let u = VertexId::from_1_based(read.u32());
-        let v = VertexId::from_1_based(read.u32());
+        let [u, v] = read.usizes().from1b();
         g.add_edge_p(u, v, i as i32);
     }
     let mut visited = vec![false; n];
     let mut max_len = 0;
-    dfs(&g, VertexId::from_1_based(1), -1, &mut visited, 1, &mut max_len);
+    dfs(&g, 0, -1, &mut visited, 1, &mut max_len);
     emitln!(write, max_len);
 }
 

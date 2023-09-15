@@ -1,4 +1,4 @@
-use crate::graph::{VertexId, Graph};
+use crate::graph::{VertexId, Graph, StorageVertexId};
 use crate::{io, ivec};
 use crate::undirected_graph::UndirectedGraph;
 
@@ -13,28 +13,31 @@ pub enum TreeConstructionError {
 #[derive(Clone, Debug)]
 pub struct Tree<VP, EP> {
     vertices: Vec<TreeVertex<VP, EP>>,
-    root: VertexId,
+    root: StorageVertexId,
 }
 
 #[derive(Clone, Debug)]
 pub struct TreeVertex<VP, EP> {
     pub payload: VP,
-    pub parent: Option<(VertexId, EP)>,
-    pub children: Vec<VertexId>,
+    pub parent: Option<(StorageVertexId, EP)>,
+    pub children: Vec<StorageVertexId>,
 }
 
 impl<VP, EP> Tree<VP, EP> {
-    pub fn root(&self) -> VertexId { self.root }
+    pub fn root(&self) -> VertexId { self.root as VertexId }
 
-    pub fn children(&self, v: VertexId) -> &[VertexId] { &self.vertices[v].children }
+    pub fn children(&self, v: VertexId) -> impl ExactSizeIterator<Item = VertexId> + '_ {
+        self.vertices[v].children.iter().map(|&u| u as VertexId)
+    }
     pub fn child_edges(&self, v: VertexId) -> impl ExactSizeIterator<Item = (VertexId, &EP)> {
-        self.vertices[v].children.iter().map(|&u| (u, &self.vertices[u].parent.as_ref().unwrap().1))
+        self.vertices[v].children.iter().map(
+            |&u| (u as VertexId, &self.vertices[u as usize].parent.as_ref().unwrap().1))
     }
     pub fn parent(&self, v: VertexId) -> Option<VertexId> {
-        self.vertices[v].parent.as_ref().map(|(p, _)| *p)
+        self.vertices[v].parent.as_ref().map(|(p, _)| *p as VertexId)
     }
     pub fn parent_edge(&self, v: VertexId) -> Option<(VertexId, &EP)> {
-        self.vertices[v].parent.as_ref().map(|(p, payload)| (*p, payload))
+        self.vertices[v].parent.as_ref().map(|(p, payload)| (*p as VertexId, payload))
     }
 
     pub fn compute_recursively<R, F>(&self, f: F) -> Vec<R>
@@ -42,7 +45,7 @@ impl<VP, EP> Tree<VP, EP> {
         F: Fn(&[&R], VertexId) -> R,
     {
         let mut result = ivec![None; self.vertices.len()];
-        self.compute_recursively_impl(&f, self.root, &mut result);
+        self.compute_recursively_impl(&f, self.root as VertexId, &mut result);
         result.into_iter().map(|v| v.unwrap()).collect()
     }
 
@@ -50,12 +53,12 @@ impl<VP, EP> Tree<VP, EP> {
     where
         F: Fn(&[&R], VertexId) -> R,
     {
-        for &u in self.children(v) {
+        for u in self.children(v) {
             self.compute_recursively_impl(f, u, result);
         }
         // Improvement potential: Pass an iterator instead of collecting to a vector.
-        let children_results = self.children(v).iter()
-            .map(|&u| result[u].as_ref().unwrap())
+        let children_results = self.children(v)
+            .map(|u| result[u].as_ref().unwrap())
             .collect::<Vec<_>>();
         assert!(result[v].is_none());
         result[v] = Some(f(&children_results, v));
@@ -68,7 +71,7 @@ impl<VP: Clone, EP: Clone> Tree<VP, EP> {
         if graph.num_vertices() == 0 {
             return Err(TreeConstructionError::EmptyGraph);
         }
-        let root = VertexId::from_0_based(0);
+        let root = 0 as StorageVertexId;
         let mut vertices = graph.vertex_ids().map(|v| TreeVertex {
             payload: graph.vertex(v).clone(),
             parent: None,
@@ -77,18 +80,19 @@ impl<VP: Clone, EP: Clone> Tree<VP, EP> {
         let mut found_vertices = 1;  // root is already ok
         let mut stack = vec![(root, None)];
         while let Some((v, p)) = stack.pop() {
+            let v = v as VertexId;
             for (u, payload) in graph.edges_adj(v) {
                 if Some(u) == p {
                     continue;
                 }
-                let was_visited = vertices[u].parent.is_some() || u == root;
+                let was_visited = vertices[u].parent.is_some() || u == root as VertexId;
                 if was_visited {
                     return Err(TreeConstructionError::HasCycle);
                 }
-                vertices[u].parent = Some((v, payload.clone()));
-                vertices[v].children.push(u);
+                vertices[u].parent = Some((v as StorageVertexId, payload.clone()));
+                vertices[v].children.push(u as StorageVertexId);
                 found_vertices += 1;
-                stack.push((u, Some(v)));
+                stack.push((u as StorageVertexId, Some(v)));
             }
         }
         if found_vertices < graph.num_vertices() {
@@ -110,14 +114,11 @@ impl<VP, EP> Graph<VP, EP> for Tree<VP, EP> {
 
     fn edges(&self) -> Self::FullEdgeIter<'_> {
         Box::new(self.vertices.iter().enumerate().flat_map(move |(to, vertex)| {
-            let to = VertexId::from_0_based(to);
-            vertex.parent.iter().map(move |(from, payload)| (*from, to, payload))
+            vertex.parent.iter().map(move |(from, payload)| (*from as VertexId, to, payload))
         }))
     }
 
-    fn vertex_ids(&self) -> Self::VertexIter {
-        Box::new((0..self.vertices.len()).map(|i| VertexId::from_0_based(i)))
-    }
+    fn vertex_ids(&self) -> Self::VertexIter { Box::new(0..self.vertices.len()) }
 
     fn vertex(&self, v: VertexId) -> &VP { &self.vertices[v].payload }
     fn vertex_mut(&mut self, v: VertexId) -> &mut VP { &mut self.vertices[v].payload }
@@ -141,12 +142,12 @@ impl<VP, EP> Graph<VP, EP> for Tree<VP, EP> {
         }
     }
 
-    fn degree(&self, v: VertexId) -> u32 {
+    fn degree(&self, v: VertexId) -> usize {
         let vertex = &self.vertices[v];
-        (vertex.children.len() + vertex.parent.iter().count()) as u32
+        vertex.children.len() + vertex.parent.iter().count()
     }
-    fn out_degree(&self, v: VertexId) -> u32 { self.degree(v) }
-    fn in_degree(&self, v: VertexId) -> u32 { self.degree(v) }
+    fn out_degree(&self, v: VertexId) -> usize { self.degree(v) }
+    fn in_degree(&self, v: VertexId) -> usize { self.degree(v) }
 
     fn edges_adj(&self, v: VertexId) -> Self::HalfEdgeIter<'_> {
         Box::new(self.child_edges(v).chain(self.parent_edge(v).into_iter()))
@@ -184,7 +185,7 @@ mod tests {
         let tree = Tree::try_from(&g).unwrap();
         assert_eq!(tree.root(), v1);
         assert_eq!(tree.parent(v1), None);
-        assert_eq!(tree.children(v1), &[v3]);
+        assert_eq!(tree.children(v1).collect_vec(), vec![v3]);
         assert_eq!(tree.parent(v3), Some(v1));
         assert_eq!(tree.children(v3).len(), 3);
         assert_eq!(tree.degree(v3), 4);

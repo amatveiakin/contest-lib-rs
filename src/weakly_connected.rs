@@ -15,14 +15,14 @@ pub fn weakly_connected_components<VP, EP>(g: &impl Graph<VP, EP>) -> Vec<Vec<Ve
     let mut visited = Bitset::new(g.num_vertices());
     let mut stack = Vec::new();
     for v in g.vertex_ids() {
-        if visited.get(v.to_0_based() as usize) {
+        if visited.get(v) {
             continue;
         }
         stack.push(v);
         let mut component = Vec::new();
         while let Some(v) = stack.pop() {
-            if !visited.get(v.to_0_based() as usize) {
-                visited.set(v.to_0_based() as usize, true);
+            if !visited.get(v) {
+                visited.set(v, true);
                 component.push(v);
                 for (w, _) in g.edges_adj(v) {
                     stack.push(w);

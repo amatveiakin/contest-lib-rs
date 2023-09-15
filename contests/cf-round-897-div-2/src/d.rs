@@ -2,7 +2,6 @@
 
 use contest_lib_rs::base_one::BaseOneConversion;
 use contest_lib_rs::directed_graph::DirectedGraph;
-use contest_lib_rs::graph::VertexId;
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::topological_sort::topological_sort;
 
@@ -45,7 +44,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
     g.add_vertices(n);
     for i in 0..n {
         if r[i] != i {
-            g.add_edge(VertexId::from_0_based(i), VertexId::from_0_based(r[i]));
+            g.add_edge(i, r[i]);
         }
     }
     let ans = topological_sort(&g).is_some();

@@ -169,8 +169,7 @@ pub fn random_directed_graph(params: DirectedGraphParams) -> DirectedGraph<(), (
     let mut vertex_order = None;
     let mut all_edges = vec![];
     if params.ensure_dag {
-        let mut all_v_in_order =
-            (0..num_vertices).map(|v| VertexId::from_0_based(v)).collect::<Vec<_>>();
+        let mut all_v_in_order = (0..num_vertices).collect::<Vec<_>>();
         let mut v_order = vec![0; num_vertices];
         for i in 0..num_vertices {
             v_order[all_v_in_order[i]] = i;
@@ -192,10 +191,8 @@ pub fn random_directed_graph(params: DirectedGraphParams) -> DirectedGraph<(), (
         all_vertices_in_order = Some(all_v_in_order);
         vertex_order = Some(v_order);
     } else {
-        for i in 0..num_vertices {
-            for j in i..num_vertices {
-                let u = VertexId::from_0_based(i);
-                let v = VertexId::from_0_based(j);
+        for u in 0..num_vertices {
+            for v in u..num_vertices {
                 if u == v {
                     if params.allow_loops {
                         all_edges.push((u, v));
@@ -262,8 +259,8 @@ pub fn random_directed_graph(params: DirectedGraphParams) -> DirectedGraph<(), (
             }
         }
         DirectedGraphConnectedness::ReachableFromFirstVertex => {
-            let first_v = VertexId::from_0_based(0);
-            let reachable_set = bfs_distances(&g, VertexId::from_0_based(0))
+            let first_v = 0 as VertexId;
+            let reachable_set = bfs_distances(&g, first_v)
                 .keys().copied().collect::<HashSet<_>>();
             if let Some(ref all_vertices_in_order) = all_vertices_in_order {
                 assert_eq!(all_vertices_in_order[0], first_v);

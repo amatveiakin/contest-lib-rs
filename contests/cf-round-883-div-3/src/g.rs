@@ -1,6 +1,6 @@
 use contest_lib_rs::dijkstra::dijkstra_path;
 use contest_lib_rs::directed_graph::DirectedGraph;
-use contest_lib_rs::graph::{Graph, VertexId};
+use contest_lib_rs::graph::Graph;
 use contest_lib_rs::{io, emitln};
 use contest_lib_rs::relax::RelaxMinMax;
 
@@ -8,17 +8,15 @@ use contest_lib_rs::relax::RelaxMinMax;
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, write: &mut W) {
     let n = read.usize();
     let m = read.usize();
-    let rudolf = u32::from_str_radix(&read.word(), 2).unwrap();
+    let rudolf = usize::from_str_radix(&read.word(), 2).unwrap();
     let mut g: DirectedGraph<(), u64> = DirectedGraph::new();
     g.add_vertices(1 << n);
     for _ in 0..m {
         let d = read.u64();
-        let removes = u32::from_str_radix(&read.word(), 2).unwrap();
-        let adds = u32::from_str_radix(&read.word(), 2).unwrap();
+        let removes = usize::from_str_radix(&read.word(), 2).unwrap();
+        let adds = usize::from_str_radix(&read.word(), 2).unwrap();
         for v in 0..(1 << n) {
             let u = v & !removes | adds;
-            let v = VertexId::from_0_based(v);
-            let u = VertexId::from_0_based(u);
             if let Some(old_d) = g.edge_mut(v, u) {
                 old_d.relax_min(d);
             } else {
@@ -26,8 +24,8 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, 
             }
         }
     }
-    let rudolf = VertexId::from_0_based(rudolf);
-    let healthy = VertexId::from_0_based(0);
+    let rudolf = rudolf;
+    let healthy = 0;
     let time = dijkstra_path(&g, rudolf, healthy, |&x| x).map_or(-1, |path| path.cost as i64);
     emitln!(write, time);
 }

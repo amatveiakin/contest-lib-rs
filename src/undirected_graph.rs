@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::graph::{Graph, VertexId};
+use crate::base_one::BaseOneConversion;
+use crate::graph::{Graph, VertexId, StorageVertexId};
 use crate::io;
 
 
@@ -12,7 +13,7 @@ use crate::io;
 pub struct UndirectedGraph<VP, EP> {
     vertices: Vec<VP>,
     edges: HashMap<UndirectedEdgeId, EP>,
-    neighbours: Vec<HashSet<VertexId>>,
+    neighbours: Vec<HashSet<StorageVertexId>>,
 }
 
 impl<VP, EP> UndirectedGraph<VP, EP> {
@@ -25,7 +26,7 @@ impl<VP, EP> UndirectedGraph<VP, EP> {
     }
 
     pub fn add_vertex_p(&mut self, payload: VP) -> VertexId {
-        let id = VertexId::from_0_based(self.vertices.len());
+        let id = self.vertices.len();
         self.vertices.push(payload);
         self.neighbours.push(HashSet::new());
         id
@@ -35,15 +36,15 @@ impl<VP, EP> UndirectedGraph<VP, EP> {
     pub fn add_edge_p(&mut self, from: VertexId, to: VertexId, payload: EP) {
         let id = UndirectedEdgeId::new(from, to);
         self.edges.insert(id, payload);
-        self.neighbours[from].insert(to);
-        self.neighbours[to].insert(from);
+        self.neighbours[from].insert(to as StorageVertexId);
+        self.neighbours[to].insert(from as StorageVertexId);
     }
 
     pub fn remove_edge(&mut self, from: VertexId, to: VertexId) -> Option<EP> {
         let id = UndirectedEdgeId::new(from, to);
         let payload = self.edges.remove(&id);
-        self.neighbours[from].remove(&to);
-        self.neighbours[to].remove(&from);
+        self.neighbours[from].remove(&(to as StorageVertexId));
+        self.neighbours[to].remove(&(from as StorageVertexId));
         payload
     }
 
@@ -66,7 +67,7 @@ impl<EP> UndirectedGraph<(), EP> {
         }
     }
     pub fn fit_vertex(&mut self, v: VertexId) {
-        while self.vertices.len() <= v.to_0_based() as usize {
+        while self.vertices.len() <= v {
             self.add_vertex();
         }
     }
@@ -86,9 +87,8 @@ impl UndirectedGraph<(), ()> {
         let mut graph = Self::new();
         graph.add_vertices(num_vertices);
         for _ in 0..num_edges {
-            let from = read.u32();
-            let to = read.u32();
-            graph.add_edge(VertexId::from_1_based(from), VertexId::from_1_based(to));
+            let [from, to] = read.usizes().from1b();
+            graph.add_edge(from, to);
         }
         graph
     }
@@ -104,12 +104,11 @@ impl<VP, EP> Graph<VP, EP> for UndirectedGraph<VP, EP> {
     fn num_vertices(&self) -> usize { self.vertices.len() }
     fn num_edges(&self) -> usize { self.edges.len() }
 
-    fn vertex_ids(&self) -> Self::VertexIter {
-        Box::new((0..self.vertices.len()).map(|i| VertexId::from_0_based(i)))
-    }
+    fn vertex_ids(&self) -> Self::VertexIter { Box::new(0..self.vertices.len()) }
 
     fn edges(&self) -> Self::FullEdgeIter<'_> {
-        Box::new(self.edges.iter().map(|(e, payload)| (e.from, e.to, payload)))
+        Box::new(self.edges.iter().map(
+            |(e, payload)| (e.from as VertexId, e.to as VertexId, payload)))
     }
 
     fn vertex(&self, v: VertexId) -> &VP { &self.vertices[v] }
@@ -124,12 +123,13 @@ impl<VP, EP> Graph<VP, EP> for UndirectedGraph<VP, EP> {
         self.edges.get_mut(&id)
     }
 
-    fn degree(&self, v: VertexId) -> u32 { self.neighbours[v].len() as u32 }
-    fn out_degree(&self, v: VertexId) -> u32 { self.degree(v) }
-    fn in_degree(&self, v: VertexId) -> u32 { self.degree(v) }
+    fn degree(&self, v: VertexId) -> usize { self.neighbours[v].len() }
+    fn out_degree(&self, v: VertexId) -> usize { self.degree(v) }
+    fn in_degree(&self, v: VertexId) -> usize { self.degree(v) }
 
     fn edges_adj(&self, v: VertexId) -> Self::HalfEdgeIter<'_> {
-        Box::new(self.neighbours[v].iter().map(move |&u| (u, self.get_payload(v, u).unwrap())))
+        Box::new(self.neighbours[v].iter().map(
+            move |&u| (u as VertexId, self.get_payload(v, u as VertexId).unwrap())))
     }
     fn edges_in(&self, to: VertexId) -> Self::HalfEdgeIter<'_> { self.edges_adj(to) }
     fn edges_out(&self, from: VertexId) -> Self::HalfEdgeIter<'_> { self.edges_adj(from) }
@@ -137,12 +137,14 @@ impl<VP, EP> Graph<VP, EP> for UndirectedGraph<VP, EP> {
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 struct UndirectedEdgeId {
-    pub from: VertexId,
-    pub to: VertexId,
+    pub from: StorageVertexId,
+    pub to: StorageVertexId,
 }
 
 impl UndirectedEdgeId {
     fn new(from: VertexId, to: VertexId) -> Self {
+        let from = from as StorageVertexId;
+        let to = to as StorageVertexId;
         let (from, to) = if from < to { (from, to) } else { (to, from) };
         Self { from, to }
     }
@@ -171,10 +173,7 @@ mod tests {
         let m = read.usize();
         let g = UndirectedGraph::from_read_edges(n, m, &mut read);
         assert_eq!(g.num_vertices(), 4);
-        let v1 = VertexId::from_1_based(1);
-        let v2 = VertexId::from_1_based(2);
-        let v3 = VertexId::from_1_based(3);
-        let v4 = VertexId::from_1_based(4);
+        let [v1, v2, v3, v4] = [1, 2, 3, 4].from1b();
         assert!(g.edge(v1, v3).is_some());
         assert!(g.edge(v3, v2).is_some());
         assert!(g.edge(v3, v4).is_some());

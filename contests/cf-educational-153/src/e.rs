@@ -1,7 +1,8 @@
+// UNFINISHED
+
 use std::collections::HashMap;
 
 use contest_lib_rs::bfs::bfs_path;
-use contest_lib_rs::graph::VertexId;
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::undirected_graph::UndirectedGraph;
 
@@ -24,7 +25,7 @@ fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &m
         let p2 = (s[i+1], s[i+2]);
         let idx1 = *pairs.get(&p1).unwrap();
         let idx2 = *pairs.get(&p2).unwrap();
-        g.add_edge(VertexId::from_0_based(idx1), VertexId::from_0_based(idx2));
+        g.add_edge(idx1, idx2);
 
     }
     let q = read.usize();
@@ -34,7 +35,7 @@ fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &m
         let p2 = (s[b-1], s[b]);
         let idx1 = *pairs.get(&p1).unwrap();
         let idx2 = *pairs.get(&p2).unwrap();
-        let answer = bfs_path(&g, VertexId::from_0_based(idx1), VertexId::from_0_based(idx2)).unwrap().len();
+        let answer = bfs_path(&g, idx1, idx2).unwrap().len();
         // What about cross-cluster moves?
         emitln!(write, answer);
     }
