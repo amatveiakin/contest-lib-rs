@@ -10,11 +10,11 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, 
     let b = read.vec_i32(n);
     let mut a_count = HashMap::new();
     let mut b_count = HashMap::new();
-    a.into_iter().group_identical().for_each(|(v, c)| {
+    a.into_iter().dedup_with_count().for_each(|(c, v)| {
         let count: &mut usize = a_count.entry(v).or_insert(0);
         *count = (*count).max(c);
     });
-    b.into_iter().group_identical().for_each(|(v, c)| {
+    b.into_iter().dedup_with_count().for_each(|(c, v)| {
         let count: &mut usize = b_count.entry(v).or_insert(0);
         *count = (*count).max(c);
     });

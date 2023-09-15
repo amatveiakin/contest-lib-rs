@@ -15,7 +15,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, 
     let mut ab = BTreeMap::new();
     for (&a, bv) in ab_raw.iter_mut() {
         bv.sort();
-        ab.insert(a, bv.iter().copied().group_identical().collect::<Vec<_>>());
+        ab.insert(a, bv.iter().copied().dedup_with_count().collect::<Vec<_>>());
     }
     let mut answer: i64 = 0;
     let mut i = 0;
@@ -35,8 +35,8 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, 
             let mut p1: i32 = 0;
             let mut p2: i32 = bv2.len() as i32 - 1;
             while p1 < bv1.len() as i32 && p2 >= 0 {
-                let (b1, bc1) = bv1[p1 as usize];
-                let (b2, bc2) = bv2[p2 as usize];
+                let (bc1, b1) = bv1[p1 as usize];
+                let (bc2, b2) = bv2[p2 as usize];
                 let bc1 = bc1 as i64;
                 let bc2 = bc2 as i64;
                 match (b1 + b2).cmp(&s) {
