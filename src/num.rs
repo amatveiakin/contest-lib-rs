@@ -37,6 +37,8 @@ pub trait RegularInteger:
 {
     fn min_value() -> Self;
     fn max_value() -> Self;
+    fn from_usize(v: usize) -> Self;
+    fn to_usize(self) -> usize;
 }
 
 macro_rules! impl_integer {
@@ -48,6 +50,8 @@ macro_rules! impl_integer {
         impl RegularInteger for $t {
             fn min_value() -> Self { <$t>::MIN }
             fn max_value() -> Self { <$t>::MAX }
+            fn from_usize(v: usize) -> Self { v as Self }
+            fn to_usize(self) -> usize { self as usize }
         }
     )* }
 }
