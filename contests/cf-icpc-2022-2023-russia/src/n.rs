@@ -9,7 +9,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
     for i in 0..x.len() {
         dpositions[x[i] as usize].push(i);
     }
-    let mut dpos = dpositions.iter().map(|v| &v[..]).collect::<Vec<_>>();
+    let mut dpos = dpositions.iter().map(|v| &v[..]).collect_vec();
     let mut p = 0;
     let mut ans = vec![];
     'outer: while k > 0 && p < x.len() {

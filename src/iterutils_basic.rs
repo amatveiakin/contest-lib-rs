@@ -9,6 +9,7 @@ where
     Self: Sized + Iterator,
 {
     fn join(self, sep: &str) -> String where Self::Item: fmt::Display;
+    fn collect_vec(self) -> Vec<Self::Item>;
 }
 
 impl<I: Iterator> IterutilsBasic for I {
@@ -22,6 +23,8 @@ impl<I: Iterator> IterutilsBasic for I {
         }
         ret
     }
+
+    fn collect_vec(self) -> Vec<Self::Item> { self.collect() }
 }
 
 

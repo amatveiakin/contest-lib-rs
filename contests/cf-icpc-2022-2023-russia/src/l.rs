@@ -5,6 +5,7 @@ use contest_lib_rs::base_one::{IteratorBaseOneConversion, BaseOneConversion};
 use contest_lib_rs::binary_heaps::MinHeap;
 use contest_lib_rs::bitset::Bitset;
 use contest_lib_rs::io::prelude::*;
+use contest_lib_rs::iterutils_basic::IterutilsBasic;
 use contest_lib_rs::relax::RelaxMinMax;
 
 fn parse_weekday(day: &str) -> usize {
@@ -51,7 +52,7 @@ fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &m
         projects_data.push(a);
     }
 
-    let mut projects = projects_data.iter().map(|pr| &pr[..]).collect::<Vec<_>>();
+    let mut projects = projects_data.iter().map(|pr| &pr[..]).collect_vec();
     let mut queues = vec![MinHeap::new(); n];
     for (pid, &pr) in projects.iter().enumerate() {
         queues[pr[0] as usize].push(pid);
@@ -108,7 +109,7 @@ fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &m
             queues[worker].push(pid);
         }
     }
-    emitln!(write, project_finish.into_iter().map(|d| d.unwrap() + 1).collect::<Vec<_>>());
+    emitln!(write, project_finish.into_iter().map(|d| d.unwrap() + 1).collect_vec());
 }
 
 fn main() {
