@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use contest_lib_rs::iterutils::Iterutils;
+use contest_lib_rs::iterutils_basic::IterutilsBasic;
 use contest_lib_rs::{io, emitln};
 
 #[allow(unused_variables)]

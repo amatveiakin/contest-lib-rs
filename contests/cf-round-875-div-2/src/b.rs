@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
-use contest_lib_rs::{io, emitln, iterutils::Iterutils};
+use contest_lib_rs::iterutils_dedup::IterutilsDedup;
+use contest_lib_rs::{io, emitln};
 
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, write: &mut W) {

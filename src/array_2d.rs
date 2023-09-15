@@ -7,7 +7,7 @@ use std::io::BufRead;
 use std::{fmt, ops, str};
 
 use crate::io::Reader;
-use crate::iterutils::Iterutils;
+use crate::iterutils_basic::IterutilsBasic;
 use crate::relax::RelaxMinMax;
 
 
