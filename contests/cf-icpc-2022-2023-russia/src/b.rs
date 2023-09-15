@@ -3,7 +3,7 @@ use contest_lib_rs::io::prelude::*;
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let n = read.usize();
-    let s = read.word().chars().collect::<Vec<_>>();
+    let s = read.word_as_chars();
     let mut i = 1;
     while i < n {
         if s.get(i) != s.get(i + 1) {

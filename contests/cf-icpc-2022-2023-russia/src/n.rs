@@ -3,7 +3,7 @@ use contest_lib_rs::iterutils_basic::IterutilsBasic;
 
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
-    let x = read.digit_word();
+    let x = read.word_as_digits();
     let mut k = read.usize();
     let mut dpositions = vec![vec![]; 10];
     for i in 0..x.len() {
