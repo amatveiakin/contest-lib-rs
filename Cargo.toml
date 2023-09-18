@@ -2,6 +2,7 @@
 members = [
     ".",
     "contests/cf-codeton-5",
+    "contests/cf-codeton-6",
     "contests/cf-compfest-15",
     "contests/cf-educational-148",
     "contests/cf-educational-149",
