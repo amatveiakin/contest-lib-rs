@@ -179,6 +179,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "cf-round-900-div-3"
+version = "0.1.0"
+dependencies = [
+ "contest_lib_rs",
+ "pretty_assertions",
+]
+
+[[package]]
 name = "cf-round-999-div-1"
 version = "0.1.0"
 dependencies = [
