@@ -45,21 +45,38 @@ impl<T: Ord + Clone> CountingSet<T> {
     pub fn first_group(&self) -> Option<(&T, usize)> { self.map.first_key_value().map(|(k, n)| (k, *n)) }
     pub fn last_group(&self) -> Option<(&T, usize)> { self.map.last_key_value().map(|(k, n)| (k, *n)) }
 
-    pub fn is_subset(&self, other: &Self) -> bool { self.map.iter().all(|(k, n)| *n <= other.count(k)) }
+    pub fn is_subset(&self, other: &Self) -> bool { self.map.iter().all(|(x, n)| *n <= other.count(x)) }
     pub fn is_superset(&self, other: &Self) -> bool { other.is_subset(self) }
 
+    pub fn intersection(&self, other: &Self) -> Self {
+        let mut s = Self::new();
+        for (x, n) in self.group_iter() {
+            s.push_multiple(x.clone(), n.min(other.count(x)));
+        }
+        s
+    }
+    pub fn union(&self, other: &Self) -> Self {
+        let mut s = self.clone();
+        for (x, n) in other.group_iter() {
+            s.map.entry(x.clone()).and_modify(|m| *m = (*m).max(n)).or_insert(n);
+        }
+        s
+    }
+
     pub fn item_iter(&self) -> impl Iterator<Item = &T> {
-        self.group_iter().flat_map(|(k, n)| std::iter::repeat(k).take(n))
+        self.group_iter().flat_map(|(x, n)| std::iter::repeat(x).take(n))
     }
     pub fn group_iter(&self) -> impl ExactSizeIterator<Item = (&T, usize)> {
-        self.map.iter().map(|(k, n)| (k, *n))
+        self.map.iter().map(|(x, n)| (x, *n))
     }
 
     pub fn push(&mut self, x: T) {
         *self.map.entry(x).or_insert(0) += 1;
     }
     pub fn push_multiple(&mut self, x: T, n: usize) {
-        *self.map.entry(x).or_insert(0) += n;
+        if n > 0 {
+            *self.map.entry(x).or_insert(0) += n;
+        }
     }
 
     pub fn remove(&mut self, x: T) -> bool {
@@ -233,5 +250,27 @@ mod tests {
             assert_eq!(s.remove_up_to("foo", 4), 3);
             assert_eq!(s.len_slow(), 0);
         }
+    }
+
+    #[test]
+    fn set_operations() {
+        let a = CountingSet::from_items_iter(["a", "b", "b", "c", "c", "c"]);
+        assert!(a.is_subset(&a));
+        assert!(a.is_superset(&a));
+        assert_eq!(a.union(&a), a);
+        assert_eq!(a.intersection(&a), a);
+
+        let b = CountingSet::from_items_iter(["b", "c", "c"]);
+        assert!(b.is_subset(&a));
+        assert!(a.is_superset(&b));
+        assert_eq!(a.union(&b), a);
+        assert_eq!(a.intersection(&b), b);
+
+        let c = CountingSet::from_items_iter(["b", "b", "b", "c", "d", "d"]);
+        assert!(!c.is_subset(&a));
+        assert!(!a.is_subset(&c));
+        assert_eq!(a.union(&c),
+            CountingSet::from_items_iter(["a", "b", "b", "b", "c", "c", "c", "d", "d"]));
+        assert_eq!(a.intersection(&c), CountingSet::from_items_iter(["b", "b", "c"]));
     }
 }

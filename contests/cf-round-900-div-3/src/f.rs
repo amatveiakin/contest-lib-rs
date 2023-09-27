@@ -1,45 +1,20 @@
-use contest_lib_rs::counting_set::CountingSet;
-use contest_lib_rs::factors::factors;
+use contest_lib_rs::factored_num::FactoredNum;
 use contest_lib_rs::io::prelude::*;
-
-#[derive(Clone, PartialEq, Eq, Debug)]
-struct MultNum(CountingSet<u32>);
-
-impl MultNum {
-    fn from(x: u32) -> Self {
-        Self(CountingSet::from_group_iter(factors(x).into_iter().map(|(p, c)| (p, c as usize))))
-    }
-
-    fn mul(mut self, rhs: &Self) -> Self {
-        for (&p, c) in rhs.0.group_iter() {
-            self.0.push_multiple(p, c);
-        }
-        self
-    }
-
-    fn num_div(&self) -> u32 {
-        self.0.group_iter().map(|(_, c)| c as u32 + 1).product()
-    }
-
-    fn divisible_by(&self, rhs: &Self) -> bool {
-        self.0.is_superset(&rhs.0)
-    }
-}
 
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let n_orig = read.u32();
     let q = read.usize();
 
-    let n_orig = MultNum::from(n_orig);
+    let n_orig = FactoredNum::from(n_orig);
     let mut n = n_orig.clone();
     for _ in 0..q {
         let qt = read.u32();
         match qt {
             1 => {
-                let x = MultNum::from(read.u32());
-                n = n.mul(&x);
-                let d = MultNum::from(n.num_div());
+                let x = FactoredNum::from(read.u32());
+                n *= x;
+                let d = FactoredNum::from(n.num_divisors());
                 if n.divisible_by(&d) {
                     emitln!(write, "YES");
                 } else {

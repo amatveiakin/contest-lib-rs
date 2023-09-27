@@ -1,7 +1,7 @@
-use std::collections::HashMap;
-
+use contest_lib_rs::factored_num::FactoredNum;
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::mod_ring::ModNumber;
+use contest_lib_rs::num::IntegerRing;
 
 type M = ModNumber<998244353>;
 
@@ -13,23 +13,14 @@ fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &m
     let m = read.usize();
     let c = read.vec_u32(m);
     let d = read.vec_u32(m);
-    let ab: HashMap<u32, u32> = HashMap::from_iter(a.into_iter().zip(b.into_iter()));
-    let cd: HashMap<u32, u32> = HashMap::from_iter(c.into_iter().zip(d.into_iter()));
-    let mut p = 0;
-    for (&c, &d) in cd.iter() {
-        let b = *ab.get(&c).unwrap_or(&0);
-        if d > b {
-            emitln!(write, 0);
-            return;
-        }
-    }
-    for (&a, &b) in ab.iter() {
-        let d = *cd.get(&a).unwrap_or(&0);
-        if d != b {
-            p += 1;
-        }
-    }
-    let ans = M::from(2).pow(p);
+    let x = FactoredNum::from_factors(a.into_iter().zip(b.into_iter()));
+    let y = FactoredNum::from_factors(c.into_iter().zip(d.into_iter()));
+    let ans =
+        if let Some(r) = x / y {
+            M::from(2).pow(r.factors().len() as u32)
+        } else {
+            M::zero()
+        };
     emitln!(write, ans);
 }
 
