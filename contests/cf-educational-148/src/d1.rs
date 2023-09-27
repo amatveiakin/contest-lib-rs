@@ -21,7 +21,7 @@ fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, write
         for i in 0..final_operations {
             a[i] += (k - i) as i64;
         }
-        let mut h: CountingSet<_> = a.into_iter().collect();
+        let mut h = CountingSet::from_items_iter(a);
         while operations_left > 0 {
             let (value, count) = h.pop_last_group().unwrap();
             let second = h.last();

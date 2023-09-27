@@ -162,7 +162,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
             s_ends.push((from, false));
             s_ends.push((to, true));
         }
-        let s_ends = s_ends.iter().copied().collect_vec();
+        let s_ends = s_ends.item_iter().copied().collect_vec();
 
         let mut left = vec![];
         let mut right = vec![];

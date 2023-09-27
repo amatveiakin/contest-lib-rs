@@ -1,6 +1,6 @@
 // CountingSet is like MultiSet, but assumes that all elements which compare equal are identical and
 // stores only one copy plus a count. Supports operations on individual element level and on
-// equality group level.
+// equality group level. It is guaranteed that all counts are always non-zero.
 
 use std::collections::{BTreeMap, btree_map};
 
@@ -17,6 +17,23 @@ impl<T: Ord + Clone> CountingSet<T> {
         }
     }
 
+    pub fn from_items_iter(iter: impl IntoIterator<Item = T>) -> Self {
+        let mut s = Self::new();
+        for x in iter {
+            s.push(x);
+        }
+        s
+    }
+    pub fn from_group_iter(iter: impl IntoIterator<Item = (T, usize)>) -> Self {
+        // Note. Could've done `BTreeMap::from_iter(iter.into_iter().filter(|(_, n)| *n > 0))`,
+        // but that would be wrong if there are duplicates.
+        let mut s = Self::new();
+        for (x, n) in iter {
+            s.push_multiple(x, n);
+        }
+        s
+    }
+
     pub fn is_empty(&self) -> bool { self.map.is_empty() }
     pub fn len_slow(&self) -> usize { self.map.values().sum() }
     pub fn num_groups(&self) -> usize { self.map.len() }
@@ -31,10 +48,10 @@ impl<T: Ord + Clone> CountingSet<T> {
     pub fn is_subset(&self, other: &Self) -> bool { self.map.iter().all(|(k, n)| *n <= other.count(k)) }
     pub fn is_superset(&self, other: &Self) -> bool { other.is_subset(self) }
 
-    pub fn iter(&self) -> impl Iterator<Item = &T> {
-        self.iter_groups().flat_map(|(k, n)| std::iter::repeat(k).take(n))
+    pub fn item_iter(&self) -> impl Iterator<Item = &T> {
+        self.group_iter().flat_map(|(k, n)| std::iter::repeat(k).take(n))
     }
-    pub fn iter_groups(&self) -> impl Iterator<Item = (&T, usize)> {
+    pub fn group_iter(&self) -> impl ExactSizeIterator<Item = (&T, usize)> {
         self.map.iter().map(|(k, n)| (k, *n))
     }
 
@@ -139,8 +156,8 @@ mod tests {
         let mut s = CountingSet::new();
         assert!(s.is_empty());
         assert_eq!(s.len_slow(), 0);
-        assert_eq!(s.iter().next(), None);
-        assert_eq!(s.iter_groups().next(), None);
+        assert_eq!(s.item_iter().next(), None);
+        assert_eq!(s.group_iter().next(), None);
         assert_eq!(s.first(), None);
         assert_eq!(s.last(), None);
         assert!(!s.contains(&"b"));
@@ -157,8 +174,8 @@ mod tests {
         s.push("c");
         assert!(!s.is_empty());
         assert_eq!(s.len_slow(), 6);
-        assert_eq!(s.iter().collect::<Vec<_>>(), vec![&"a", &"b", &"b", &"c", &"c", &"c"]);
-        assert_eq!(s.iter_groups().collect::<Vec<_>>(), vec![(&"a", 1), (&"b", 2), (&"c", 3)]);
+        assert_eq!(s.item_iter().collect::<Vec<_>>(), vec![&"a", &"b", &"b", &"c", &"c", &"c"]);
+        assert_eq!(s.group_iter().collect::<Vec<_>>(), vec![(&"a", 1), (&"b", 2), (&"c", 3)]);
         assert_eq!(s.first(), Some(&"a"));
         assert_eq!(s.last(), Some(&"c"));
         assert!(s.contains(&"b"));
@@ -166,7 +183,7 @@ mod tests {
         assert!(s.remove("b"));
         assert_eq!(s.pop_first(), Some("a"));
         assert_eq!(s.pop_last(), Some("c"));
-        assert_eq!(s.iter().collect::<Vec<_>>(), vec![&"b", &"c", &"c"]);
+        assert_eq!(s.item_iter().collect::<Vec<_>>(), vec![&"b", &"c", &"c"]);
     }
 
     #[test]

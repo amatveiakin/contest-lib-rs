@@ -37,7 +37,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, 
             }
             ap += 1;
         }
-        for (len, count) in row_segments.iter_groups() {
+        for (len, count) in row_segments.group_iter() {
             total_segments[*len as usize] += count as i64;
         }
     }

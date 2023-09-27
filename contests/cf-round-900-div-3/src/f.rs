@@ -7,22 +7,18 @@ struct MultNum(CountingSet<u32>);
 
 impl MultNum {
     fn from(x: u32) -> Self {
-        let mut s = CountingSet::new();
-        for (p, c) in factors(x) {
-            s.push_multiple(p, c as usize);
-        }
-        Self(s)
+        Self(CountingSet::from_group_iter(factors(x).into_iter().map(|(p, c)| (p, c as usize))))
     }
 
     fn mul(mut self, rhs: &Self) -> Self {
-        for (&p, c) in rhs.0.iter_groups() {
+        for (&p, c) in rhs.0.group_iter() {
             self.0.push_multiple(p, c);
         }
         self
     }
 
     fn num_div(&self) -> u32 {
-        self.0.iter_groups().map(|(_, c)| c as u32 + 1).product()
+        self.0.group_iter().map(|(_, c)| c as u32 + 1).product()
     }
 
     fn divisible_by(&self, rhs: &Self) -> bool {
