@@ -1,5 +1,7 @@
-// Subset of Itertools.
-// Basic utilities. Larger tools should be stored separately as "itertools_foo.rs".
+// Analog of Itertools. Mostly a subset, but some interfaces are different. Notably, we are using
+// arrays instead of homogenous tuples.
+//
+// This file contains basic utilities. Larger tools are stored separately as "itertools_foo.rs".
 
 use std::fmt;
 

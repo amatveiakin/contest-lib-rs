@@ -1,4 +1,6 @@
 use contest_lib_rs::io::prelude::*;
+use contest_lib_rs::iterutils_basic::IterutilsBasic;
+use contest_lib_rs::iterutils_windows::IterutilsWindows;
 use contest_lib_rs::relax::Relax;
 use contest_lib_rs::segment_bucket_counter::SegmentBucketCounter;
 
@@ -7,7 +9,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
     use std::cmp::Ordering::*;
     let n = read.usize();
     let a = read.vec_i32(n);
-    let d = a.windows(2).map(|w| w[1].cmp(&w[0])).collect::<Vec<_>>();
+    let d = a.iter().array_windows().map(|[x, y]| y.cmp(x)).collect_vec();
     let c = SegmentBucketCounter::new(&d);
     let mut answer = c.count(Less, ..) + c.count(Equal, ..);
     for i in 1..n {
