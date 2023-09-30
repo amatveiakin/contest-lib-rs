@@ -1,3 +1,4 @@
+use contest_lib_rs::bool_ext::BoolExtension;
 use contest_lib_rs::{io, emitln};
 
 #[allow(unused_variables)]
@@ -12,7 +13,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, 
             run = false;
         }
     }
-    emitln!(write, if run { "YES" } else { "NO" });
+    emitln!(write, run.yesno());
 }
 
 #[allow(unused_variables)]

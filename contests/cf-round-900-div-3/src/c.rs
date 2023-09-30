@@ -1,14 +1,12 @@
+use contest_lib_rs::bool_ext::BoolExtension;
 use contest_lib_rs::io::prelude::*;
 
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let [n, k, x] = read.i64s();
     let ks = k * (k + 1) / 2;
-    if ks <= x && x <= ks + (n - k) * k {
-        emitln!(write, "YES");
-    } else {
-        emitln!(write, "NO");
-    }
+    let ans = ks <= x && x <= ks + (n - k) * k;
+    emitln!(write, ans.yesno());
 }
 
 #[allow(unused_variables)]

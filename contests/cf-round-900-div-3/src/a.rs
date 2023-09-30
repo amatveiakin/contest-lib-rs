@@ -1,3 +1,4 @@
+use contest_lib_rs::bool_ext::BoolExtension;
 use contest_lib_rs::io::prelude::*;
 
 #[allow(unused_variables)]
@@ -5,11 +6,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
     let n = read.usize();
     let k = read.u32();
     let a = read.vec_u32(n);
-    if a.contains(&k) {
-        emitln!(write, "YES");
-    } else {
-        emitln!(write, "NO");
-    }
+    emitln!(write, a.contains(&k).yesno());
 }
 
 #[allow(unused_variables)]

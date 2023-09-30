@@ -1,6 +1,7 @@
 // UNFINISHED
 
 use contest_lib_rs::base_one::BaseOneConversion;
+use contest_lib_rs::bool_ext::BoolExtension;
 use contest_lib_rs::directed_graph::DirectedGraph;
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::topological_sort::topological_sort;
@@ -48,7 +49,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
         }
     }
     let ans = topological_sort(&g).is_some();
-    emitln!(write, if ans { "YES" } else { "NO" });
+    emitln!(write, ans.yesno());
 }
 
 #[allow(unused_variables)]

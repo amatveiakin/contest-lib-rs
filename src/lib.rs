@@ -13,6 +13,7 @@ pub mod base_one;
 pub mod bfs;
 pub mod binary_heaps;
 pub mod bitset;
+pub mod bool_ext;
 pub mod btreeset_util;
 pub mod combinatorics_mod;
 pub mod combinatorics;

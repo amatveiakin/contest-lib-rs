@@ -1,3 +1,4 @@
+use contest_lib_rs::bool_ext::BoolExtension;
 use contest_lib_rs::factored_num::FactoredNum;
 use contest_lib_rs::io::prelude::*;
 
@@ -15,11 +16,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
                 let x = FactoredNum::from(read.u32());
                 n *= x;
                 let d = FactoredNum::from(n.num_divisors());
-                if n.divisible_by(&d) {
-                    emitln!(write, "YES");
-                } else {
-                    emitln!(write, "NO");
-                }
+                emitln!(write, n.divisible_by(&d).yesno());
             }
             2 => {
                 n = n_orig.clone();
