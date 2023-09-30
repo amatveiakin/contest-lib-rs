@@ -33,14 +33,14 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, 
             for i in 0..m {
                 emit!(write, a[(i * n + j) as usize]);
             }
-            emitln!(write, "");
+            emitln!(write);
         }
     } else {
         for i in 0..m {
             for j in 0..n {
                 emit!(write, a[(i * n + j) as usize]);
             }
-            emitln!(write, "");
+            emitln!(write);
         }
     }
 }

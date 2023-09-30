@@ -168,6 +168,9 @@ macro_rules! emit {
 
 #[macro_export]
 macro_rules! emitln {
+    ( $dst:expr ) => {{
+        writeln!($dst).unwrap();
+    }};
     ( $dst:expr, $($value:expr),* ) => {{
         $crate::emit!($dst, $($value),*);
         writeln!($dst).unwrap();

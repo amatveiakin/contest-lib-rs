@@ -194,7 +194,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
 
         emit!(write, ans);
     }
-    emitln!(write, "");
+    emitln!(write);
 }
 
 #[allow(unused_variables)]
