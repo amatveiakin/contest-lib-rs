@@ -18,18 +18,23 @@ impl<R: std::io::BufRead> Reader<R> {
         }
     }
 
-    pub fn atom<T>(&mut self) -> T
-    where
-        T: str::FromStr,
-        <T as str::FromStr>::Err: fmt::Debug,
-    {
+    // Accesses underlying buffer directly without copying and Unicode parsing. Could be a faster
+    // way to read ASCII strings, although I never needed it in practice.
+    pub fn byte_word(&mut self) -> &[u8] {
         self.buf.skip_whitespace();
         while !self.buf.has_data() {
             self.get_next_line();
             self.buf.skip_whitespace();
         }
-        let word = str::from_utf8(self.buf.consume_word()).unwrap();
-        word.parse().unwrap()
+        self.buf.consume_word()
+    }
+
+    pub fn atom<T>(&mut self) -> T
+    where
+        T: str::FromStr,
+        <T as str::FromStr>::Err: fmt::Debug,
+    {
+        str::from_utf8(self.byte_word()).unwrap().parse().unwrap()
     }
 
     pub fn i32(&mut self) -> i32 { self.atom() }
@@ -42,6 +47,13 @@ impl<R: std::io::BufRead> Reader<R> {
     pub fn word(&mut self) -> String { self.atom() }
     pub fn word_as_chars(&mut self) -> Vec<char> {
         self.word().chars().collect()
+    }
+    pub fn word_as_char_array<const N: usize>(&mut self) -> [char; N] {
+        let word = self.word();
+        let mut iter = word.chars();
+        let ret = [(); N].map(|()| iter.next().unwrap());
+        assert!(iter.next().is_none());
+        ret
     }
     pub fn word_as_digits(&mut self) -> Vec<u32> {
         self.word().chars().map(|ch| ch.to_digit(10).unwrap()).collect::<Vec<_>>()
