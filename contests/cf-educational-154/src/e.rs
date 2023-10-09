@@ -1,8 +1,9 @@
 // UNFINISHED
 
+use contest_lib_rs::callable::Callable;
 use contest_lib_rs::combinatorics_mod::factorial_mod;
 use contest_lib_rs::io::prelude::*;
-use contest_lib_rs::memoize::{memoize, Callable};
+use contest_lib_rs::memoize::memoize;
 use contest_lib_rs::mod_ring::ModNumber;
 
 type M = ModNumber<998244353>;
