@@ -97,7 +97,7 @@ impl<T: Clone, F: Fn(&T, &T, i32) -> T> SegmentTree<T, F> {
     // Returns an iterator yielding each value separately.
     // Complexity of traversing the iterator: O(N log N) where N is tree size.
     // Optimization potential: Make O(N): push everything down and iterate over leaves.
-    pub fn iter(&mut self) -> impl Iterator<Item = T> + '_ {
+    pub fn iter(&mut self) -> impl DoubleEndedIterator<Item = T> + ExactSizeIterator + '_ {
         (0..self.num_leaves).map(|i| self.get(i))
     }
 

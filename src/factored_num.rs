@@ -18,7 +18,7 @@ impl FactoredNum {
     }
 
     // Not ordered! If ordering is needed, sort manually.
-    pub fn factors(&self) -> impl ExactSizeIterator<Item = (u32, u32)> + '_ {
+    pub fn factors(&self) -> impl DoubleEndedIterator<Item = (u32, u32)> + ExactSizeIterator + '_ {
         self.factors.group_iter().map(|(&a, n)| (a, n as u32))
     }
 

@@ -66,7 +66,7 @@ impl<T: Ord + Clone> CountingSet<T> {
     pub fn item_iter(&self) -> impl Iterator<Item = &T> {
         self.group_iter().flat_map(|(x, n)| std::iter::repeat(x).take(n))
     }
-    pub fn group_iter(&self) -> impl ExactSizeIterator<Item = (&T, usize)> {
+    pub fn group_iter(&self) -> impl DoubleEndedIterator<Item = (&T, usize)> + ExactSizeIterator {
         self.map.iter().map(|(x, n)| (x, *n))
     }
 
