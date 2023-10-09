@@ -22,6 +22,7 @@ pub mod counting_set;
 pub mod dfs;
 pub mod dijkstra;
 pub mod directed_graph;
+pub mod divisors;
 pub mod factored_num;
 pub mod factors;
 pub mod graph;

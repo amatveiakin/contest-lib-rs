@@ -1,4 +1,4 @@
-use contest_lib_rs::factors::divisors;
+use contest_lib_rs::divisors::divisors;
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::iterutils_basic::IterutilsBasic;
 use contest_lib_rs::mod_ring::ModNumber;
