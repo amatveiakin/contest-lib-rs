@@ -1,4 +1,5 @@
 use contest_lib_rs::io::prelude::*;
+use contest_lib_rs::relax_float::RelaxFloat;
 
 fn dist(a: (i32, i32), b: (i32, i32)) -> f64 {
     let dx = (a.0 - b.0) as f64;
@@ -18,9 +19,9 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
     for (pl, ol) in [(0, 0), (0, 1), (1, 0), (1, 1)] {
         let mut d = dist(p, l[pl]).max(dist(o, l[ol]));
         if pl != ol {
-            d = d.max(dist(l[pl], l[ol]) / 2.0);
+            d.relax_max(dist(l[pl], l[ol]) / 2.0);
         }
-        best_d = best_d.min(d);
+        best_d.relax_min(d);
     }
     emitln!(write, best_d);
 }
