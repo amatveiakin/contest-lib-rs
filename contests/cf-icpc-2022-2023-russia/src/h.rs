@@ -3,7 +3,7 @@ use contest_lib_rs::bitset::Bitset;
 use contest_lib_rs::directed_graph::DirectedGraph;
 use contest_lib_rs::graph::{VertexId, Graph};
 use contest_lib_rs::io::prelude::*;
-use contest_lib_rs::relax::RelaxMinMax;
+use contest_lib_rs::relax::Relax;
 
 fn update_p(g: &DirectedGraph<(), ()>, v: VertexId, pvec: &mut Vec<u32>, visited: &mut Bitset) {
     if visited.get(v) {

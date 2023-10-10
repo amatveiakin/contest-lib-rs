@@ -1,10 +1,10 @@
-pub trait RelaxMinMax {
+pub trait Relax {
     fn relax_min(&mut self, other: Self);
     fn relax_max(&mut self, other: Self);
     fn relax_clamp(&mut self, min: Self, max: Self);
 }
 
-impl<T: Ord> RelaxMinMax for T {
+impl<T: Ord> Relax for T {
     fn relax_min(&mut self, other: Self) {
         if other < *self {
             *self = other;

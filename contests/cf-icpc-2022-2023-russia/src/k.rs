@@ -1,6 +1,6 @@
 use contest_lib_rs::array_2d::{Array2DReading, DynArray2D};
 use contest_lib_rs::io::prelude::*;
-use contest_lib_rs::relax::RelaxMinMax;
+use contest_lib_rs::relax::Relax;
 
 #[allow(unused_variables)]
 fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {

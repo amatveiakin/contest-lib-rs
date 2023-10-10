@@ -1,5 +1,5 @@
 use contest_lib_rs::io::prelude::*;
-use contest_lib_rs::relax::RelaxMinMax;
+use contest_lib_rs::relax::Relax;
 use contest_lib_rs::segment_bucket_counter::SegmentBucketCounter;
 
 #[allow(unused_variables)]

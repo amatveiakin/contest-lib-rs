@@ -1,5 +1,5 @@
 use contest_lib_rs::{io, emitln};
-use contest_lib_rs::relax::RelaxMinMax;
+use contest_lib_rs::relax::Relax;
 
 fn disc(mut s: i64, k: i64, mut inc: i64) -> i64 {
     let apply: i64 = k - inc;

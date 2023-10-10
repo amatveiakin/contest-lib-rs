@@ -7,7 +7,7 @@ use crate::bfs::bfs_distances;
 use crate::directed_graph::DirectedGraph;
 use crate::graph::{VertexId, Graph};
 use crate::rand::{self, Rng, SliceRandom};
-use crate::relax::RelaxMinMax;
+use crate::relax::Relax;
 use crate::weakly_connected::weakly_connected_components;
 
 

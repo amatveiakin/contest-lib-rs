@@ -3,7 +3,7 @@ use contest_lib_rs::counting_set::CountingSet;
 use contest_lib_rs::graph::VertexId;
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::iterutils_basic::IterutilsBasic;
-use contest_lib_rs::relax::RelaxMinMax;
+use contest_lib_rs::relax::Relax;
 use contest_lib_rs::tree::Tree;
 
 const N_BITS: usize = 30;

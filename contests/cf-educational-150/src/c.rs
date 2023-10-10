@@ -1,4 +1,4 @@
-use contest_lib_rs::relax::RelaxMinMax;
+use contest_lib_rs::relax::Relax;
 use contest_lib_rs::{io, emitln};
 
 const N: usize = 5;

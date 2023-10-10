@@ -6,7 +6,7 @@ use contest_lib_rs::binary_heaps::MinHeap;
 use contest_lib_rs::bitset::Bitset;
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::iterutils_basic::IterutilsBasic;
-use contest_lib_rs::relax::RelaxMinMax;
+use contest_lib_rs::relax::Relax;
 
 fn parse_weekday(day: &str) -> usize {
     match day {

@@ -1,7 +1,7 @@
 // UNFINISHED
 
 use contest_lib_rs::{io, emitln};
-use contest_lib_rs::relax::RelaxMinMax;
+use contest_lib_rs::relax::Relax;
 
 fn set_cost(b: &[u32]) -> u32 {
     let mut t = 1 << 30;

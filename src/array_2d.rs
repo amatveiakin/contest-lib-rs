@@ -8,7 +8,7 @@ use std::{fmt, ops, str};
 
 use crate::io::Reader;
 use crate::iterutils_basic::IterutilsBasic;
-use crate::relax::RelaxMinMax;
+use crate::relax::Relax;
 
 
 pub trait Array2D<T> : ops::Index<[usize; 2], Output = T> + ops::IndexMut<[usize; 2]> {
