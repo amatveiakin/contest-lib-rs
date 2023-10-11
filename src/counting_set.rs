@@ -17,7 +17,7 @@ impl<T: Ord + Clone> CountingSet<T> {
         }
     }
 
-    pub fn from_items_iter(iter: impl IntoIterator<Item = T>) -> Self {
+    pub fn from_item_iter(iter: impl IntoIterator<Item = T>) -> Self {
         let mut s = Self::new();
         for x in iter {
             s.push(x);
@@ -153,16 +153,6 @@ impl<T: Ord + Clone> CountingSet<T> {
     }
 }
 
-impl<T: Ord + Clone> FromIterator<T> for CountingSet<T> {
-    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
-        let mut s = Self::new();
-        for x in iter {
-            s.push(x);
-        }
-        s
-    }
-}
-
 
 #[cfg(test)]
 mod tests {
@@ -254,23 +244,23 @@ mod tests {
 
     #[test]
     fn set_operations() {
-        let a = CountingSet::from_items_iter(["a", "b", "b", "c", "c", "c"]);
+        let a = CountingSet::from_item_iter(["a", "b", "b", "c", "c", "c"]);
         assert!(a.is_subset(&a));
         assert!(a.is_superset(&a));
         assert_eq!(a.union(&a), a);
         assert_eq!(a.intersection(&a), a);
 
-        let b = CountingSet::from_items_iter(["b", "c", "c"]);
+        let b = CountingSet::from_item_iter(["b", "c", "c"]);
         assert!(b.is_subset(&a));
         assert!(a.is_superset(&b));
         assert_eq!(a.union(&b), a);
         assert_eq!(a.intersection(&b), b);
 
-        let c = CountingSet::from_items_iter(["b", "b", "b", "c", "d", "d"]);
+        let c = CountingSet::from_item_iter(["b", "b", "b", "c", "d", "d"]);
         assert!(!c.is_subset(&a));
         assert!(!a.is_subset(&c));
         assert_eq!(a.union(&c),
-            CountingSet::from_items_iter(["a", "b", "b", "b", "c", "c", "c", "d", "d"]));
-        assert_eq!(a.intersection(&c), CountingSet::from_items_iter(["b", "b", "c"]));
+            CountingSet::from_item_iter(["a", "b", "b", "b", "c", "c", "c", "d", "d"]));
+        assert_eq!(a.intersection(&c), CountingSet::from_item_iter(["b", "b", "c"]));
     }
 }

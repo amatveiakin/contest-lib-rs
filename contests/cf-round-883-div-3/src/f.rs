@@ -6,7 +6,7 @@ use contest_lib_rs::{io, emitln};
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, write: &mut W) {
     let mut n = read.usize();
-    let initial_a_set = CountingSet::from_items_iter(read.vec_i32(n));
+    let initial_a_set = CountingSet::from_item_iter(read.vec_i32(n));
     let mut special_t = None;
     emitln!(write, "- 0");
     std::io::stdout().flush().unwrap();
@@ -22,7 +22,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, 
                 emitln!(write, "- 0");
             }
         } else {
-            let a_set = CountingSet::from_items_iter(a.iter().copied());
+            let a_set = CountingSet::from_item_iter(a.iter().copied());
             if a_set != initial_a_set {
                 let mut t = None;
                 for (&v, count) in a_set.group_iter() {
