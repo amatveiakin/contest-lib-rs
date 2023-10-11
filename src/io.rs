@@ -1,4 +1,4 @@
-use std::{fmt, mem, str};
+use std::{fmt, mem, str, array};
 
 pub mod prelude {
     pub use crate::{emit, emitln};
@@ -51,7 +51,7 @@ impl<R: std::io::BufRead> Reader<R> {
     pub fn word_as_char_array<const N: usize>(&mut self) -> [char; N] {
         let word = self.word();
         let mut iter = word.chars();
-        let ret = [(); N].map(|()| iter.next().unwrap());
+        let ret = array::from_fn(|_| iter.next().unwrap());
         assert!(iter.next().is_none());
         ret
     }
@@ -64,7 +64,7 @@ impl<R: std::io::BufRead> Reader<R> {
         T: str::FromStr,
         <T as str::FromStr>::Err: fmt::Debug,
     {
-        [(); N].map(|()| self.atom())
+        array::from_fn(|_| self.atom())
     }
 
     pub fn i32s<const N: usize>(&mut self) -> [i32; N] { self.atoms() }

@@ -4,7 +4,7 @@
 //   graph.rs /directed_graph.rs / undirected_graph.rs.
 
 use std::io::BufRead;
-use std::{fmt, ops, str};
+use std::{fmt, ops, str, array};
 
 use crate::io::Reader;
 use crate::iterutils_basic::IterutilsBasic;
@@ -183,7 +183,7 @@ impl<T, const ROWS: usize, const COLS: usize> Array2D<T> for FixedArray2D<T, ROW
 
     fn transpose(self) -> Self::TransposeResult {
         let mut old_data = self.data.map(|row_data| row_data.map(|x| Some(x)));
-        let mut data = [[(); ROWS]; COLS].map(|row_data| row_data.map(|()| None));
+        let mut data = array::from_fn(|_| array::from_fn(|_| None));
         for i in 0..ROWS {
             for j in 0..COLS {
                 data[j][i] = old_data[i][j].take();

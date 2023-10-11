@@ -1,3 +1,4 @@
+use std::array;
 use std::collections::{HashMap, HashSet};
 
 use crate::base_one::BaseOneConversion;
@@ -47,7 +48,7 @@ impl<EP> DirectedGraph<(), EP> {
         self.add_vertex_p(())
     }
     pub fn add_vertex_array<const N: usize>(&mut self) -> [VertexId; N] {
-        [(); N].map(|()| self.add_vertex())
+        array::from_fn(|_| self.add_vertex())
     }
     pub fn add_vertices(&mut self, num: usize) {
         for _ in 0..num {
