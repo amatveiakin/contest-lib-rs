@@ -32,6 +32,7 @@ pub mod int_ext;
 pub mod io;
 pub mod iterutils_basic;
 pub mod iterutils_dedup;
+pub mod iterutils_is_sorted;
 pub mod iterutils_windows;
 pub mod memoize;
 pub mod mex;

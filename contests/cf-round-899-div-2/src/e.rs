@@ -5,23 +5,12 @@ use std::collections::HashSet;
 use contest_lib_rs::base_one::BaseOneConversion;
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::iterutils_basic::IterutilsBasic;
-
-fn is_sorted<T: Ord>(a: &[T]) -> bool {
-    if a.is_empty() {
-        return true;
-    }
-    for i in 0..(a.len() - 1) {
-        if a[i] > a[i + 1] {
-            return false;
-        }
-    }
-    true
-}
+use contest_lib_rs::iterutils_is_sorted::IterutilsIsSorted;
 
 fn sort_array(mut a: Vec<i32>) -> Option<Vec<usize>> {
     let mut seen = HashSet::new();
     let mut ops = vec![];
-    while !is_sorted(&a) {
+    while !a.iter().issorted() {
         let pivot = a[0] - 1;
         let p = a.iter().position(|&x| x == pivot).unwrap_or(0);
         let b = [&a[(p + 1)..], &[a[p]][..], &a[..p]].concat();

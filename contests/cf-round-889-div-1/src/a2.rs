@@ -73,16 +73,10 @@ fn main() {
 mod tests {
     #![allow(unused_imports)]
     use super::*;
+    use contest_lib_rs::iterutils_is_sorted::IterutilsIsSorted;
     use contest_lib_rs::rand::random;
     use pretty_assertions::assert_eq;
     use contest_lib_rs::testing::solution_testing::prelude::*;
-
-    fn is_sorted<T>(data: &[T]) -> bool
-    where
-        T: Ord,
-    {
-        data.windows(2).all(|w| w[0] <= w[1])
-    }
 
     #[track_caller]
     fn solve_and_verify(a: &[i32]) {
@@ -92,7 +86,7 @@ mod tests {
         for &(i, j) in &ret {
             b[i] += b[j];
         }
-        assert!(is_sorted(&b), "\na = {a:?}\nret = {ret:?}\nb = {b:?}\n");
+        assert!(b.iter().issorted(), "\na = {a:?}\nret = {ret:?}\nb = {b:?}\n");
     }
 
     #[test]
