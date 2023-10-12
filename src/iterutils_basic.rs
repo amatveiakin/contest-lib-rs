@@ -1,9 +1,10 @@
-// Analog of Itertools. Mostly a subset, but some interfaces are different. Notably, we are using
-// arrays instead of homogenous tuples.
+// Analog of Itertools. Mostly a subset, but some interfaces are different:
+//   - Using arrays instead of homogenous tuples;
+//   - Some functions panic instead of returning an `Option`: we would always unwrap it anyway.
 //
 // This file contains basic utilities. Larger tools are stored separately as "itertools_foo.rs".
 
-use std::fmt;
+use std::{fmt, array};
 
 
 pub trait IterutilsBasic
@@ -12,6 +13,7 @@ where
 {
     fn join(self, sep: &str) -> String where Self::Item: fmt::Display;
     fn collect_vec(self) -> Vec<Self::Item>;
+    fn collect_array<const N: usize>(self) -> [Self::Item; N];
 }
 
 impl<I: Iterator> IterutilsBasic for I {
@@ -27,6 +29,12 @@ impl<I: Iterator> IterutilsBasic for I {
     }
 
     fn collect_vec(self) -> Vec<Self::Item> { self.collect() }
+
+    fn collect_array<const N: usize>(mut self) -> [Self::Item; N] {
+        let ret = array::from_fn(|_| self.next().unwrap());
+        assert!(self.next().is_none());
+        ret
+    }
 }
 
 
