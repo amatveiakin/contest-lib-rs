@@ -34,6 +34,7 @@ pub mod iterutils_basic;
 pub mod iterutils_dedup;
 pub mod iterutils_is_sorted;
 pub mod iterutils_windows;
+pub mod iterutils_zip_eq;
 pub mod memoize;
 pub mod mex;
 pub mod mod_ring;

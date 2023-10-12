@@ -2,6 +2,7 @@ use std::collections::BTreeMap;
 
 use contest_lib_rs::counting_set::CountingSet;
 use contest_lib_rs::io::prelude::*;
+use contest_lib_rs::iterutils_zip_eq::IterutilsZipEq;
 
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
@@ -11,7 +12,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
     let vb = read.vec_u32(n);
 
     let mut left = BTreeMap::new();
-    for (a, b) in va.into_iter().zip(vb.into_iter()) {
+    for (a, b) in va.into_iter().zip_eq(vb.into_iter()) {
         left.entry(b).or_insert(vec![]).push(a);
     }
 

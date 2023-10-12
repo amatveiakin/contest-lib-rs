@@ -6,6 +6,7 @@ use contest_lib_rs::base_one::BaseOneConversion;
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::iterutils_basic::IterutilsBasic;
 use contest_lib_rs::iterutils_is_sorted::IterutilsIsSorted;
+use contest_lib_rs::iterutils_zip_eq::IterutilsZipEq;
 
 fn sort_array(mut a: Vec<i32>) -> Option<Vec<usize>> {
     let mut seen = HashSet::new();
@@ -57,7 +58,7 @@ fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &m
         oq.push(0);
         oq.push(m - 1);
     }
-    let opq = op.into_iter().zip(oq.into_iter()).collect_vec();
+    let opq = op.into_iter().zip_eq(oq.into_iter()).collect_vec();
 
     emitln!(write, opq.len());
     for (ap, aq) in opq {

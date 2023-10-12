@@ -3,6 +3,7 @@ use contest_lib_rs::counting_set::CountingSet;
 use contest_lib_rs::graph::VertexId;
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::iterutils_basic::IterutilsBasic;
+use contest_lib_rs::iterutils_zip_eq::IterutilsZipEq;
 use contest_lib_rs::relax::Relax;
 use contest_lib_rs::tree::Tree;
 
@@ -188,7 +189,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
         assert_eq!(left.len(), right.len());
 
         let mut ans = 0;
-        for (l, r) in left.iter().zip(right.iter()) {
+        for (l, r) in left.iter().zip_eq(right.iter()) {
             ans.relax_max(l + r);
         }
 

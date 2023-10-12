@@ -1,5 +1,6 @@
 use contest_lib_rs::factored_num::FactoredNum;
 use contest_lib_rs::io::prelude::*;
+use contest_lib_rs::iterutils_zip_eq::IterutilsZipEq;
 use contest_lib_rs::mod_ring::ModNumber;
 use contest_lib_rs::num::IntegerRing;
 
@@ -13,8 +14,8 @@ fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &m
     let m = read.usize();
     let c = read.vec_u32(m);
     let d = read.vec_u32(m);
-    let x = FactoredNum::from_factors(a.into_iter().zip(b.into_iter()));
-    let y = FactoredNum::from_factors(c.into_iter().zip(d.into_iter()));
+    let x = FactoredNum::from_factors(a.into_iter().zip_eq(b.into_iter()));
+    let y = FactoredNum::from_factors(c.into_iter().zip_eq(d.into_iter()));
     let ans =
         if let Some(r) = x / y {
             M::from(2).pow(r.factors().len() as u32)
