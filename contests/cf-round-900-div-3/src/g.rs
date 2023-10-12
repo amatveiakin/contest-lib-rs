@@ -1,5 +1,6 @@
 use contest_lib_rs::base_one::BaseOneConversion;
 use contest_lib_rs::counting_set::CountingSet;
+use contest_lib_rs::genealogy::Genealogy;
 use contest_lib_rs::graph::VertexId;
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::iterutils_basic::IterutilsBasic;
@@ -8,33 +9,6 @@ use contest_lib_rs::relax::Relax;
 use contest_lib_rs::tree::Tree;
 
 const N_BITS: usize = 30;
-
-fn number_vertices(v: VertexId, t: &Tree<(), ()>, n: &mut usize, vn: &mut Vec<(usize, usize)>) {
-    let n0 = *n;
-    *n += 1;
-    for ch in t.children(v) {
-        number_vertices(ch, t, n, vn);
-    }
-    *n += 1;
-    vn[v] = (n0, *n);
-}
-
-fn fill_parent_jumps(v: VertexId, t: &Tree<(), ()>, pj: &mut Vec<Vec<u32>>) {
-    if let Some(p) = t.parent(v) {
-        let mut p = p as u32;
-        pj[v].push(p);
-        for i in 1.. {
-            let Some(&pp) = pj[pj[v][i - 1] as usize].get(i - 1) else {
-                break;
-            };
-            p = pp;
-            pj[v].push(p);
-        }
-    };
-    for ch in t.children(v) {
-        fill_parent_jumps(ch, t, pj);
-    }
-}
 
 fn fill_parent_with_bits(v: VertexId, t: &Tree<(), ()>, a: &[u32], p1: &mut Vec<[Option<u32>; N_BITS]>) {
     let pbits = t.parent(v).map_or([None; N_BITS], |p| p1[p]);
@@ -51,25 +25,24 @@ fn fill_parent_with_bits(v: VertexId, t: &Tree<(), ()>, a: &[u32], p1: &mut Vec<
 }
 
 fn farthest_parent_with_bit(
-    mut v: VertexId, root: VertexId,
-    vn: &Vec<(usize, usize)>, pj: &Vec<Vec<u32>>,
+    mut v: VertexId, root: VertexId, gn: &Genealogy,
     b: usize, p1: &Vec<[Option<u32>; N_BITS]>
 ) -> VertexId {
-    assert!(is_parent(root, v, vn));
-    assert!(is_parent(root, p1[v][b].unwrap() as VertexId, vn));
+    assert!(gn.is_parent(root, v));
+    assert!(gn.is_parent(root, p1[v][b].unwrap() as VertexId));
     let mut jump = usize::MAX;
     'outer: loop {
-        jump.relax_min(pj[v].len());
+        jump.relax_min(gn.binary_lifting()[v].len());
         while jump > 0 {
             jump -= 1;
-            let p = pj[v][jump] as VertexId;
-            if !is_parent(root, p, vn) {
+            let p = gn.binary_lifting()[v][jump] as VertexId;
+            if !gn.is_parent(root, p) {
                 continue;
             }
             let Some(pp1) = p1[p][b] else {
                 continue;
             };
-            if !is_parent(root, pp1 as VertexId, vn) {
+            if !gn.is_parent(root, pp1 as VertexId) {
                 continue;
             }
             v = p;
@@ -81,57 +54,27 @@ fn farthest_parent_with_bit(
     v
 }
 
-fn is_parent(u: VertexId, v: VertexId, vn: &Vec<(usize, usize)>) -> bool {
-    vn[u].0 <= vn[v].0 && vn[v].1 <= vn[u].1
-}
-
-fn common_parent(
-    u: VertexId, v: VertexId, t: &Tree<(), ()>,
-    vn: &Vec<(usize, usize)>, pj: &Vec<Vec<u32>>
-) -> VertexId {
-    if is_parent(u, v, vn) {
-        u
-    } else if is_parent(v, u, vn) {
-        v
-    } else {
-        let mut u = u;
-        'outer: loop {
-            for &p in pj[u].iter().rev() {
-                if !is_parent(p as VertexId, v, vn) {
-                    u = p as VertexId;
-                    continue 'outer;
-                }
-            }
-            return t.parent(u).unwrap();
-        }
-    }
-}
-
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let n = read.usize();
     let a = read.vec_u32(n);
     let t = Tree::from_read_edges(n, read).unwrap();
 
-    let mut vn = vec![(0, 0); n];
-    let mut pj = vec![vec![]; n];
     let mut p1 = vec![[None; N_BITS]; n];
-    let mut n = 0;
-    number_vertices(0, &t, &mut n, &mut vn);
-    fill_parent_jumps(0, &t, &mut pj);
+    let gn = Genealogy::new(&t);
     fill_parent_with_bits(0, &t, &a, &mut p1);
 
     let q = read.usize();
     for _ in 0..q {
         let [mut u, mut v] = read.usizes().from1b();
-        if vn[v].0 < vn[u].0 {
+        if gn.dfs_numbering()[v].0 < gn.dfs_numbering()[u].0 {
             std::mem::swap(&mut u, &mut v);
         }
-        let cp = common_parent(u, v, &t, &vn, &pj);
+        let cp = gn.lowest_common_ancestor(u, v);
         let mut s_ends = CountingSet::new();
         for b in 0..N_BITS {
-            let up1 = p1[u][b].map(|p| p as VertexId).filter(|&p| is_parent(cp, p, &vn));
-            let vp1 = p1[v][b].map(|p| p as VertexId).filter(|&p| is_parent(cp, p, &vn));
+            let up1 = p1[u][b].map(|p| p as VertexId).filter(|&p| gn.is_parent(cp, p));
+            let vp1 = p1[v][b].map(|p| p as VertexId).filter(|&p| gn.is_parent(cp, p));
             let (from, to) = match (up1, vp1) {
                 (Some(up1), Some(vp1)) => (
                     (-1, up1),
@@ -139,10 +82,10 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
                 ),
                 (Some(up1), None) => (
                     (-1, up1),
-                    (-1, farthest_parent_with_bit(up1, cp, &vn, &pj, b, &p1)),
+                    (-1, farthest_parent_with_bit(up1, cp, &gn, b, &p1)),
                 ),
                 (None, Some(vp1)) => (
-                    ( 1, farthest_parent_with_bit(vp1, cp, &vn, &pj, b, &p1)),
+                    ( 1, farthest_parent_with_bit(vp1, cp, &gn, b, &p1)),
                     ( 1, vp1),
                 ),
                 (None, None) => continue,
@@ -152,8 +95,8 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
                     (0, 0)
                 } else {
                     match subtree {
-                        -1 => (-1, vn[w].1),
-                        1  => (1,  vn[w].0),
+                        -1 => (-1, gn.dfs_numbering()[w].1),
+                        1  => (1,  gn.dfs_numbering()[w].0),
                         _ => unreachable!(),
                     }
                 }

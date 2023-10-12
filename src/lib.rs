@@ -26,6 +26,7 @@ pub mod directed_graph;
 pub mod divisors;
 pub mod factored_num;
 pub mod factors;
+pub mod genealogy;
 pub mod graph;
 pub mod indexer;
 pub mod int_ext;
