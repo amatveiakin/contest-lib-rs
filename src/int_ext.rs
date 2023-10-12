@@ -6,8 +6,8 @@ use crate::num::RegularInteger;
 
 
 pub trait IntegerExtension {
-    // Rust-upgrade (https://github.com/rust-lang/rust/issues/88581): remove when built-in
-    // `div_ceil` is stable.
+    // Rust-upgrade: `div_ceil` for unsigned ints is stable since Rust 1.73.
+    // Rust-upgrade (https://github.com/rust-lang/rust/issues/88581): `div_ceil` for signed ints.
     fn div_up(self, rhs: Self) -> Self;
 }
 
