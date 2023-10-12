@@ -14,28 +14,36 @@ pub trait U32Index {
 }
 
 impl U32Index for u32 {
+    #[track_caller]
     fn bounds(self, size: u32) -> (u32, u32) { checked((self, self + 1), size) }
 }
 
 impl U32Index for ops::Range<u32> {
+    #[track_caller]
     fn bounds(self, size: u32) -> (u32, u32) { checked((self.start, self.end), size) }
 }
 impl U32Index for ops::RangeInclusive<u32> {
+    #[track_caller]
     fn bounds(self, size: u32) -> (u32, u32) { checked((*self.start(), *self.end() + 1), size) }
 }
 impl U32Index for ops::RangeFrom<u32> {
+    #[track_caller]
     fn bounds(self, size: u32) -> (u32, u32) { checked((self.start, size), size) }
 }
 impl U32Index for ops::RangeTo<u32> {
+    #[track_caller]
     fn bounds(self, size: u32) -> (u32, u32) { checked((0, self.end), size) }
 }
 impl U32Index for ops::RangeToInclusive<u32> {
+    #[track_caller]
     fn bounds(self, size: u32) -> (u32, u32) { checked((0, self.end + 1), size) }
 }
 impl U32Index for ops::RangeFull {
+    #[track_caller]
     fn bounds(self, size: u32) -> (u32, u32) { checked((0, size), size) }
 }
 
+#[track_caller]
 fn checked(bounds: (u32, u32), size: u32) -> (u32, u32) {
     let (begin, end) = bounds;
     assert!(begin <= end, "[{}, {}) segment invalid", begin, end);
