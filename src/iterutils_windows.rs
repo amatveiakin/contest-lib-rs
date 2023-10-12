@@ -1,4 +1,4 @@
-use std::{array, iter};
+use std::array;
 
 
 pub trait IterutilsWindows
@@ -9,29 +9,30 @@ where
 }
 
 impl<I: Iterator> IterutilsWindows for I {
-    fn array_windows<const N: usize>(self) -> ArrayWindows<Self, N> {
+    fn array_windows<const N: usize>(mut self) -> ArrayWindows<Self, N> {
         assert!(N > 0);
         // Rust-upgrade (https://github.com/rust-lang/rust/issues/89379):
         //   Use `array::try_from_fn`.
-        let mut iter = self.fuse();
         let mut data = array::from_fn(|_| None);
         for i in 0..N {
-            data[i] = iter.next();
+            if let Some(v) = self.next() {
+                data[i] = Some(v);
+            } else {
+                return ArrayWindows {
+                    iter: self,
+                    next: None,
+                };
+            }
         }
-        let next = if data[N - 1].is_none() {
-            None
-        } else {
-            Some(data.map(|x| x.unwrap()))
-        };
         ArrayWindows {
-            iter,
-            next,
+            iter: self,
+            next: Some(data.map(|v| v.unwrap())),
         }
     }
 }
 
 pub struct ArrayWindows<I: Iterator, const N: usize> {
-    iter: iter::Fuse<I>,
+    iter: I,
     next: Option<[I::Item; N]>,
 }
 
