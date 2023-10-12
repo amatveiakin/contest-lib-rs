@@ -1,3 +1,5 @@
+use std::array;
+
 use crate::graph::{VertexId, Graph, StorageVertexId};
 use crate::{io, ivec};
 use crate::undirected_graph::UndirectedGraph;
@@ -24,6 +26,29 @@ pub struct TreeVertex<VP, EP> {
 }
 
 impl<VP, EP> Tree<VP, EP> {
+    pub fn new_with_root_p(root_payload: VP) -> (Self, VertexId) {
+        let v = TreeVertex {
+            payload: root_payload,
+            parent: None,
+            children: Vec::new(),
+        };
+        let root = 0 as StorageVertexId;
+        let tree = Tree { vertices: vec![v], root };
+        (tree, root as VertexId)
+    }
+
+    pub fn add_child_p(&mut self, parent: VertexId, vertex_payload: VP, edge_payload: EP) -> VertexId {
+        let v = TreeVertex {
+            payload: vertex_payload,
+            parent: Some((parent as StorageVertexId, edge_payload)),
+            children: Vec::new(),
+        };
+        let id = self.vertices.len();
+        self.vertices.push(v);
+        self.vertices[parent].children.push(id as StorageVertexId);
+        id as VertexId
+    }
+
     pub fn root(&self) -> VertexId { self.root as VertexId }
 
     pub fn children(&self, v: VertexId) -> impl ExactSizeIterator<Item = VertexId> + '_ {
@@ -157,6 +182,18 @@ impl<VP, EP> Graph<VP, EP> for Tree<VP, EP> {
 }
 
 impl Tree<(), ()> {
+    pub fn new_with_root() -> (Self, VertexId) {
+        Self::new_with_root_p(())
+    }
+
+    pub fn add_child(&mut self, parent: VertexId) -> VertexId {
+        self.add_child_p(parent, (), ())
+    }
+
+    pub fn add_children<const N: usize>(&mut self, parent: VertexId) -> [VertexId; N] {
+        array::from_fn(|_| self.add_child(parent))
+    }
+
     // Reads edges as 1-based vertex pairs.
     pub fn from_read_edges<R: std::io::BufRead>(num_vertices: usize, read: &mut io::Reader<R>)
         -> Result<Self, TreeConstructionError>
