@@ -7,7 +7,7 @@
 
 use std::fmt;
 
-use crate::num::RegularInteger;
+use crate::num::{RegularInteger, IntegerRing};
 use crate::u32_index::U32Index;
 
 
@@ -20,7 +20,7 @@ pub struct SegmentTree<T, F> {
     neutral: T,
 }
 
-pub fn new_sum_tree<T: RegularInteger>(data: &[T]) -> SegmentTree<T, impl Clone + Fn(&T, &T, i32) -> T>
+pub fn new_sum_tree<T: IntegerRing>(data: &[T]) -> SegmentTree<T, impl Clone + Fn(&T, &T, i32) -> T>
 where
     i32: TryInto<T>,
     <i32 as TryInto<T>>::Error: fmt::Debug,
