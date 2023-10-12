@@ -40,6 +40,7 @@ pub mod memoize;
 pub mod mex;
 pub mod mod_ring;
 pub mod num;
+pub mod point_2d;
 pub mod prefix_accumulate;
 pub mod primes;
 pub mod rand;

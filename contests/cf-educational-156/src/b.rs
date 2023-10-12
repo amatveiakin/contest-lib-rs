@@ -1,25 +1,19 @@
+use contest_lib_rs::point_2d::{PointReading, Point2D};
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::relax_float::RelaxFloat;
 
-fn dist(a: (i32, i32), b: (i32, i32)) -> f64 {
-    let dx = (a.0 - b.0) as f64;
-    let dy = (a.1 - b.1) as f64;
-    (dx * dx + dy * dy).sqrt()
-}
-
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
-    let [px, py] = read.i32s();
-    let [ax, ay] = read.i32s();
-    let [bx, by] = read.i32s();
-    let p = (px, py);
-    let o = (0, 0);
-    let l = [(ax, ay), (bx, by)];
+    let p = read.p2_f64();
+    let a = read.p2_f64();
+    let b = read.p2_f64();
+    let o = Point2D::zero();
+    let l = [a, b];
     let mut best_d = f64::MAX;
     for (pl, ol) in [(0, 0), (0, 1), (1, 0), (1, 1)] {
-        let mut d = dist(p, l[pl]).max(dist(o, l[ol]));
+        let mut d = (p.l2_dist(l[pl])).max(o.l2_dist(l[ol]));
         if pl != ol {
-            d.relax_max(dist(l[pl], l[ol]) / 2.0);
+            d.relax_max(l[pl].l2_dist(l[ol]) / 2.0);
         }
         best_d.relax_min(d);
     }
