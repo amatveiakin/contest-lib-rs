@@ -4,21 +4,15 @@ use std::collections::HashSet;
 
 use contest_lib_rs::base_one::IteratorBaseOneConversion;
 use contest_lib_rs::counting_set::CountingSet;
+use contest_lib_rs::genealogy::VertexDepths;
 use contest_lib_rs::graph::VertexId;
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::relax::Relax;
 use contest_lib_rs::tree::Tree;
 
-fn dfs_depth(t: &Tree<(), ()>, v: usize, d: u32, depth: &mut Vec<u32>) {
-    depth[v] = d;
-    for ch in t.children(v) {
-        dfs_depth(t, ch, d + 1, depth)
-    }
-}
-
 fn dfs_answer(
     t: &Tree<(), ()>, v: usize, parent_path: Option<u32>,
-    a: &HashSet<VertexId>, depth: &[u32], max_red_depth: &[Option<u32>], min_f: &mut u32
+    a: &HashSet<VertexId>, depth: &VertexDepths, max_red_depth: &[Option<u32>], min_f: &mut u32
 ) {
     let f = max_red_depth[v].map_or(0, |d| d - depth[v]).max(parent_path.unwrap_or(0));
     min_f.relax_min(f);
@@ -44,19 +38,18 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
     let a = read.vec_usize(k).into_iter().from1b().collect::<HashSet<_>>();
     let t = Tree::from_read_edges(n, read).unwrap();
 
-    let mut depth = vec![0; n];
-    dfs_depth(&t, t.root(), 0, &mut depth);
+    let depths = VertexDepths::new(&t);
     let max_red_depth = t.compute_recursively(|ch, v| {
         if let Some(ret) = ch.iter().filter_map(|x| **x).max() {
             Some(ret)
         } else if a.contains(&v) {
-            Some(depth[v])
+            Some(depths[v])
         } else {
             None
         }
     });
     let mut min_f = u32::MAX;
-    dfs_answer(&t, t.root(), None, &a, &depth, &max_red_depth, &mut min_f);
+    dfs_answer(&t, t.root(), None, &a, &depths, &max_red_depth, &mut min_f);
     emitln!(write, min_f);
 }
 

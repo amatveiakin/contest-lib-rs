@@ -65,6 +65,8 @@ impl<VP, EP> Tree<VP, EP> {
         self.vertices[v].parent.as_ref().map(|(p, payload)| (*p as VertexId, payload))
     }
 
+    // Improvement potential: Rename to `compute_bottom_up` and add `compute_top_down` for things
+    // like vertex depth.
     pub fn compute_recursively<R, F>(&self, f: F) -> Vec<R>
     where
         F: Fn(&[&R], VertexId) -> R,

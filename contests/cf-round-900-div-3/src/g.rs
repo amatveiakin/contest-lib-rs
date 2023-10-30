@@ -1,6 +1,6 @@
 use contest_lib_rs::base_one::BaseOneConversion;
 use contest_lib_rs::counting_set::CountingSet;
-use contest_lib_rs::genealogy::Genealogy;
+use contest_lib_rs::genealogy::{lowest_common_ancestor, DfsNumbering, BinaryLifting};
 use contest_lib_rs::graph::VertexId;
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::iterutils_basic::IterutilsBasic;
@@ -25,24 +25,24 @@ fn fill_parent_with_bits(v: VertexId, t: &Tree<(), ()>, a: &[u32], p1: &mut Vec<
 }
 
 fn farthest_parent_with_bit(
-    mut v: VertexId, root: VertexId, gn: &Genealogy,
+    mut v: VertexId, root: VertexId, dn: &DfsNumbering, bl: &BinaryLifting,
     b: usize, p1: &Vec<[Option<u32>; N_BITS]>
 ) -> VertexId {
-    assert!(gn.is_parent(root, v));
-    assert!(gn.is_parent(root, p1[v][b].unwrap() as VertexId));
+    assert!(dn.is_ancestor(root, v));
+    assert!(dn.is_ancestor(root, p1[v][b].unwrap() as VertexId));
     let mut jump = usize::MAX;
     'outer: loop {
-        jump.relax_min(gn.binary_lifting()[v].len());
+        jump.relax_min(bl[v].len());
         while jump > 0 {
             jump -= 1;
-            let p = gn.binary_lifting()[v][jump] as VertexId;
-            if !gn.is_parent(root, p) {
+            let p = bl[v][jump] as VertexId;
+            if !dn.is_ancestor(root, p) {
                 continue;
             }
             let Some(pp1) = p1[p][b] else {
                 continue;
             };
-            if !gn.is_parent(root, pp1 as VertexId) {
+            if !dn.is_ancestor(root, pp1 as VertexId) {
                 continue;
             }
             v = p;
@@ -61,20 +61,21 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
     let t = Tree::from_read_edges(n, read).unwrap();
 
     let mut p1 = vec![[None; N_BITS]; n];
-    let gn = Genealogy::new(&t);
+    let dn = DfsNumbering::new(&t);
+    let bl = BinaryLifting::new(&t);
     fill_parent_with_bits(0, &t, &a, &mut p1);
 
     let q = read.usize();
     for _ in 0..q {
         let [mut u, mut v] = read.usizes().from1b();
-        if gn.dfs_numbering()[v].0 < gn.dfs_numbering()[u].0 {
+        if dn[v].0 < dn[u].0 {
             std::mem::swap(&mut u, &mut v);
         }
-        let cp = gn.lowest_common_ancestor(u, v);
+        let cp = lowest_common_ancestor(&dn, &bl, u, v);
         let mut s_ends = CountingSet::new();
         for b in 0..N_BITS {
-            let up1 = p1[u][b].map(|p| p as VertexId).filter(|&p| gn.is_parent(cp, p));
-            let vp1 = p1[v][b].map(|p| p as VertexId).filter(|&p| gn.is_parent(cp, p));
+            let up1 = p1[u][b].map(|p| p as VertexId).filter(|&p| dn.is_ancestor(cp, p));
+            let vp1 = p1[v][b].map(|p| p as VertexId).filter(|&p| dn.is_ancestor(cp, p));
             let (from, to) = match (up1, vp1) {
                 (Some(up1), Some(vp1)) => (
                     (-1, up1),
@@ -82,10 +83,10 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
                 ),
                 (Some(up1), None) => (
                     (-1, up1),
-                    (-1, farthest_parent_with_bit(up1, cp, &gn, b, &p1)),
+                    (-1, farthest_parent_with_bit(up1, cp, &dn, &bl, b, &p1)),
                 ),
                 (None, Some(vp1)) => (
-                    ( 1, farthest_parent_with_bit(vp1, cp, &gn, b, &p1)),
+                    ( 1, farthest_parent_with_bit(vp1, cp, &dn, &bl, b, &p1)),
                     ( 1, vp1),
                 ),
                 (None, None) => continue,
@@ -95,8 +96,8 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
                     (0, 0)
                 } else {
                     match subtree {
-                        -1 => (-1, gn.dfs_numbering()[w].1),
-                        1  => (1,  gn.dfs_numbering()[w].0),
+                        -1 => (-1, dn[w].1),
+                        1  => (1,  dn[w].0),
                         _ => unreachable!(),
                     }
                 }
