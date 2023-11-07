@@ -7,7 +7,7 @@
 
 use std::fmt;
 
-use crate::num::{RegularInteger, IntegerRing};
+use crate::num::{RingInteger, Integer};
 use crate::u32_index::U32Index;
 
 
@@ -20,7 +20,7 @@ pub struct SegmentTree<T, F> {
     neutral: T,
 }
 
-pub fn new_sum_tree<T: IntegerRing>(data: &[T]) -> SegmentTree<T, impl Clone + Fn(&T, &T, i32) -> T>
+pub fn new_sum_tree<T: RingInteger>(data: &[T]) -> SegmentTree<T, impl Clone + Fn(&T, &T, i32) -> T>
 where
     i32: TryInto<T>,
     <i32 as TryInto<T>>::Error: fmt::Debug,
@@ -28,12 +28,12 @@ where
     SegmentTree::new(data, T::zero(), |&a, &b, n| a + b * n.try_into().unwrap())
 }
 
-pub fn new_min_tree<T: RegularInteger>(data: &[T]) -> SegmentTree<T, impl Clone + Fn(&T, &T, i32) -> T> {
-    SegmentTree::new(data, T::max_value(), |&a, &b, _| a.min(b))
+pub fn new_min_tree<T: Integer>(data: &[T]) -> SegmentTree<T, impl Clone + Fn(&T, &T, i32) -> T> {
+    SegmentTree::new(data, T::MAX, |&a, &b, _| a.minv(b))
 }
 
-pub fn new_max_tree<T: RegularInteger>(data: &[T]) -> SegmentTree<T, impl Clone + Fn(&T, &T, i32) -> T> {
-    SegmentTree::new(data, T::min_value(), |&a, &b, _| a.max(b))
+pub fn new_max_tree<T: Integer>(data: &[T]) -> SegmentTree<T, impl Clone + Fn(&T, &T, i32) -> T> {
+    SegmentTree::new(data, T::MIN, |&a, &b, _| a.maxv(b))
 }
 
 impl<T: Clone, F: Fn(&T, &T, i32) -> T> SegmentTree<T, F> {

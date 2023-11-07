@@ -1,4 +1,4 @@
-use crate::num::{RegularInteger, IntegerRing};
+use crate::num::{Integer, RingInteger};
 use crate::u32_index::U32Index;
 
 
@@ -59,7 +59,7 @@ define_prefix_accumulation! {
 
 define_prefix_accumulation! {
     PrefixProduct
-    for T: (IntegerRing);
+    for T: (RingInteger);
     with {
         identity() { T::one() }
         combine(a, b) { a * b }
@@ -69,7 +69,7 @@ define_prefix_accumulation! {
 
 define_prefix_accumulation! {
     PrefixXor
-    for T: (RegularInteger);
+    for T: (Integer);
     with {
         identity() { T::zero() }
         combine(a, b) { a ^ b }

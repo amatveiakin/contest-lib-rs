@@ -2,7 +2,7 @@ use contest_lib_rs::factored_num::FactoredNum;
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::iterutils_zip_eq::IterutilsZipEq;
 use contest_lib_rs::mod_ring::ModNumber;
-use contest_lib_rs::num::IntegerRing;
+use contest_lib_rs::num::RingNumber;
 
 type M = ModNumber<998244353>;
 

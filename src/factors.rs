@@ -1,4 +1,4 @@
-use crate::num::RegularInteger;
+use crate::num::Integer;
 use crate::primes::{primes, PrimesIter};
 
 
@@ -6,7 +6,7 @@ use crate::primes::{primes, PrimesIter};
 //   - x = p_1^k_1 * ... * p_n^k_n,
 //   - p_i is prime,
 //   - p_i < p_{i+1},
-pub fn factors<T: RegularInteger>(mut x: T) -> Vec<(T, u32)> {
+pub fn factors<T: Integer>(mut x: T) -> Vec<(T, u32)> {
     // If size of x type is twice the size of prime type or less, then p * p > x is implied when
     // primes are over. Note that for now factoring numbers close to u64::MAX wouldn't work because
     // primes iterator never ends.

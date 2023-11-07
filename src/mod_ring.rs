@@ -2,7 +2,7 @@
 
 use std::{fmt, ops};
 
-use crate::num::IntegerRing;
+use crate::num::{RingNumber, RingInteger};
 use crate::trait_for_value_and_ref;
 use crate::io::Emittable;
 
@@ -43,10 +43,11 @@ impl<const M: i32> ModNumber<M> {
     fn assert_mod_ok() { let () = AssertModOk::<M>::OK; }
 }
 
-impl<const M: i32> IntegerRing for ModNumber<M> {
+impl<const M: i32> RingNumber for ModNumber<M> {
     fn zero() -> Self { ModNumber::new_unchecked(0) }
     fn one() -> Self { ModNumber::new_unchecked(1) }
 }
+impl<const M: i32> RingInteger for ModNumber<M> {}
 
 impl<const M: i32> From<i32> for ModNumber<M> {
     fn from(x: i32) -> Self { ModNumber::new_unchecked(x.rem_euclid(M)) }

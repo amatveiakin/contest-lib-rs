@@ -13,7 +13,7 @@
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use crate::num::RegularInteger;
+use crate::num::Integer;
 
 
 const KX: u32 = 123456789;
@@ -38,14 +38,14 @@ pub trait Rng {
     fn int_range_exclusive<T>(&mut self, from: T, to: T) -> T
     where
         Standard: Distribution<T>,
-        T: RegularInteger,
+        T: Integer,
     {
         self.int_range_inclusive(from, to - T::one())
     }
     fn int_range_inclusive<T>(&mut self, from: T, to: T) -> T
     where
         Standard: Distribution<T>,
-        T: RegularInteger,
+        T: Integer,
     {
         assert!(from <= to);
         self.gen() % (to - from + T::one()) + from

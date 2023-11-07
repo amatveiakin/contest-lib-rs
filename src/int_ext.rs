@@ -2,7 +2,7 @@
 //   - `div_up(a, b)`: returns a / b rounded up when b is positive. Behavior for negative b is
 //     unspecified. Implemented as `(a + b - 1) / b`, so it may overflow unnecessarily.
 
-use crate::num::RegularInteger;
+use crate::num::Integer;
 
 
 pub trait IntegerExtension {
@@ -11,7 +11,7 @@ pub trait IntegerExtension {
     fn div_up(self, rhs: Self) -> Self;
 }
 
-impl<T: RegularInteger> IntegerExtension for T {
+impl<T: Integer> IntegerExtension for T {
     fn div_up(self, rhs: Self) -> Self {
         (self + rhs - T::one()) / rhs
     }

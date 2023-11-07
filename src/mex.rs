@@ -1,10 +1,10 @@
-use crate::num::RegularInteger;
+use crate::num::Integer;
 
 
 // Not calling it `mex`, because autocompletion is dominated by stuff like `_mm256_extract_epi16`.
 pub fn get_mex<T, I>(values: impl IntoIterator<Item = T, IntoIter = I>) -> T
 where
-    T: RegularInteger,
+    T: Integer,
     I: ExactSizeIterator<Item = T>,
 {
     let iter = values.into_iter();

@@ -1,17 +1,17 @@
 use crate::factors::factors;
-use crate::num::RegularInteger;
+use crate::num::Integer;
 
 
 // Returns the list of all positive integers that divide `x`, including 1 and `x` itself.
 // The list is NOT sorted.
-pub fn divisors<T: RegularInteger>(x: T) -> Vec<T> {
+pub fn divisors<T: Integer>(x: T) -> Vec<T> {
     let factorization = factors(x);
     let mut ret = vec![];
     fill_divisors(0, T::one(), &factorization, &mut ret);
     ret
 }
 
-fn fill_divisors<T: RegularInteger>(
+fn fill_divisors<T: Integer>(
     i: usize, mut v: T, factorization: &[(T, u32)], ret: &mut Vec<T>
 ) {
     if i == factorization.len() {

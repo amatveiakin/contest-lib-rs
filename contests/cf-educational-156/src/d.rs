@@ -3,7 +3,7 @@ use std::io::BufWriter;
 use contest_lib_rs::base_one::BaseOneConversion;
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::mod_ring::ModNumber;
-use contest_lib_rs::num::IntegerRing;
+use contest_lib_rs::num::RingNumber;
 
 type ModNum = ModNumber<998244353>;
 
