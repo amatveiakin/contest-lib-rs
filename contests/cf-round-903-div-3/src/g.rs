@@ -17,7 +17,10 @@ fn set_assign<K: Eq + Ord>(set: &mut BTreeSet<K>, key: K, exists: bool) {
     }
 }
 
-fn get_or<T: Clone, F: Fn(&T, &T, i32) -> T>(t: &mut SegmentTree<T, F>, idx: i32) -> Option<T> {
+// TODO: Reduce the number of generic parameters.
+fn get_or<T: Clone, U: Clone, TC: Fn(&T, &T) -> T, UC: Fn(&U, &U) -> U, A: Fn(&T, &U, u32, u32) -> T> (
+    t: &mut SegmentTree<T, U, TC, UC, A>, idx: i32
+) -> Option<T> {
     if 0 <= idx && idx < t.len() as i32 {
         Some(t.get(idx as u32))
     } else {

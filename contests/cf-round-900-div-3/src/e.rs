@@ -2,13 +2,13 @@
 
 use contest_lib_rs::base_one::BaseOneConversion;
 use contest_lib_rs::io::prelude::*;
-use contest_lib_rs::segment_tree::SegmentTree;
+use contest_lib_rs::segment_tree::new_homogenous_tree;
 
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let n = read.usize();
     let a = read.vec_u32(n);
-    let mut t = SegmentTree::new(&a, u32::MAX, |&a, &b, _| a & b);
+    let mut t = new_homogenous_tree(&a, u32::MAX, |&a, &b, _| a & b);
     let q = read.usize();
     for _ in 0..q {
         let l0 = read.u32().from1b();
