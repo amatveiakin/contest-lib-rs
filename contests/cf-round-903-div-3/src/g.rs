@@ -5,7 +5,7 @@ use contest_lib_rs::bool_ext::BoolExtension;
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::iterutils_basic::IterutilsBasic;
 use contest_lib_rs::mod_ring::ModNumber;
-use contest_lib_rs::segment_tree::{new_sum_tree, SegmentTree};
+use contest_lib_rs::segment_tree::{new_sum_tree, ISegmentTree};
 
 type M = ModNumber<26>;
 
@@ -17,10 +17,7 @@ fn set_assign<K: Eq + Ord>(set: &mut BTreeSet<K>, key: K, exists: bool) {
     }
 }
 
-// TODO: Reduce the number of generic parameters.
-fn get_or<T: Clone, U: Clone, TC: Fn(&T, &T) -> T, UC: Fn(&U, &U) -> U, A: Fn(&T, &U, u32, u32) -> T> (
-    t: &mut SegmentTree<T, U, TC, UC, A>, idx: i32
-) -> Option<T> {
+fn get_or<T: Clone, U: Clone> (t: &mut impl ISegmentTree<T, U>, idx: i32) -> Option<T> {
     if 0 <= idx && idx < t.len() as i32 {
         Some(t.get(idx as u32))
     } else {

@@ -44,6 +44,26 @@ use crate::num::{RingInteger, Integer};
 use crate::u32_index::U32Index;
 
 
+// Use this trait instead of the actual tree type to reduce the number of generic parameters in
+// functions accepting a segment tree as an argument. Note that all these methods are also present
+// directly in the `SegmentTree` class, so that most users don't need to import the trait.
+pub trait ISegmentTree<T, U> {
+    fn len(&self) -> u32;
+
+    // Updates each value on a segment.
+    // Complexity: O(log N) where N is tree size.
+    fn update(&mut self, idx: impl U32Index, upd: &U);
+
+    // Returns combined value for a segment.
+    // Complexity: O(log N) where N is tree size.
+    fn get(&mut self, idx: impl U32Index) -> T;
+
+    // Returns an iterator yielding each value separately.
+    // Complexity of traversing the iterator: O(N log N) where N is tree size.
+    // Optimization potential: Make O(N): push everything down and iterate over leaves.
+    fn iter(&mut self) -> impl DoubleEndedIterator<Item = T> + ExactSizeIterator + '_;
+}
+
 pub fn new_homogenous_tree<T: Clone>(data: &[T], neutral: T, combiner: impl Clone + Fn(&T, &T, u32) -> T)
     -> SegmentTree<T, T, impl Clone + Fn(&T, &T) -> T, impl Clone + Fn(&T, &T) -> T, impl Clone + Fn(&T, &T, u32, u32) -> T>
 {
@@ -141,23 +161,16 @@ impl<
 
     pub fn len(&self) -> u32 { self.num_leaves }
 
-    // Updates each value on a segment.
-    // Complexity: O(log N) where N is tree size.
     pub fn update(&mut self, idx: impl U32Index, upd: &U) {
         let (from, to) = idx.bounds(self.len());
         self.update_impl(VertexId::root(), from, to, upd);
     }
 
-    // Returns combined value for a segment.
-    // Complexity: O(log N) where N is tree size.
     pub fn get(&mut self, idx: impl U32Index) -> T {
         let (from, to) = idx.bounds(self.len());
         self.get_impl(VertexId::root(), from, to)
     }
 
-    // Returns an iterator yielding each value separately.
-    // Complexity of traversing the iterator: O(N log N) where N is tree size.
-    // Optimization potential: Make O(N): push everything down and iterate over leaves.
     pub fn iter(&mut self) -> impl DoubleEndedIterator<Item = T> + ExactSizeIterator + '_ {
         (0..self.num_leaves).map(|i| self.get(i))
     }
@@ -258,6 +271,19 @@ impl<
         };
         heap[v.0 as usize] = Some(vertex);
     }
+}
+
+impl<
+    T: Clone,
+    U: Clone,
+    TC: Fn(&T, &T) -> T,
+    UC: Fn(&U, &U) -> U,
+    A: Fn(&T, &U, u32, u32) -> T,
+> ISegmentTree<T, U> for SegmentTree<T, U, TC, UC, A> {
+    fn len(&self) -> u32 { self.len() }
+    fn update(&mut self, idx: impl U32Index, upd: &U) { self.update(idx, upd) }
+    fn get(&mut self, idx: impl U32Index) -> T { self.get(idx) }
+    fn iter(&mut self) -> impl DoubleEndedIterator<Item = T> + ExactSizeIterator + '_ { self.iter() }
 }
 
 
