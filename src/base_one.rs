@@ -10,10 +10,8 @@ pub trait BaseOneConversion {
 
 pub trait IteratorBaseOneConversion {
     type Item: Integer;
-    type From1BOutput: Iterator<Item = Self::Item>;
-    type To1BOutput: Iterator<Item = Self::Item>;
-    fn from1b(self) -> Self::From1BOutput;
-    fn to1b(self) -> Self::To1BOutput;
+    fn from1b(self) -> impl Iterator<Item = Self::Item>;
+    fn to1b(self) -> impl Iterator<Item = Self::Item>;
 }
 
 impl<T: Integer> BaseOneConversion for T {
@@ -22,13 +20,9 @@ impl<T: Integer> BaseOneConversion for T {
 }
 
 impl<T: Integer, I: Iterator<Item = T> + 'static> IteratorBaseOneConversion for I {
-    // Rust-upgrade (https://github.com/rust-lang/rust/issues/63063):
-    //   Replace `Box<dyn Iterator<...>>` with `impl Iterator<...>`.
     type Item = T;
-    type From1BOutput = Box<dyn Iterator<Item = T>>;
-    type To1BOutput = Box<dyn Iterator<Item = T>>;
-    fn from1b(self) -> Self::From1BOutput { Box::new(self.map(|x| x - T::one())) }
-    fn to1b(self) -> Self::To1BOutput { Box::new(self.map(|x| x + T::one())) }
+    fn from1b(self) -> impl Iterator<Item = T> { self.map(|x| x - T::one()) }
+    fn to1b(self) -> impl Iterator<Item = T> { self.map(|x| x + T::one()) }
 }
 
 impl<T: Integer> BaseOneConversion for Vec<T> {

@@ -130,22 +130,16 @@ impl<VP: Clone, EP: Clone> Tree<VP, EP> {
 }
 
 impl<VP, EP> Graph<VP, EP> for Tree<VP, EP> {
-    type VertexIter = Box<dyn Iterator<Item = VertexId>>;
-    type HalfEdgeIter<'g> = Box<dyn Iterator<Item = (VertexId, &'g EP)> + 'g> where Self: 'g, EP: 'g;
-    type FullEdgeIter<'g> = Box<dyn Iterator<Item = (VertexId, VertexId, &'g EP)> + 'g> where Self: 'g, EP: 'g;
-
     const IS_DIRECTED: bool = false;
 
     fn num_vertices(&self) -> usize { self.vertices.len() }
     fn num_edges(&self) -> usize { self.num_vertices() - 1 }
 
-    fn edges(&self) -> Self::FullEdgeIter<'_> {
-        Box::new(self.vertices.iter().enumerate().flat_map(move |(to, vertex)| {
+    fn edges<'g>(&'g self) -> impl Iterator<Item = (VertexId, VertexId, &'g EP)> where EP: 'g {
+        self.vertices.iter().enumerate().flat_map(move |(to, vertex)| {
             vertex.parent.iter().map(move |(from, payload)| (*from as VertexId, to, payload))
-        }))
+        })
     }
-
-    fn vertex_ids(&self) -> Self::VertexIter { Box::new(0..self.vertices.len()) }
 
     fn vertex(&self, v: VertexId) -> &VP { &self.vertices[v].payload }
     fn vertex_mut(&mut self, v: VertexId) -> &mut VP { &mut self.vertices[v].payload }
@@ -176,11 +170,15 @@ impl<VP, EP> Graph<VP, EP> for Tree<VP, EP> {
     fn out_degree(&self, v: VertexId) -> usize { self.degree(v) }
     fn in_degree(&self, v: VertexId) -> usize { self.degree(v) }
 
-    fn edges_adj(&self, v: VertexId) -> Self::HalfEdgeIter<'_> {
-        Box::new(self.child_edges(v).chain(self.parent_edge(v).into_iter()))
+    fn edges_adj<'g>(&'g self, v: VertexId) -> impl Iterator<Item = (VertexId, &'g EP)> where EP: 'g {
+        self.child_edges(v).chain(self.parent_edge(v).into_iter())
     }
-    fn edges_in(&self, to: VertexId) -> Self::HalfEdgeIter<'_> { self.edges_adj(to) }
-    fn edges_out(&self, from: VertexId) -> Self::HalfEdgeIter<'_> { self.edges_adj(from) }
+    fn edges_in<'g>(&'g self, to: VertexId) -> impl Iterator<Item = (VertexId, &'g EP)> where EP: 'g {
+        self.edges_adj(to)
+    }
+    fn edges_out<'g>(&'g self, from: VertexId) -> impl Iterator<Item = (VertexId, &'g EP)> where EP: 'g {
+        self.edges_adj(from)
+    }
 }
 
 impl Tree<(), ()> {

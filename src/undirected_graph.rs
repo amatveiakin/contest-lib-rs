@@ -96,20 +96,13 @@ impl UndirectedGraph<(), ()> {
 }
 
 impl<VP, EP> Graph<VP, EP> for UndirectedGraph<VP, EP> {
-    type VertexIter = Box<dyn Iterator<Item = VertexId>>;
-    type HalfEdgeIter<'g> = Box<dyn Iterator<Item = (VertexId, &'g EP)> + 'g> where Self: 'g, EP: 'g;
-    type FullEdgeIter<'g> = Box<dyn Iterator<Item = (VertexId, VertexId, &'g EP)> + 'g> where Self: 'g, EP: 'g;
-
     const IS_DIRECTED: bool = false;
 
     fn num_vertices(&self) -> usize { self.vertices.len() }
     fn num_edges(&self) -> usize { self.edges.len() }
 
-    fn vertex_ids(&self) -> Self::VertexIter { Box::new(0..self.vertices.len()) }
-
-    fn edges(&self) -> Self::FullEdgeIter<'_> {
-        Box::new(self.edges.iter().map(
-            |(e, payload)| (e.from as VertexId, e.to as VertexId, payload)))
+    fn edges<'g>(&'g self) -> impl Iterator<Item = (VertexId, VertexId, &'g EP)> where EP: 'g {
+        self.edges.iter().map(|(e, payload)| (e.from as VertexId, e.to as VertexId, payload))
     }
 
     fn vertex(&self, v: VertexId) -> &VP { &self.vertices[v] }
@@ -128,12 +121,16 @@ impl<VP, EP> Graph<VP, EP> for UndirectedGraph<VP, EP> {
     fn out_degree(&self, v: VertexId) -> usize { self.degree(v) }
     fn in_degree(&self, v: VertexId) -> usize { self.degree(v) }
 
-    fn edges_adj(&self, v: VertexId) -> Self::HalfEdgeIter<'_> {
-        Box::new(self.neighbours[v].iter().map(
-            move |&u| (u as VertexId, self.get_payload(v, u as VertexId).unwrap())))
+    fn edges_adj<'g>(&'g self, v: VertexId) -> impl Iterator<Item = (VertexId, &'g EP)> where EP: 'g {
+        self.neighbours[v].iter().map(
+            move |&u| (u as VertexId, self.get_payload(v, u as VertexId).unwrap()))
     }
-    fn edges_in(&self, to: VertexId) -> Self::HalfEdgeIter<'_> { self.edges_adj(to) }
-    fn edges_out(&self, from: VertexId) -> Self::HalfEdgeIter<'_> { self.edges_adj(from) }
+    fn edges_in<'g>(&'g self, to: VertexId) -> impl Iterator<Item = (VertexId, &'g EP)> where EP: 'g {
+        self.edges_adj(to)
+    }
+    fn edges_out<'g>(&'g self, from: VertexId) -> impl Iterator<Item = (VertexId, &'g EP)> where EP: 'g {
+        self.edges_adj(from)
+    }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]

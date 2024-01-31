@@ -84,10 +84,6 @@ impl DirectedGraph<(), ()> {
 }
 
 impl<VP, EP> Graph<VP, EP> for DirectedGraph<VP, EP> {
-    type VertexIter = Box<dyn Iterator<Item = VertexId>>;
-    type HalfEdgeIter<'g> = Box<dyn Iterator<Item = (VertexId, &'g EP)> + 'g> where Self: 'g, EP: 'g;
-    type FullEdgeIter<'g> = Box<dyn Iterator<Item = (VertexId, VertexId, &'g EP)> + 'g> where Self: 'g, EP: 'g;
-
     const IS_DIRECTED: bool = true;
 
     fn num_vertices(&self) -> usize { self.vertices.len() }
@@ -95,12 +91,10 @@ impl<VP, EP> Graph<VP, EP> for DirectedGraph<VP, EP> {
         self.edges_out.iter().map(|edges_out| edges_out.len()).sum()
     }
 
-    fn vertex_ids(&self) -> Self::VertexIter { Box::new(0..self.vertices.len()) }
-
-    fn edges(&self) -> Self::FullEdgeIter<'_> {
-        Box::new(self.edges_out.iter().enumerate().flat_map(move |(from, edges_out)| {
+    fn edges<'g>(&'g self) -> impl Iterator<Item = (VertexId, VertexId, &'g EP)> where EP: 'g {
+        self.edges_out.iter().enumerate().flat_map(move |(from, edges_out)| {
             edges_out.iter().map(move |(to, payload)| (from, *to as VertexId, payload))
-        }))
+        })
     }
 
     fn vertex(&self, v: VertexId) -> &VP { &self.vertices[v] }
@@ -117,18 +111,18 @@ impl<VP, EP> Graph<VP, EP> for DirectedGraph<VP, EP> {
     fn out_degree(&self, v: VertexId) -> usize { self.edges_out[v].len() }
     fn in_degree(&self, v: VertexId) -> usize { self.edges_in[v].len() }
 
-    fn edges_adj(&self, v: VertexId) -> Self::HalfEdgeIter<'_> {
-        Box::new(self.edges_out(v).chain(self.edges_in(v)))
+    fn edges_adj<'g>(&'g self, v: VertexId) -> impl Iterator<Item = (VertexId, &'g EP)> where EP: 'g {
+        self.edges_out(v).chain(self.edges_in(v))
     }
-    fn edges_in(&self, to: VertexId) -> Self::HalfEdgeIter<'_> {
-        Box::new(self.edges_in[to]
+    fn edges_in<'g>(&'g self, to: VertexId) -> impl Iterator<Item = (VertexId, &'g EP)> where EP: 'g {
+        self.edges_in[to]
             .iter()
-            .map(move |&from| (from as VertexId, self.edge(from as VertexId, to).unwrap())))
+            .map(move |&from| (from as VertexId, self.edge(from as VertexId, to).unwrap()))
     }
-    fn edges_out(&self, from: VertexId) -> Self::HalfEdgeIter<'_> {
-        Box::new(self.edges_out[from]
+    fn edges_out<'g>(&'g self, from: VertexId) -> impl Iterator<Item = (VertexId, &'g EP)> where EP: 'g {
+        self.edges_out[from]
             .iter()
-            .map(move |(&to, payload)| (to as VertexId, payload)))
+            .map(move |(&to, payload)| (to as VertexId, payload))
     }
 }
 

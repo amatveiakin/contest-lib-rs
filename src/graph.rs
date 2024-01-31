@@ -3,12 +3,6 @@
 //   - https://rust-lang.github.io/rfcs/1210-impl-specialization.html
 //   - https://github.com/rust-lang/rust/issues/31844
 
-// Rust-upgrade (https://github.com/rust-lang/rust/issues/63063): Replace
-//     type VertexIter = Box<dyn Iterator<...>>;
-// and alike with
-//     type VertexIter = impl Iterator<...>;
-// in `Graph` implementations when "Permit impl Trait in type aliases" is stable.
-
 // Improvement potential: Consider extending `VP == ()` and `EP == ()` specializations to
 // `VP: Default` and `EP: Default`.
 
@@ -44,10 +38,6 @@ pub type StorageVertexId = u32;
 // you almost certainly need to take either a `&mut DirectedGraph` or a `&mut UndirectedGraph`.
 //
 pub trait Graph<VP, EP> {
-    type VertexIter: Iterator<Item = VertexId>;
-    type HalfEdgeIter<'g>: Iterator<Item = (VertexId, &'g EP)> where Self: 'g, EP: 'g;
-    type FullEdgeIter<'g>: Iterator<Item = (VertexId, VertexId, &'g EP)> where Self: 'g, EP: 'g;
-
     const IS_DIRECTED: bool;
     fn is_directed(&self) -> bool { Self::IS_DIRECTED }
 
@@ -56,9 +46,9 @@ pub trait Graph<VP, EP> {
     fn num_edges(&self) -> usize;
 
     // Vertex IDs always range from 0 to (num_vertices() - 1).
-    fn vertex_ids(&self) -> Self::VertexIter;
+    fn vertex_ids(&self) -> VertexIdIterator { VertexIdIterator { current: 0, end: self.num_vertices() } }
 
-    fn edges(&self) -> Self::FullEdgeIter<'_>;
+    fn edges<'g>(&'g self) -> impl Iterator<Item = (VertexId, VertexId, &'g EP)> where EP: 'g;
 
     fn vertex(&self, v: VertexId) -> &VP;
     fn vertex_mut(&mut self, v: VertexId) -> &mut VP;
@@ -80,7 +70,31 @@ pub trait Graph<VP, EP> {
     //   - `edges_out().count()` == `out_degree()`;
     // Iteration order is unspecified. (Note. It's easy to fix it if necessary by replacing
     // `HashSet` with `BTreeSet`.)
-    fn edges_adj(&self, from: VertexId) -> Self::HalfEdgeIter<'_>;
-    fn edges_in(&self, to: VertexId) -> Self::HalfEdgeIter<'_>;
-    fn edges_out(&self, from: VertexId) -> Self::HalfEdgeIter<'_>;
+    fn edges_adj<'g>(&'g self, from: VertexId) -> impl Iterator<Item = (VertexId, &'g EP)> where EP: 'g;
+    fn edges_in<'g>(&'g self, to: VertexId) -> impl Iterator<Item = (VertexId, &'g EP)> where EP: 'g;
+    fn edges_out<'g>(&'g self, from: VertexId) -> impl Iterator<Item = (VertexId, &'g EP)> where EP: 'g;
+}
+
+// Rust-upgrade: replpace with
+//   fn vertex_ids(&self) -> impl Iterator<Item = VertexId> { 0..self.vertices.len() }
+// when there is a way to fix that fact that &self lifetime is captired. For now there isn't:
+// https://rust-lang.github.io/rfcs/3498-lifetime-capture-rules-2024.html#overcapturing
+// Capturing &self lifetime is problematic because it breaks code like
+//   for v in g.vertex_ids() { ... g.add_edge(v, u); ... }
+pub struct VertexIdIterator {
+    current: VertexId,
+    end: VertexId,
+}
+
+impl Iterator for VertexIdIterator {
+    type Item = VertexId;
+    fn next(&mut self) -> Option<VertexId> {
+        if self.current < self.end {
+            let result = self.current;
+            self.current += 1;
+            Some(result)
+        } else {
+            None
+        }
+    }
 }
