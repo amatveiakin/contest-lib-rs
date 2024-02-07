@@ -72,6 +72,20 @@ impl<EP> UndirectedGraph<(), EP> {
             self.add_vertex();
         }
     }
+
+    pub fn from_read_edges_p<R: std::io::BufRead>(
+        num_vertices: usize, num_edges: usize, read: &mut io::Reader<R>,
+        read_payload: impl Fn(&mut io::Reader<R>) -> EP
+    ) -> Self {
+        let mut graph = Self::new();
+        graph.add_vertices(num_vertices);
+        for _ in 0..num_edges {
+            let [from, to] = read.usizes().from1b();
+            let payload = read_payload(read);
+            graph.add_edge_p(from, to, payload);
+        }
+        graph
+    }
 }
 
 impl<VP> UndirectedGraph<VP, ()> {
@@ -85,13 +99,7 @@ impl UndirectedGraph<(), ()> {
     pub fn from_read_edges<R: std::io::BufRead>(
         num_vertices: usize, num_edges: usize, read: &mut io::Reader<R>
     ) -> Self {
-        let mut graph = Self::new();
-        graph.add_vertices(num_vertices);
-        for _ in 0..num_edges {
-            let [from, to] = read.usizes().from1b();
-            graph.add_edge(from, to);
-        }
-        graph
+        Self::from_read_edges_p(num_vertices, num_edges, read, |_| ())
     }
 }
 
