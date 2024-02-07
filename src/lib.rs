@@ -1,4 +1,5 @@
 pub mod testing {
+    pub mod graph_ext;
     pub mod graph_generators;
     pub mod graph_output;
     pub mod graphviz;
@@ -14,6 +15,7 @@ pub mod bfs;
 pub mod binary_heaps;
 pub mod bitset;
 pub mod bool_ext;
+pub mod bridges;
 pub mod btreeset_util;
 pub mod callable;
 pub mod combinatorics_mod;

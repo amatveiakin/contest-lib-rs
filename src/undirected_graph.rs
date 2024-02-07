@@ -110,7 +110,7 @@ impl<VP, EP> Graph<VP, EP> for UndirectedGraph<VP, EP> {
     fn num_edges(&self) -> usize { self.edges.len() }
 
     fn edges<'g>(&'g self) -> impl Iterator<Item = (VertexId, VertexId, &'g EP)> where EP: 'g {
-        self.edges.iter().map(|(e, payload)| (e.from as VertexId, e.to as VertexId, payload))
+        self.edges.iter().map(|(e, payload)| (e.v1 as VertexId, e.v2 as VertexId, payload))
     }
 
     fn vertex(&self, v: VertexId) -> &VP { &self.vertices[v] }
@@ -142,18 +142,21 @@ impl<VP, EP> Graph<VP, EP> for UndirectedGraph<VP, EP> {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
-struct UndirectedEdgeId {
-    pub from: StorageVertexId,
-    pub to: StorageVertexId,
+pub struct UndirectedEdgeId {
+    v1: StorageVertexId,
+    v2: StorageVertexId,
 }
 
 impl UndirectedEdgeId {
-    fn new(from: VertexId, to: VertexId) -> Self {
-        let from = from as StorageVertexId;
-        let to = to as StorageVertexId;
-        let (from, to) = if from < to { (from, to) } else { (to, from) };
-        Self { from, to }
+    pub fn new(v1: VertexId, v2: VertexId) -> Self {
+        let v1 = v1 as StorageVertexId;
+        let v2 = v2 as StorageVertexId;
+        let (v1, v2) = if v1 < v2 { (v1, v2) } else { (v2, v1) };
+        Self { v1, v2 }
     }
+
+    pub fn v1(&self) -> VertexId { self.v1 as VertexId }
+    pub fn v2(&self) -> VertexId { self.v2 as VertexId }
 }
 
 
