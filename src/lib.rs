@@ -52,6 +52,7 @@ pub mod relax_float;
 pub mod segment_bucket_counter;
 pub mod segment_tree;
 pub mod sort_array;
+pub mod strongly_connected;
 pub mod topological_sort;
 pub mod tree;
 pub mod u32_index;

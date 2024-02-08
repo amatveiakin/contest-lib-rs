@@ -1,4 +1,4 @@
-// Provides `weakly_connected_components` which returns:
+// `weakly_connected_components` returns:
 //   - weakly connected components of a directed graph;
 //   - connected components of an undirected graph.
 //
@@ -41,11 +41,12 @@ mod tests {
 
     use super::*;
 
-    fn components_sorted(mut components: Vec<Vec<VertexId>>) -> Vec<Vec<VertexId>> {
+    fn components_sorted<VP, EP>(g: &impl Graph<VP, EP>) -> Vec<Vec<VertexId>> {
+        let mut components = weakly_connected_components(g);
         for component in &mut components {
-            component.sort();
+            component.sort_unstable();
         }
-        components.sort();
+        components.sort_unstable();
         components
     }
 
@@ -58,7 +59,7 @@ mod tests {
         g.add_edge(a, d);
         g.add_edge(b, e);
         g.add_edge(d, e);
-        assert_eq!(components_sorted(weakly_connected_components(&g)), vec![
+        assert_eq!(components_sorted(&g), vec![
             vec![a, b, c, d, e]
         ]);
     }
@@ -71,7 +72,7 @@ mod tests {
         g.add_edge(b, d);
         g.add_edge(d, e);
         g.add_edge(e, b);
-        assert_eq!(components_sorted(weakly_connected_components(&g)), vec![
+        assert_eq!(components_sorted(&g), vec![
             vec![a, c],
             vec![b, d, e]
         ]);
