@@ -56,6 +56,7 @@ pub mod strongly_connected;
 pub mod topological_sort;
 pub mod tree;
 pub mod u32_index;
+pub mod undirected_combo_graph;
 pub mod undirected_graph;
 pub mod vec_ext;
 pub mod weakly_connected;
