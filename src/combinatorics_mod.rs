@@ -27,9 +27,8 @@ thread_local! {
 }
 
 pub fn factorial_mod<const M: i32>(n: i32) -> ModNumber<M> {
-    FACTORIAL_MOD_MEMO.with(|memo_storage| {
-        let mut memo_borrow = memo_storage.borrow_mut();
-        let memo = memo_borrow.entry(M).or_insert_with(|| vec![1.into()]);
+    FACTORIAL_MOD_MEMO.with_borrow_mut(|memo_map| {
+        let memo = memo_map.entry(M).or_insert_with(|| vec![1.into()]);
         while memo.len() <= n as usize {
             let last = ModNumber::<M>::from(*memo.last().unwrap());
             let next = last * (memo.len() as i32).into();

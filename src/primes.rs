@@ -28,8 +28,8 @@ impl Iterator for PrimesIter {
     fn next(&mut self) -> Option<Self::Item> {
         // Performance note: on my machine the overhead on `thread_local` and `ref_cell` is about 1%
         // when generating primes up to 10'000'000.
-        PRIMES.with(|p| {
-            let values = &mut p.borrow_mut().values;
+        PRIMES.with_borrow_mut(|p| {
+            let values = &mut p.values;
             if self.index < values.len() {
                 let ret = values[self.index];
                 self.index += 1;

@@ -22,7 +22,7 @@ const KZ: u32 = 521288629;
 const KW: u32 = 88675123;
 
 pub fn random<T>() -> T where Standard: Distribution<T> {
-    RAND.with(|r| r.borrow_mut().gen())
+    RAND.with_borrow_mut(|r| r.gen())
 }
 
 thread_local! {
@@ -103,7 +103,7 @@ impl Rng for Rand {
 
 impl Rng for ThreadRng {
     fn next_u32(&mut self) -> u32 {
-        RAND.with(|r| r.borrow_mut().next_u32())
+        RAND.with_borrow_mut(|r| r.next_u32())
     }
 }
 

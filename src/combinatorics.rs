@@ -24,9 +24,8 @@ pub fn factorial(n: i32) -> i64 {
 }
 
 pub fn num_combinations(n: i32, k: i32) -> i64 {
-    COMBINATIONS_MEMO.with(|memo_storage| {
-        let mut memo_borrow = memo_storage.borrow_mut();
-        num_combinations_impl(n, k, &mut memo_borrow)
+    COMBINATIONS_MEMO.with_borrow_mut(|memo| {
+        num_combinations_impl(n, k, memo)
     })
 }
 
