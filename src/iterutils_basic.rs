@@ -4,7 +4,9 @@
 //
 // This file contains basic utilities. Larger tools are stored separately as "itertools_foo.rs".
 
+use std::hash::Hash;
 use std::{fmt, array};
+use std::collections::HashSet;
 
 
 pub trait IterutilsBasic
@@ -14,6 +16,7 @@ where
     fn join(self, sep: &str) -> String where Self::Item: fmt::Display;
     fn collect_vec(self) -> Vec<Self::Item>;
     fn collect_array<const N: usize>(self) -> [Self::Item; N];
+    fn collect_set(self) -> HashSet<Self::Item> where Self::Item: Eq + Hash;
 }
 
 impl<I: Iterator> IterutilsBasic for I {
@@ -34,6 +37,10 @@ impl<I: Iterator> IterutilsBasic for I {
         let ret = array::from_fn(|_| self.next().unwrap());
         assert!(self.next().is_none());
         ret
+    }
+
+    fn collect_set(self) -> HashSet<Self::Item> where Self::Item: Eq + Hash {
+        self.collect()
     }
 }
 
