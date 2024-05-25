@@ -47,6 +47,7 @@ members = [
     "contests/cf-round-932-div-2",
     "contests/cf-round-936-div-2",
     "contests/cf-round-945-div-2",
+    "contests/cf-round-947-div-1-2",
     "graph-render",
     "playground",
 ]
