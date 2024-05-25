@@ -93,12 +93,18 @@ impl<VP, EP> Tree<VP, EP> {
 }
 
 impl<VP: Clone, EP: Clone> Tree<VP, EP> {
-    // Note using `TryFrom` trait because it expects a value, not a reference.
+    // Not using `TryFrom` trait because it expects a value, not a reference.
     pub fn try_from(graph: &UndirectedGraph<VP, EP>) -> Result<Self, TreeConstructionError> {
+        Self::try_from_with_root(graph, 0)
+    }
+
+    pub fn try_from_with_root(graph: &UndirectedGraph<VP, EP>, root: VertexId)
+        -> Result<Self, TreeConstructionError>
+    {
         if graph.num_vertices() == 0 {
             return Err(TreeConstructionError::EmptyGraph);
         }
-        let root = 0 as StorageVertexId;
+        let root = root as StorageVertexId;
         let mut vertices = graph.vertex_ids().map(|v| TreeVertex {
             payload: graph.vertex(v).clone(),
             parent: None,
@@ -126,6 +132,22 @@ impl<VP: Clone, EP: Clone> Tree<VP, EP> {
             return Err(TreeConstructionError::NotConnected);
         }
         return Ok(Tree { vertices, root });
+    }
+
+    pub fn chroot(&self, new_root: VertexId) -> Tree<VP, EP> {
+        // Cannot fail: we know this is a tree.
+        Self::try_from_with_root(&self.to_graph(), new_root).unwrap()
+    }
+
+    pub fn to_graph(&self) -> UndirectedGraph<VP, EP> {
+        let mut graph = UndirectedGraph::new();
+        for v in self.vertex_ids() {
+            graph.add_vertex_p(self.vertex(v).clone());
+        }
+        for (u, v, p) in self.edges() {
+            graph.add_edge_p(u, v, p.clone());
+        }
+        graph
     }
 }
 
