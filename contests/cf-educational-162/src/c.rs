@@ -20,7 +20,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
         }
         let min = ((r - l + 1) + oc.count(true, l..=r)) as u64;
         let sum = sums.get(l..=r);
-        emitln!(write, (min <= sum).yesno());
+        emitln!(write, (min <= sum).YESNO());
     }
 }
 

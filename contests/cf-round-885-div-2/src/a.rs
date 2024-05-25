@@ -13,7 +13,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, 
             run = false;
         }
     }
-    emitln!(write, run.yesno());
+    emitln!(write, run.YESNO());
 }
 
 #[allow(unused_variables)]

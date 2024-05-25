@@ -6,7 +6,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
     let n = read.usize();
     let k = read.u32();
     let a = read.vec_u32(n);
-    emitln!(write, a.contains(&k).yesno());
+    emitln!(write, a.contains(&k).YESNO());
 }
 
 #[allow(unused_variables)]

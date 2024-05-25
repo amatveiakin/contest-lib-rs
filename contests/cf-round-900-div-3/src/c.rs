@@ -6,7 +6,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
     let [n, k, x] = read.i64s();
     let ks = k * (k + 1) / 2;
     let ans = ks <= x && x <= ks + (n - k) * k;
-    emitln!(write, ans.yesno());
+    emitln!(write, ans.YESNO());
 }
 
 #[allow(unused_variables)]

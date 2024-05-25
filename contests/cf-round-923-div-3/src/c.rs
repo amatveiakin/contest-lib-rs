@@ -22,7 +22,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
             (true, true) => {}
         }
     }
-    emitln!(write, (oa <= k/2 && ob <= k/2).yesno());
+    emitln!(write, (oa <= k/2 && ob <= k/2).YESNO());
 }
 
 #[allow(unused_variables)]

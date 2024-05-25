@@ -77,7 +77,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
                 if r >= l + 2 {
                     c |= p2.range(l..=(r - 2)).next().is_some();
                 }
-                emitln!(write, (!c).yesno());
+                emitln!(write, (!c).YESNO());
             }
             _ => panic!()
         }

@@ -7,7 +7,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
     let ans =
         (a % 2 == 0 && a / 2 != b) ||
         (b % 2 == 0 && b / 2 != a);
-    emitln!(write, ans.yesno());
+    emitln!(write, ans.YESNO());
 }
 
 #[allow(unused_variables)]

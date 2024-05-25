@@ -16,7 +16,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
                 let x = FactoredNum::from(read.u32());
                 n *= x;
                 let d = FactoredNum::from(n.num_divisors());
-                emitln!(write, n.divisible_by(&d).yesno());
+                emitln!(write, n.divisible_by(&d).YESNO());
             }
             2 => {
                 n = n_orig.clone();

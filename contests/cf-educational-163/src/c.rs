@@ -30,7 +30,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
         }
     }
     let path = bfs_path(&g, vid(Point2D::new(0, 0)), vid(Point2D::new(n as i32 - 1, 1)));
-    emitln!(write, path.is_some().yesno());
+    emitln!(write, path.is_some().YESNO());
 }
 
 #[allow(unused_variables)]

@@ -49,7 +49,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
         }
     }
     let ans = topological_sort(&g).is_some();
-    emitln!(write, ans.yesno());
+    emitln!(write, ans.YESNO());
 }
 
 #[allow(unused_variables)]
