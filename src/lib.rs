@@ -12,6 +12,7 @@ pub mod testing {
 pub mod array_2d;
 pub mod base_one;
 pub mod bfs;
+pub mod bimap;
 pub mod binary_heaps;
 pub mod bitset;
 pub mod bool_ext;
