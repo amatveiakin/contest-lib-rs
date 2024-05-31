@@ -30,29 +30,34 @@ impl Iterator for PrimesIter {
         // when generating primes up to 10'000'000.
         PRIMES.with_borrow_mut(|p| {
             let values = &mut p.values;
-            if self.index < values.len() {
-                let ret = values[self.index];
-                self.index += 1;
-                Some(ret)
-            } else {
-                assert_eq!(self.index, values.len());
-                let mut x = values.last().unwrap() + 2;
-                'outer: loop {
-                    for &p in values.iter() {
-                        if x % p == 0 {
-                            x += 2;
-                            continue 'outer;
-                        }
-                        if p * p > x {
-                            break;
-                        }
-                    }
-                    values.push(x);
-                    self.index += 1;
-                    return Some(x);
-                }
+            while self.index >= values.len() {
+                push_next_prime(values);
             }
+            let ret = values[self.index];
+            self.index += 1;
+            Some(ret)
         })
+    }
+
+    fn nth(&mut self, n: usize) -> Option<Self::Item> {
+        self.index += n;
+        self.next()
+    }
+}
+
+fn push_next_prime(values: &mut Vec<u32>) {
+    let mut x = values.last().unwrap() + 2;
+    loop {
+        for &p in values.iter() {
+            if x % p == 0 {
+                x += 2;
+                break;
+            }
+            if p * p > x {
+                values.push(x);
+                return;
+            }
+        }
     }
 }
 
