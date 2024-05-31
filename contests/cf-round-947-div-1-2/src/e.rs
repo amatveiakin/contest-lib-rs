@@ -2,8 +2,6 @@ use std::collections::HashSet;
 
 use contest_lib_rs::base_one::BaseOneConversion;
 use contest_lib_rs::bool_ext::BoolExtension;
-use contest_lib_rs::counting_set::CountingSet;
-use contest_lib_rs::genealogy::VertexDepths;
 use contest_lib_rs::graph::{Graph, VertexId};
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::tree::Tree;
@@ -11,24 +9,17 @@ use contest_lib_rs::tree::Tree;
 fn update(
     u: VertexId,
     t: &Tree<(), ()>,
-    dp: &VertexDepths,
     cl: &mut Vec<i32>,
     nch: &mut Vec<i32>,
     nv: &mut i32,
     ne: &mut i32,
     v2: &mut HashSet<VertexId>,
     nv3: &mut i32,
-    vd: &mut CountingSet<u32>,
 ) {
     cl[u] = 1 - cl[u];
     let sign = if cl[u] == 1 { 1 } else { -1 };
     *nv += sign;
     *ne += sign * nch[u];
-    if cl[u] == 1 {
-        vd.push(dp[u]);
-    } else {
-        assert!(vd.remove(dp[u]));
-    }
     if let Some(v) = t.parent(u) {
         if cl[v] == 1 {
             *ne += sign;
@@ -53,7 +44,6 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
     let [n, q] = read.usizes();
     let clinit = read.vec_u32(n);
     let t = Tree::from_read_edges(n, read).unwrap();
-    let dp = VertexDepths::new(&t);
 
     let mut cl = vec![0; n];
     let mut nch = vec![0; n];
@@ -61,24 +51,23 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
     let mut ne = 0;
     let mut v2 = HashSet::new();
     let mut nv3 = 0;
-    let mut vd = CountingSet::new();
 
     for u in t.vertex_ids() {
         if clinit[u] == 1 {
-            update(u, &t, &dp, &mut cl, &mut nch, &mut nv, &mut ne, &mut v2, &mut nv3, &mut vd);
+            update(u, &t, &mut cl, &mut nch, &mut nv, &mut ne, &mut v2, &mut nv3);
         }
     }
 
     for _ in 0..q {
         let u = read.usize().from1b();
-        update(u, &t, &dp, &mut cl, &mut nch, &mut nv, &mut ne, &mut v2, &mut nv3, &mut vd);
+        update(u, &t, &mut cl, &mut nch, &mut nv, &mut ne, &mut v2, &mut nv3);
         let ok =
             nv > 0 &&
             ne == nv - 1 &&
             nv3 == 0 &&
             (
                 v2.len() == 0 ||
-                (v2.len() == 1 && dp[*v2.iter().next().unwrap()] <= *vd.first().unwrap())
+                (v2.len() == 1 && t.parent(*v2.iter().next().unwrap()).map_or(true, |p| cl[p] == 0))
             )
         ;
         emitln!(write, ok.YesNo());
