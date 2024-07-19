@@ -166,6 +166,12 @@ trait_for_value_and_ref!(impl<{T: Emittable}> Emittable for Vec<T> {
     }
 });
 
+trait_for_value_and_ref!(impl<{T: Emittable, const N: usize}> Emittable for [T; N] {
+    fn emit(&self, writer: &mut impl std::io::Write) {
+        self.iter().for_each(|v| v.emit(writer));
+    }
+});
+
 pub fn emit_impl<T: Emittable>(writer: &mut impl std::io::Write, value: T) {
     value.emit(writer);
 }

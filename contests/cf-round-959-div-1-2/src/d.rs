@@ -15,7 +15,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
             let vx = v as usize % x;
             if let Some(j) = modgr[vx] {
                 if comp.unite(i, j) {
-                    ops.push((i, j));
+                    ops.push([i, j]);
                     continue 'outer;
                 }
             } else {
@@ -26,8 +26,8 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
     }
 
     emitln!(write, "YES");
-    for &(i, j) in ops.iter().rev() {
-        emitln!(write, i.to1b(), j.to1b());
+    for &op in ops.iter().rev() {
+        emitln!(write, op.to1b());
     }
 }
 
