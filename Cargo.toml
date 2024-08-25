@@ -16,6 +16,7 @@ members = [
     "contests/cf-educational-162",
     "contests/cf-educational-163",
     "contests/cf-epic-2024",
+    "contests/cf-european-championship-2024",
     "contests/cf-icpc-2022-2023-russia",
     "contests/cf-round-869-div-2",
     "contests/cf-round-870-div-2",

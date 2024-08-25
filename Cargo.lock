@@ -115,6 +115,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "cf-european-championship-2024"
+version = "0.1.0"
+dependencies = [
+ "contest_lib_rs",
+ "pretty_assertions",
+]
+
+[[package]]
 name = "cf-icpc-2022-2023-russia"
 version = "0.1.0"
 dependencies = [
