@@ -1,3 +1,4 @@
+#[derive(Clone, Debug)]
 pub struct DisjointSet {
     parent: Vec<usize>,
     size: Vec<usize>,
@@ -14,6 +15,7 @@ impl DisjointSet {
         self.parent.len()
     }
 
+    #[track_caller]
     pub fn find(&mut self, x: usize) -> usize {
         if self.parent[x] != x {
             self.parent[x] = self.find(self.parent[x]);
@@ -21,6 +23,7 @@ impl DisjointSet {
         self.parent[x]
     }
 
+    #[track_caller]
     pub fn unite(&mut self, x: usize, y: usize) -> bool {
         let mut x = self.find(x);
         let mut y = self.find(y);
@@ -35,10 +38,12 @@ impl DisjointSet {
         true
     }
 
+    #[track_caller]
     pub fn same(&mut self, x: usize, y: usize) -> bool {
         self.find(x) == self.find(y)
     }
 
+    #[track_caller]
     pub fn size(&mut self, x: usize) -> usize {
         let root = self.find(x);
         self.size[root]
