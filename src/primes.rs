@@ -74,4 +74,12 @@ mod tests {
             53, 59, 61, 67, 71, 73, 79, 83, 89, 97
         ]);
     }
+
+    #[test]
+    fn nth_prime() {
+        assert_eq!(primes().nth(0), Some(2));
+        assert_eq!(primes().nth(1), Some(3));
+        assert_eq!(primes().nth(2), Some(5));
+        assert_eq!(primes().nth(5), Some(13));
+    }
 }

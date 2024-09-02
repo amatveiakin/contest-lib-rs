@@ -1,5 +1,5 @@
 // `UndirectedComboGraph` is an undirected graph that allows combining multiple vertices into a
-// single one.
+// single one, like a `DisjointSet`.
 //
 // Combining vertices any number of times in a graph with V vertices and E edges is done in
 //   O((V + E) log V)
