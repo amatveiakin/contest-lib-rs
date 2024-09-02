@@ -1,54 +1,33 @@
-// Improvement potential. Find a way to compute auxiliary structures like DFS numbering and binary
-// lifting in a way that:
-//   - Each structure is computed once and reused by all algorithms which need it;
-//   - No unnecessary structures are computed;
+// Implements the following low-level helper classes:
 //
-// This could be done in different ways (syntax is not final):
+//   * `DfsNumbering`: O(V) space and build time
+//     For each vertex, stores enter and exit times of a DFS traversal.
 //
-// (1)
-//   let dfs_numbering = get_dfs_numbering(&tree);
-//   let binary_lifting = get_binary_lifting(&tree);
-//   let lca = LowestCommonAncestor::new(&dfs_numbering, &binary_lifting);
-//   let c = lca.get(u, v);
+//   * `BinaryLifting`: O(V log V) space and build time
+//     For each vertex, stores the list of ancestors at distances 2^0, 2^1, 2^2, ...
 //
-// (2) (current)
-//   let dfs_numbering = get_dfs_numbering(&tree);
-//   let binary_lifting = get_binary_lifting(&tree);
-//   let c = lowest_common_ancestor(u, v, &dfs_numbering, &binary_lifting);
+//   * `VertexDepths`: O(V) space and build time
+//     For each vertex, stores the distance to the root.
 //
-// (3)
-//   let (dfs_numbering, binary_lifting) =
-//       tree_compute(&tree, (DfsNumbering::builder(), BinaryLifting::builder()));
-//   let c = lowest_common_ancestor(u, v, &dfs_numbering, &binary_lifting);
+// and the following high-level helper functions:
 //
-// (4)
-//   let tree = tree.compute_dfs_numbering();
-//   let tree = tree.compute_binary_lifting();
-//   let c = tree.lowest_common_ancestor(u, v);
+//   * `lowest_common_ancestor(DfsNumbering, BinaryLifting, u, v)`: O(log V)
+//     Lowest common ancestor of two vertices.
 //
-// (5)
-//   let tree = tree.compute::<DfsNumbering, BinaryLifting>();
-//   let c = tree.lowest_common_ancestor(u, v);
+//   * `tree_path_via_depths(Tree, VertexDepths, from, to)`: O(path_length)
+//   * `tree_path_via_dfsn(Tree, DfsNumbering, from, to)`: O(path_length)
+//     Path in a tree. Includes the start and end vertices.
 //
-// (6)
-//   // Constructs simple wrapper in O(1) time.
-//   let navigator = TreeNavigator::new(&tree);
-//   // Lazily computes DFS numbering and binary lifting on first use.
-//   let c = navigator.lowest_common_ancestor(u, v);
-//
-// Ideal solution properties:
-//   - Ideally simple cases should be simple;
-//   - Less DFS traversals is better.
-//
-// Options (1) and (2) are very easy to implement. Options (4) and (5) seem more convenient for the
-// user, but require a way to figure out how to stuff all this information into the `Tree` type
-// without making it too complex. Options (3) and (5) allow to do just a single DFS traversal.
-// Option (1) could be made easier to use in the simple case by splitting into
-//   `LowestCommonAncestor::new()` and
-//   `LowestCommonAncestor::new_with_precomputed(Some(&dfs_numbering), None);`
-// where you can pass the information that you have and the rest is calculated automatically
-// Option (6) is easy to use and to implement, but is a bit too magical. I'm not sure I like the
-// idea of hiding the set of auxiliary structures that are computed.
+//   * `tree_distance(DfsNumbering, BinaryLifting, VertexDepths, from, to)`: O(log V)
+//     Equals to path length minus one.
+
+// Improvement potential. Consider replacing with this syntax:
+//   let genealogy = compute_genealogy::<DfsNumbering, BinaryLifting>(&tree);
+//   let p = genealogy.lowest_common_ancestor(u, v);
+// Benefits:
+//   - Compact syntax (less structures, less arguments to pass around)
+//   - Potentially possible to compute all structures with a single DFS.
+// The question is if Rust generic system is rich enough to support this.
 
 use std::ops;
 
@@ -162,6 +141,61 @@ pub fn lowest_common_ancestor(
     }
 }
 
+pub fn tree_path_via_depths<VP, EP>(
+    tree: &Tree<VP, EP>, vertex_depths: &VertexDepths, mut from: VertexId, mut to: VertexId,
+) -> Vec<VertexId> {
+    let mut path_from = vec![];
+    let mut path_to = vec![];
+    while vertex_depths[from] > vertex_depths[to] {
+        path_from.push(from);
+        from = tree.parent(from).unwrap();
+    }
+    while vertex_depths[to] > vertex_depths[from] {
+        path_to.push(to);
+        to = tree.parent(to).unwrap();
+    }
+    while from != to {
+        path_from.push(from);
+        path_to.push(to);
+        from = tree.parent(from).unwrap();
+        to = tree.parent(to).unwrap();
+    }
+    path_from.push(from);
+    path_to.reverse();
+    path_from.extend_from_slice(&path_to);
+    path_from
+}
+
+pub fn tree_path_via_dfsn<VP, EP>(
+    tree: &Tree<VP, EP>, dfs_numbering: &DfsNumbering, mut from: VertexId, mut to: VertexId,
+) -> Vec<VertexId> {
+    let mut path_from = vec![];
+    let mut path_to = vec![];
+    while !dfs_numbering.is_ancestor(from, to) {
+        path_from.push(from);
+        from = tree.parent(from).unwrap();
+    }
+    let ancestor = from;
+    path_from.push(ancestor);
+    while to != ancestor {
+        path_to.push(to);
+        to = tree.parent(to).unwrap();
+    }
+    path_to.reverse();
+    path_from.extend_from_slice(&path_to);
+    path_from
+}
+
+pub fn tree_distance(
+    dfs_numbering: &DfsNumbering, binary_lifting: &BinaryLifting, vertex_depths: &VertexDepths,
+    from: VertexId, to: VertexId,
+) -> u32 {
+    let ancestor = lowest_common_ancestor(dfs_numbering, binary_lifting, from, to);
+    let d_from = vertex_depths[from] - vertex_depths[ancestor];
+    let d_to = vertex_depths[to] - vertex_depths[ancestor];
+    d_from + d_to
+}
+
 fn compute_dfs_numbering<VP, EP>(
     tree: &Tree<VP, EP>, v: VertexId, timestamp: &mut u32, numbering: &mut Vec<(u32, u32)>
 ) {
@@ -202,8 +236,26 @@ fn compute_vertex_depths<VP, EP>(tree: &Tree<VP, EP>, v: VertexId, d: u32, depth
 
 #[cfg(test)]
 mod tests {
+    use crate::bfs::bfs_path;
+
     use super::*;
 
+    fn to_vertex_ids(storage_vertex_ids: &[StorageVertexId]) -> Vec<VertexId> {
+        storage_vertex_ids.iter().map(|&v| v as VertexId).collect()
+    }
+
+    //            _____ a _____
+    //           /      |      \
+    //          b       c       d
+    //          |             /   \
+    //          e            f     g
+    //        /   \
+    //       h     k
+    //       |
+    //       l
+    //     / | \
+    //    m  n  o
+    //
     #[test]
     fn basic() {
         let (mut tree, a) = Tree::new_with_root();
@@ -216,6 +268,7 @@ mod tests {
 
         let dfs_numbering = DfsNumbering::new(&tree);
         let binary_lifting = BinaryLifting::new(&tree);
+        let vertex_depths = VertexDepths::new(&tree);
 
         assert!(dfs_numbering.is_ancestor(a, a));
         assert!(dfs_numbering.is_ancestor(a, b));
@@ -235,6 +288,14 @@ mod tests {
         assert_eq!(dfs_numbering.subtree_size(l), 4);
         assert_eq!(dfs_numbering.subtree_size(n), 1);
 
+        assert_eq!(to_vertex_ids(&binary_lifting[a]), []);
+        assert_eq!(to_vertex_ids(&binary_lifting[b]), [a]);
+        assert_eq!(to_vertex_ids(&binary_lifting[m]), [l, h, b]);
+
+        assert_eq!(vertex_depths[a], 0);
+        assert_eq!(vertex_depths[c], 1);
+        assert_eq!(vertex_depths[k], 3);
+
         assert!(lowest_common_ancestor(&dfs_numbering, &binary_lifting, a, a) == a);
         assert!(lowest_common_ancestor(&dfs_numbering, &binary_lifting, l, l) == l);
         assert!(lowest_common_ancestor(&dfs_numbering, &binary_lifting, b, d) == a);
@@ -242,5 +303,17 @@ mod tests {
         assert!(lowest_common_ancestor(&dfs_numbering, &binary_lifting, b, m) == b);
         assert!(lowest_common_ancestor(&dfs_numbering, &binary_lifting, g, n) == a);
         assert!(lowest_common_ancestor(&dfs_numbering, &binary_lifting, f, g) == d);
+
+        for i in tree.vertex_ids() {
+            for j in tree.vertex_ids() {
+                let bfs_path = bfs_path(&tree, i, j).unwrap();
+                let path1 = tree_path_via_depths(&tree, &vertex_depths, i, j);
+                let path2 = tree_path_via_dfsn(&tree, &dfs_numbering, i, j);
+                let dist = tree_distance(&dfs_numbering, &binary_lifting, &vertex_depths, i, j);
+                assert_eq!(path1, bfs_path);
+                assert_eq!(path2, bfs_path);
+                assert_eq!(dist, bfs_path.len() as u32 - 1);
+            }
+        }
     }
 }
