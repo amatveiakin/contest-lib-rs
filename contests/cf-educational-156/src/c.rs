@@ -1,8 +1,6 @@
-use std::iter;
-
 use contest_lib_rs::base_one::BaseOneConversion;
 use contest_lib_rs::io::prelude::*;
-use contest_lib_rs::iterutils_basic::IterutilsBasic;
+use contest_lib_rs::linked_vector::LinkedVector;
 
 fn break_pos(pos: usize, n: usize) -> (usize, usize) {
     let mut start: usize = 0;
@@ -23,34 +21,27 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
 
     let n = s.len();
     let (iiter, subp) = break_pos(pos, n);
-    let mut first = 0;
-    let mut nexts = (1..n).map(|x| Some(x)).chain(iter::once(None)).collect_vec();
-    let mut prevs = iter::once(None).chain((0..n - 1).map(|x| Some(x))).collect_vec();
+    let mut list = LinkedVector::new(n);
 
-    let mut cur = first;
+    let mut cur = 0;
     let mut removed = 0;
     while removed < iiter {
-        let Some(next) = nexts[cur] else {
+        let Some(next) = list.next(cur) else {
             break;
         };
         if s[next] >= s[cur] {
             cur = next;
         } else {
-            let prev = prevs[cur];
-            if let Some(prev) = prev {
-                nexts[prev] = Some(next);
-            } else {
-                first = next;
-            }
-            prevs[next] = prev;
+            let prev = list.prev(cur);
+            list.remove(cur);
             cur = prev.unwrap_or(next);
             removed += 1;
         }
     }
 
-    let mut idx = first;
+    let mut idx = list.first().unwrap();
     for i in 0..subp {
-        idx = nexts[idx].unwrap();
+        idx = list.next(idx).unwrap();
     }
     write!(write, "{}", s[idx]).unwrap();
 }
