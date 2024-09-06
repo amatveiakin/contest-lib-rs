@@ -20,6 +20,8 @@ pub trait RingNumber:
 {
     fn zero() -> Self;
     fn one() -> Self;
+    fn zero_ref() -> &'static Self;
+    fn one_ref() -> &'static Self;
 }
 
 pub trait Number: RingNumber {
@@ -84,6 +86,8 @@ macro_rules! impl_integer {
         impl RingNumber for $t {
             fn zero() -> Self { 0 }
             fn one() -> Self { 1 }
+            fn zero_ref() -> &'static Self { &0 }
+            fn one_ref() -> &'static Self { &1 }
         }
         impl Number for $t {
             const MIN: $t = <$t>::MIN;
@@ -114,6 +118,8 @@ macro_rules! impl_float {
         impl RingNumber for $t {
             fn zero() -> Self { 0.0 }
             fn one() -> Self { 1.0 }
+            fn zero_ref() -> &'static Self { &0.0 }
+            fn one_ref() -> &'static Self { &1.0 }
         }
         impl Number for $t {
             const MIN: $t = <$t>::MIN;

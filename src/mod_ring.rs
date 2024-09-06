@@ -20,6 +20,9 @@ pub struct ModNumber<const M: i32> {
 }
 
 impl<const M: i32> ModNumber<M> {
+    pub const ZERO: Self = Self { val: 0 };
+    pub const ONE: Self = Self { val: 1 };
+
     pub fn new_unchecked(x: i32) -> Self {
         // This is a compile-time assertion, but it must be located in a function that is called
         // at least once.
@@ -44,8 +47,10 @@ impl<const M: i32> ModNumber<M> {
 }
 
 impl<const M: i32> RingNumber for ModNumber<M> {
-    fn zero() -> Self { ModNumber::new_unchecked(0) }
-    fn one() -> Self { ModNumber::new_unchecked(1) }
+    fn zero() -> Self { ModNumber::ZERO }
+    fn one() -> Self { ModNumber::ONE }
+    fn zero_ref() -> &'static Self { &ModNumber::ZERO }
+    fn one_ref() -> &'static Self { &ModNumber::ONE }
 }
 impl<const M: i32> RingInteger for ModNumber<M> {}
 
