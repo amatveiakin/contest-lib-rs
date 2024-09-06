@@ -1,4 +1,4 @@
-use contest_lib_rs::base_one::BaseOneConversion;
+use contest_lib_rs::base_one::{Base, BaseOneConversion};
 use contest_lib_rs::bfs::bfs_path;
 use contest_lib_rs::bridges::find_bridges;
 use contest_lib_rs::graph::Graph;
@@ -8,7 +8,7 @@ use contest_lib_rs::undirected_graph::{UndirectedEdgeId, UndirectedGraph};
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let [n, m] = read.usizes();
-    let mut g = UndirectedGraph::from_read_edges_p(n, m, read, |read| read.u32());
+    let mut g = UndirectedGraph::from_read_edges_p(n, m, Base::ONE, read, |read| read.u32());
     let br = find_bridges(&g);
     let mut minw = u32::MAX;
     let mut mine = None;

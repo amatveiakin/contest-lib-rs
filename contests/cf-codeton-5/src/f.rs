@@ -1,5 +1,6 @@
 // UNFINISHED
 
+use contest_lib_rs::base_one::Base;
 use contest_lib_rs::graph::VertexId;
 use contest_lib_rs::io;
 use contest_lib_rs::tree::Tree;
@@ -20,7 +21,7 @@ fn dfs(v: VertexId, tree: &Tree<(), ()>, subtree_sizes: &[i64], black: &mut Vec<
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, write: &mut W) {
     let n = read.usize();
-    let tree = Tree::from_read_edges(n, read).unwrap();
+    let tree = Tree::from_read_edges(n, Base::ONE, read).unwrap();
     let subtree_sizes = tree.compute_recursively(|ch_sizes, _| {
         1 + ch_sizes.iter().copied().sum::<i64>()
     });

@@ -1,5 +1,6 @@
 use std::collections::{BTreeSet, VecDeque};
 
+use contest_lib_rs::base_one::Base;
 use contest_lib_rs::bool_ext::BoolExtension;
 use contest_lib_rs::graph::Graph;
 use contest_lib_rs::io::prelude::*;
@@ -9,7 +10,7 @@ use contest_lib_rs::undirected_graph::UndirectedGraph;
 #[allow(unused_variables)]
 fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let n = read.usize();
-    let mut g = UndirectedGraph::from_read_edges(n, n - 1, read);
+    let mut g = UndirectedGraph::from_read_edges(n, n - 1, Base::ONE, read);
 
     let mut sz = vec![1; n];
     let mut ch = vec![BTreeSet::new(); n];

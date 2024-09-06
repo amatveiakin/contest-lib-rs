@@ -1,5 +1,6 @@
 use std::array;
 
+use crate::base_one::Base;
 use crate::graph::{VertexId, Graph, StorageVertexId};
 use crate::{io, ivec};
 use crate::undirected_graph::UndirectedGraph;
@@ -206,11 +207,11 @@ impl<VP, EP> Graph<VP, EP> for Tree<VP, EP> {
 impl<EP: Clone> Tree<(), EP> {
     // Reads edges as 1-based vertex pairs.
     pub fn from_read_edges_p<R: std::io::BufRead>(
-        num_vertices: usize, read: &mut io::Reader<R>,
+        num_vertices: usize, base: Base, read: &mut io::Reader<R>,
         read_payload: impl Fn(&mut io::Reader<R>) -> EP
     ) -> Result<Self, TreeConstructionError> {
         let graph = UndirectedGraph::from_read_edges_p(
-            num_vertices, num_vertices - 1, read, read_payload);
+            num_vertices, num_vertices - 1, base, read, read_payload);
         Tree::try_from(&graph)
     }
 }
@@ -229,10 +230,10 @@ impl Tree<(), ()> {
     }
 
     // Reads edges as 1-based vertex pairs.
-    pub fn from_read_edges<R: std::io::BufRead>(num_vertices: usize, read: &mut io::Reader<R>)
-        -> Result<Self, TreeConstructionError>
-    {
-        Self::from_read_edges_p(num_vertices, read, |_| ())
+    pub fn from_read_edges<R: std::io::BufRead>(
+        num_vertices: usize, base: Base, read: &mut io::Reader<R>
+    ) -> Result<Self, TreeConstructionError> {
+        Self::from_read_edges_p(num_vertices, base, read, |_| ())
     }
 }
 

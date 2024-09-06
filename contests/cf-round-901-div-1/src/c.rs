@@ -1,5 +1,6 @@
 // UNFINISHED
 
+use contest_lib_rs::base_one::Base;
 use contest_lib_rs::directed_graph::DirectedGraph;
 use contest_lib_rs::graph::Graph;
 use contest_lib_rs::io::prelude::*;
@@ -20,7 +21,7 @@ fn num_combinations_f64(n: usize, k: usize) -> f64 {
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let [n, m] = read.usizes();
-    let g = DirectedGraph::from_read_edges(n, m, read);
+    let g = DirectedGraph::from_read_edges(n, m, Base::ONE, read);
     let mut probs = vec![1.0; n];
     for u in (0..(n - 1)).rev() {
         let mut next = g.edges_out(u).map(|(v, _)| v).collect_vec();

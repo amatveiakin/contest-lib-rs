@@ -1,3 +1,4 @@
+use contest_lib_rs::base_one::Base;
 use contest_lib_rs::graph::Graph;
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::iterutils_basic::IterutilsBasic;
@@ -6,7 +7,7 @@ use contest_lib_rs::undirected_graph::UndirectedGraph;
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let [n, m] = read.usizes();
-    let g = UndirectedGraph::from_read_edges_p(n, m, read, |r| r.u32());
+    let g = UndirectedGraph::from_read_edges_p(n, m, Base::ONE, read, |r| r.u32());
 
     let mut gg = UndirectedGraph::new();
     let mut gempty = UndirectedGraph::new();

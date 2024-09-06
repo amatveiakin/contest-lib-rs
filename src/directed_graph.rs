@@ -1,7 +1,7 @@
 use std::array;
 use std::collections::{HashMap, HashSet};
 
-use crate::base_one::BaseOneConversion;
+use crate::base_one::{Base, BaseOneConversion};
 use crate::graph::{Graph, VertexId, StorageVertexId};
 use crate::io;
 
@@ -62,13 +62,13 @@ impl<EP> DirectedGraph<(), EP> {
     }
 
     pub fn from_read_edges_p<R: std::io::BufRead>(
-        num_vertices: usize, num_edges: usize, read: &mut io::Reader<R>,
+        num_vertices: usize, num_edges: usize, base: Base, read: &mut io::Reader<R>,
         read_payload: impl Fn(&mut io::Reader<R>) -> EP
     ) -> Self {
         let mut graph = Self::new();
         graph.add_vertices(num_vertices);
         for _ in 0..num_edges {
-            let [from, to] = read.usizes().from1b();
+            let [from, to] = read.usizes().from_base(base);
             let payload = read_payload(read);
             graph.add_edge_p(from, to, payload);
         }
@@ -85,9 +85,9 @@ impl<VP> DirectedGraph<VP, ()> {
 impl DirectedGraph<(), ()> {
     // Reads edges as 1-based vertex pairs.
     pub fn from_read_edges<R: std::io::BufRead>(
-        num_vertices: usize, num_edges: usize, read: &mut io::Reader<R>
+        num_vertices: usize, num_edges: usize, base: Base, read: &mut io::Reader<R>
     ) -> Self {
-        Self::from_read_edges_p(num_vertices, num_edges, read, |_| ())
+        Self::from_read_edges_p(num_vertices, num_edges, base, read, |_| ())
     }
 }
 
@@ -139,6 +139,7 @@ impl<VP, EP> Graph<VP, EP> for DirectedGraph<VP, EP> {
 mod tests {
     use itertools::Itertools;
     use pretty_assertions::assert_eq;
+    use crate::base_one::Base;
     use crate::testing::io_utils::reader_from_string;
 
     use super::*;
@@ -155,7 +156,7 @@ mod tests {
         let mut read = reader_from_string(input);
         let n = read.usize();
         let m = read.usize();
-        let g = DirectedGraph::from_read_edges(n, m, &mut read);
+        let g = DirectedGraph::from_read_edges(n, m, Base::ONE, &mut read);
         assert_eq!(g.num_vertices(), 4);
         let [v1, v2, v3, v4] = [1, 2, 3, 4].from1b();
         assert!(g.edge(v1, v3).is_some());

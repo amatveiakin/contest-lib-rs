@@ -1,3 +1,4 @@
+use contest_lib_rs::base_one::Base;
 use contest_lib_rs::graph::VertexId;
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::iterutils_basic::IterutilsBasic;
@@ -74,7 +75,7 @@ fn dfs(v: VertexId, t: &Tree<(), ()>, a: &[i64], best: &mut Vec<[i64; 2]>) {
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let n = read.usize();
     let a = read.vec_i64(n);
-    let t = Tree::from_read_edges(n, read).unwrap();
+    let t = Tree::from_read_edges(n, Base::ONE, read).unwrap();
     let mut best = vec![[i64::MIN; 2]; n];
     dfs(t.root(), &t, &a, &mut best);
     emitln!(write, best[t.root()][0]);

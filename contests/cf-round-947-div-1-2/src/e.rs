@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use contest_lib_rs::base_one::BaseOneConversion;
+use contest_lib_rs::base_one::{Base, BaseOneConversion};
 use contest_lib_rs::bool_ext::BoolExtension;
 use contest_lib_rs::graph::{Graph, VertexId};
 use contest_lib_rs::io::prelude::*;
@@ -43,7 +43,7 @@ fn update(
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let [n, q] = read.usizes();
     let clinit = read.vec_u32(n);
-    let t = Tree::from_read_edges(n, read).unwrap();
+    let t = Tree::from_read_edges(n, Base::ONE, read).unwrap();
 
     let mut cl = vec![0; n];
     let mut nch = vec![0; n];

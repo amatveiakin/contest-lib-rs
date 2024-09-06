@@ -1,3 +1,4 @@
+use contest_lib_rs::base_one::Base;
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::tree::Tree;
 
@@ -5,7 +6,7 @@ use contest_lib_rs::tree::Tree;
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let n = read.usize();
     let k = read.u32();
-    let t = Tree::from_read_edges(n, read).unwrap();
+    let t = Tree::from_read_edges(n, Base::ONE, read).unwrap();
     let mut l = 1;
     let mut r = n;
     while l < r {

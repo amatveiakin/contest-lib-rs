@@ -2,7 +2,7 @@
 
 use std::collections::HashSet;
 
-use contest_lib_rs::base_one::IteratorBaseOneConversion;
+use contest_lib_rs::base_one::{Base, IteratorBaseOneConversion};
 use contest_lib_rs::counting_set::CountingSet;
 use contest_lib_rs::genealogy::VertexDepths;
 use contest_lib_rs::graph::VertexId;
@@ -36,7 +36,7 @@ fn dfs_answer(
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let [n, k] = read.usizes();
     let a = read.vec_usize(k).into_iter().from1b().collect::<HashSet<_>>();
-    let t = Tree::from_read_edges(n, read).unwrap();
+    let t = Tree::from_read_edges(n, Base::ONE, read).unwrap();
 
     let depths = VertexDepths::new(&t);
     let max_red_depth = t.compute_recursively(|ch, v| {
