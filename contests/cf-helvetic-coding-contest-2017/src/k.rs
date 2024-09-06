@@ -4,38 +4,34 @@ use std::collections::HashSet;
 use contest_lib_rs::base_one::Base;
 use contest_lib_rs::graph::{Graph, VertexId};
 use contest_lib_rs::io::prelude::*;
+use contest_lib_rs::joint_sort::joint_sort_by_key;
 use contest_lib_rs::relax::Relax;
 use contest_lib_rs::undirected_graph::UndirectedGraph;
 
-struct ChildWeights {
-    w1: i64,
-    w2: i64,
-}
-
 fn dfs(graph: &UndirectedGraph<(), i64>, k: usize, visited: &mut HashSet<VertexId>, v: VertexId) -> (i64, i64) {
     visited.insert(v);
-    let mut weights = Vec::new();
+    let mut weights1 = Vec::new();
+    let mut weights2 = Vec::new();
     for (u, &weight) in graph.edges_adj(v) {
         if !visited.contains(&u) {
             let (w1, w2) = dfs(graph, k, visited, u);
-            weights.push(ChildWeights{
-                w1: w1 + weight,
-                w2: w2 + weight,
-            });
+            weights1.push(w1 + weight);
+            weights2.push(w2 + weight);
         }
     }
     visited.remove(&v);
-    if weights.is_empty() {
+    let n = weights1.len();
+    if n == 0 {
         (0, 0)
     } else {
-        weights.sort_unstable_by_key(|x| cmp::Reverse(x.w1));
-        let r1 = weights.iter().take(k - 1).map(|x| x.w1).sum::<i64>();
+        joint_sort_by_key(&mut weights1, |&x| cmp::Reverse(x), &mut weights2);
+        let r1 = weights1.iter().take(k - 1).sum::<i64>();
         let mut r2 = 0;
-        for i in 0..weights.len() {
+        for i in 0..n {
             if i < k - 1 {
-                r2.relax_max(r1 - weights[i].w1 + weights[i].w2 + weights.get(k - 1).map_or(0, |x| x.w1));
+                r2.relax_max(r1 - weights1[i] + weights2[i] + weights1.get(k - 1).unwrap_or(&0));
             } else {
-                r2.relax_max(r1 + weights[i].w2);
+                r2.relax_max(r1 + weights2[i]);
             }
         }
         (r1, r2)

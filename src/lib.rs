@@ -40,6 +40,7 @@ pub mod iterutils_dedup;
 pub mod iterutils_is_sorted;
 pub mod iterutils_windows;
 pub mod iterutils_zip_eq;
+pub mod joint_sort;
 pub mod linked_vector;
 pub mod memoize;
 pub mod mex;
