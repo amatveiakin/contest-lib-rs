@@ -58,7 +58,7 @@ fn farthest_parent_with_bit(
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let n = read.usize();
     let a = read.vec_u32(n);
-    let t = Tree::from_read_edges(n, Base::ONE, read).unwrap();
+    let t = Tree::from_read_edges(n, Base::ONE, read);
 
     let mut p1 = vec![[None; N_BITS]; n];
     let dn = DfsNumbering::new(&t);

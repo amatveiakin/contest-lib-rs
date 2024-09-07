@@ -49,7 +49,7 @@ fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &m
     const EXCLUDE: usize = usize::MAX;
 
     let n = read.usize();
-    let tree = Tree::from_read_edges_p(n, Base::ZERO, read, |r| r.u32()).unwrap();
+    let tree = Tree::from_read_edges_p(n, Base::ZERO, read, |r| r.u32());
 
     let mut m = 0;
     let mut vid = vec![EXCLUDE; n];

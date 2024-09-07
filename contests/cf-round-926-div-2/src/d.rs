@@ -15,7 +15,7 @@ struct V {
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let n = read.usize();
-    let t = Tree::from_read_edges(n, Base::ONE, read).unwrap();
+    let t = Tree::from_read_edges(n, Base::ONE, read);
     let v = t.compute_recursively(|ch: &[&V], _| {
         let mut len = M::from(1);
         let mut pr = M::from(1);

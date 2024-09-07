@@ -209,10 +209,10 @@ impl<EP: Clone> Tree<(), EP> {
     pub fn from_read_edges_p<R: std::io::BufRead>(
         num_vertices: usize, base: Base, read: &mut io::Reader<R>,
         read_payload: impl Fn(&mut io::Reader<R>) -> EP
-    ) -> Result<Self, TreeConstructionError> {
+    ) -> Self {
         let graph = UndirectedGraph::from_read_edges_p(
             num_vertices, num_vertices - 1, base, read, read_payload);
-        Tree::try_from(&graph)
+        Tree::try_from(&graph).unwrap()
     }
 }
 
@@ -232,7 +232,7 @@ impl Tree<(), ()> {
     // Reads edges as 1-based vertex pairs.
     pub fn from_read_edges<R: std::io::BufRead>(
         num_vertices: usize, base: Base, read: &mut io::Reader<R>
-    ) -> Result<Self, TreeConstructionError> {
+    ) -> Self {
         Self::from_read_edges_p(num_vertices, base, read, |_| ())
     }
 }

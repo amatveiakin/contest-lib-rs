@@ -22,7 +22,7 @@ fn dfs(
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let n = read.usize();
     let c = read.vec_usize(n).from1b();
-    let t = Tree::from_read_edges(n, Base::ONE, read).unwrap();
+    let t = Tree::from_read_edges(n, Base::ONE, read);
     let mut cnt = vec![0; n];
     let mut cout = vec![0; n];
     let mut ans = 0;

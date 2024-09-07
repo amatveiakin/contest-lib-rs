@@ -5,7 +5,7 @@ use contest_lib_rs::tree::Tree;
 #[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let n = read.usize();
-    let t = Tree::from_read_edges(n, Base::ONE, read).unwrap();
+    let t = Tree::from_read_edges(n, Base::ONE, read);
     let s = read.word_as_chars();
     assert_eq!(s.len(), n);
     assert_eq!(t.root(), 0);

@@ -25,7 +25,7 @@ fn push_costs(u: VertexId, t: &Tree<(), ()>, costs: &mut Vec<i64>) {
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let n = read.usize();
     let a = read.vec_i64(n);
-    let t = Tree::from_read_edges(n, Base::ONE, read).unwrap();
+    let t = Tree::from_read_edges(n, Base::ONE, read);
     let subtree_sizes = t.compute_recursively(|ch_sizes, _| {
         1 + ch_sizes.iter().copied().sum::<i64>()
     });

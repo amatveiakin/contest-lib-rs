@@ -12,7 +12,7 @@ struct State {
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let n = read.usize();
     let [a, b] = read.usizes().from1b();
-    let t = Tree::from_read_edges(n, Base::ONE, read).unwrap();
+    let t = Tree::from_read_edges(n, Base::ONE, read);
 
     let p = bfs_path(&t, a, b).unwrap();
     let pl = p.len();
