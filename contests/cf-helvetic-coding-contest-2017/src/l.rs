@@ -1,48 +1,13 @@
-use std::collections::{HashMap, HashSet};
-use std::ops::Index;
-
 use contest_lib_rs::base_one::Base;
 use contest_lib_rs::graph::Graph;
 use contest_lib_rs::io::prelude::*;
+use contest_lib_rs::iterutils_basic::IterutilsBasic;
 use contest_lib_rs::mod_ring::ModNumber;
-use contest_lib_rs::num::{RingInteger, RingNumber};
+use contest_lib_rs::num::RingNumber;
+use contest_lib_rs::sparse_matrix::SparseMatrix;
 use contest_lib_rs::tree::Tree;
 
 type ModNum = ModNumber<1_000_000_007>;
-
-struct SparseMatrix<T: RingInteger> {
-    rows: Vec<HashMap<usize, T>>,
-    cols: Vec<HashSet<usize>>,
-}
-
-impl<T: RingInteger> SparseMatrix<T> {
-    fn new(size: usize) -> Self {
-        let rows = vec![HashMap::new(); size];
-        let cols = vec![HashSet::new(); size];
-        Self { rows, cols }
-    }
-
-    #[track_caller]
-    fn set(&mut self, row: usize, col: usize, value: T) {
-        if value != T::zero() {
-            self.rows[row].insert(col, value);
-            self.cols[col].insert(row);
-        } else {
-            self.rows[row].remove(&col);
-            self.cols[col].remove(&row);
-        }
-    }
-}
-
-impl<T: RingInteger + 'static> Index<[usize; 2]> for SparseMatrix<T> {
-    type Output = T;
-
-    #[track_caller]
-    fn index(&self, index: [usize; 2]) -> &Self::Output {
-        let [row, col] = index;
-        self.rows[row].get(&col).unwrap_or(T::zero_ref())
-    }
-}
 
 #[allow(unused_variables)]
 fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
@@ -60,16 +25,16 @@ fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &m
         }
     }
 
-    let mut mat = SparseMatrix::new(m);
+    let mut mat = SparseMatrix::new(m, m);
     let mut rhs = vec![ModNum::zero(); m];
     for i in 0..n {
         if tree.degree(i) > 1 {
-            mat.set(vid[i], vid[i], ModNum::from(tree.degree(i) as u32));
+            *mat.get_mut(vid[i], vid[i]) = ModNum::from(tree.degree(i) as u32);
             let mut sumw = ModNum::zero();
             for (j, &w) in tree.edges_adj(i) {
                 if vid[j] != EXCLUDE {
-                    mat.set(vid[i], vid[j], ModNum::from(-1));
-                    mat.set(vid[j], vid[i], ModNum::from(-1));
+                    *mat.get_mut(vid[i], vid[j]) = ModNum::from(-1);
+                    *mat.get_mut(vid[j], vid[i]) = ModNum::from(-1);
                 }
                 sumw += ModNum::from(w);
             }
@@ -77,16 +42,17 @@ fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &m
         }
     }
 
+    // TODO: Factor out sparse matrix solver.
     for i in (0..m).rev() {
         assert_ne!(mat[[i, i]], ModNum::zero());
-        for ir in mat.cols[i].clone().into_iter() {
+        for ir in mat.col_indices(i).collect_vec().into_iter() {
             if ir >= i {
                 continue;
             }
             let coeff = mat[[ir, i]] / mat[[i, i]];
             if coeff != ModNum::zero() {
-                for (ic, v) in mat.rows[i].clone().into_iter() {
-                    mat.set(ir, ic, mat[[ir, ic]] - v * coeff);
+                for (ic, v) in mat.row(i).collect_vec().into_iter() {
+                    *mat.get_mut(ir, ic) -= v * coeff;
                 }
                 rhs[ir] = rhs[ir] - rhs[i] * coeff;
             }
