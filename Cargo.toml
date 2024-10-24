@@ -1,6 +1,7 @@
 [workspace]
 members = [
     ".",
+    "contests/cf-asia-pacific-championship-2024",
     "contests/cf-codeton-5",
     "contests/cf-codeton-6",
     "contests/cf-compfest-15",

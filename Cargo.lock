@@ -3,6 +3,14 @@
 version = 3
 
 [[package]]
+name = "cf-asia-pacific-championship-2024"
+version = "0.1.0"
+dependencies = [
+ "contest_lib_rs",
+ "pretty_assertions",
+]
+
+[[package]]
 name = "cf-codeton-6"
 version = "0.1.0"
 dependencies = [
