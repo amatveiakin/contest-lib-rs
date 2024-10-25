@@ -42,6 +42,7 @@ pub mod iterutils_windows;
 pub mod iterutils_zip_eq;
 pub mod joint_sort;
 pub mod linked_vector;
+pub mod linked_list_on_vec;
 pub mod memoize;
 pub mod mex;
 pub mod mod_ring;

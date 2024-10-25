@@ -3,6 +3,7 @@ use std::ops;
 
 const NODE_MISSING: usize = usize::MAX;
 
+#[derive(Debug, Clone)]
 struct Node<T> {
     value: T,
     prev: usize,
@@ -11,6 +12,7 @@ struct Node<T> {
 
 // A linked list that starts with several elements and supports removals and random access via
 // original indices, but not insertions.
+#[derive(Debug, Clone)]
 pub struct LinkedVector<T> {
     nodes: Vec<Option<Node<T>>>,
     first: usize,
