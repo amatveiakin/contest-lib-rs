@@ -22,10 +22,10 @@ fn dfs(v: VertexId, tree: &Tree<(), ()>, subtree_sizes: &[i64], black: &mut Vec<
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut io::Reader<R>, write: &mut W) {
     let n = read.usize();
     let tree = Tree::from_read_edges(n, Base::ONE, read);
-    let subtree_sizes = tree.compute_recursively(|ch_sizes, _| {
+    let subtree_sizes = tree.compute_bottom_up(|ch_sizes, _| {
         1 + ch_sizes.iter().copied().sum::<i64>()
     });
-    let subtrees = tree.compute_recursively(|ch_subtrees, v| {
+    let subtrees = tree.compute_bottom_up(|ch_subtrees, v| {
         let mut ret = vec![v];
         for ch in ch_subtrees {
             ret.extend(*ch);

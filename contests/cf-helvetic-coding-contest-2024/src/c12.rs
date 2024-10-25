@@ -10,7 +10,7 @@ fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &m
     for _ in 0..t {
         let u = read.usize().from1b();
         let tree = tree.chroot(u);
-        let win = tree.compute_recursively(|ch_win: &[&bool], _| {
+        let win = tree.compute_bottom_up(|ch_win: &[&bool], _| {
             ch_win.iter().any(|&&v| !v)
         });
         emitln!(write, if win[u] { "Ron" } else { "Hermione" });

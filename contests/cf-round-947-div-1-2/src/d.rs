@@ -20,7 +20,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
     let init_steps = (pl / 2) as u32;
 
     let t = t.chroot(r);
-    let s = t.compute_recursively(|ch: &[&State], v| {
+    let s = t.compute_bottom_up(|ch: &[&State], v| {
         let tw = ch.iter().map(|&c| c.tw + 2).sum::<u32>();
         let mut ow = tw;
         if !ch.is_empty() {

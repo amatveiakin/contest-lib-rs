@@ -26,7 +26,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
     let n = read.usize();
     let a = read.vec_i64(n);
     let t = Tree::from_read_edges(n, Base::ONE, read);
-    let subtree_sizes = t.compute_recursively(|ch_sizes, _| {
+    let subtree_sizes = t.compute_bottom_up(|ch_sizes, _| {
         1 + ch_sizes.iter().copied().sum::<i64>()
     });
     let mut costs = vec![0i64; n];

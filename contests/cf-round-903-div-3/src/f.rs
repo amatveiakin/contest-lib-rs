@@ -39,7 +39,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
     let t = Tree::from_read_edges(n, Base::ONE, read);
 
     let depths = VertexDepths::new(&t);
-    let max_red_depth = t.compute_recursively(|ch, v| {
+    let max_red_depth = t.compute_bottom_up(|ch, v| {
         if let Some(ret) = ch.iter().filter_map(|x| **x).max() {
             Some(ret)
         } else if a.contains(&v) {

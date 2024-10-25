@@ -9,7 +9,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
     let [n, m] = read.usizes();
     let c = read.u64();
     let tree = Tree::from_read_edges(n, Base::ONE, read);
-    let subtree_sizes = tree.compute_recursively(|ch_sizes, _| {
+    let subtree_sizes = tree.compute_bottom_up(|ch_sizes, _| {
         1 + ch_sizes.iter().copied().sum::<u64>()
     });
     let mut min_fund = u64::MAX;

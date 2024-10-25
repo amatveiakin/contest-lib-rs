@@ -6,10 +6,10 @@ use contest_lib_rs::tree::Tree;
 fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let [n, t] = read.usizes();
     let tree = Tree::from_read_edges(n, Base::ONE, read);
-    let child_win = tree.compute_recursively(|ch_win: &[&bool], _| {
+    let child_win = tree.compute_bottom_up(|ch_win: &[&bool], _| {
         ch_win.iter().any(|&&v| !v)
     });
-    let parent_win = tree.compute_down_recursively(false, |&p_win: &bool, v| {
+    let parent_win = tree.compute_top_down(false, |&p_win: &bool, v| {
         !p_win && tree.silblings(v).all(|u| child_win[u])
     });
 

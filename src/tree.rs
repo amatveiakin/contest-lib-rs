@@ -75,21 +75,21 @@ impl<VP, EP> Tree<VP, EP> {
     }
 
     // Improvement potential: Rename to `compute_bottom_up` add `compute_top_down`.
-    pub fn compute_recursively<R, F>(&self, f: F) -> Vec<R>
+    pub fn compute_bottom_up<R, F>(&self, f: F) -> Vec<R>
     where
         F: Fn(&[&R], VertexId) -> R,
     {
         let mut result = ivec![None; self.vertices.len()];
-        self.compute_recursively_impl(&f, self.root as VertexId, &mut result);
+        self.compute_bottom_up_impl(&f, self.root as VertexId, &mut result);
         result.into_iter().map(|v| v.unwrap()).collect()
     }
 
-    fn compute_recursively_impl<F, R>(&self, f: &F, v: VertexId, result: &mut Vec<Option<R>>)
+    fn compute_bottom_up_impl<F, R>(&self, f: &F, v: VertexId, result: &mut Vec<Option<R>>)
     where
         F: Fn(&[&R], VertexId) -> R,
     {
         for u in self.children(v) {
-            self.compute_recursively_impl(f, u, result);
+            self.compute_bottom_up_impl(f, u, result);
         }
         // Improvement potential: Pass an iterator instead of collecting to a vector.
         let children_results = self.children(v)
@@ -99,23 +99,23 @@ impl<VP, EP> Tree<VP, EP> {
         result[v] = Some(f(&children_results, v));
     }
 
-    pub fn compute_down_recursively<R, F>(&self, root_value: R, f: F) -> Vec<R>
+    pub fn compute_top_down<R, F>(&self, root_value: R, f: F) -> Vec<R>
     where
         F: Fn(&R, VertexId) -> R,
     {
         let mut result = ivec![None; self.vertices.len()];
-        self.compute_down_recursively_impl(&f, self.root as VertexId, root_value, &mut result);
+        self.compute_top_down_impl(&f, self.root as VertexId, root_value, &mut result);
         result.into_iter().map(|v| v.unwrap()).collect()
     }
 
-    fn compute_down_recursively_impl<F, R>(
+    fn compute_top_down_impl<F, R>(
         &self, f: &F, v: VertexId, value: R, result: &mut Vec<Option<R>>)
     where
         F: Fn(&R, VertexId) -> R,
     {
         for u in self.children(v) {
             let child_value = f(&value, u);
-            self.compute_down_recursively_impl(f, u, child_value, result);
+            self.compute_top_down_impl(f, u, child_value, result);
         }
         assert!(result[v].is_none());
         result[v] = Some(value);
@@ -338,7 +338,7 @@ mod tests {
         graph.add_edge(g, h);
         let tree = Tree::try_from(&graph).unwrap();
 
-        let subtree_sizes = tree.compute_recursively(|ch_sizes, _| {
+        let subtree_sizes = tree.compute_bottom_up(|ch_sizes, _| {
             1 + ch_sizes.iter().copied().sum::<i64>()
         });
         assert_eq!(subtree_sizes[a], 8);
@@ -350,7 +350,7 @@ mod tests {
         assert_eq!(subtree_sizes[g], 2);
         assert_eq!(subtree_sizes[h], 1);
 
-        let subtrees = tree.compute_recursively(|ch_subtrees, v| {
+        let subtrees = tree.compute_bottom_up(|ch_subtrees, v| {
             let mut ret = vec![v];
             for ch in ch_subtrees {
                 ret.extend(*ch);

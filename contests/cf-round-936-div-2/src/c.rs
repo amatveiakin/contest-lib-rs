@@ -11,7 +11,7 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
     let mut r = n;
     while l < r {
         let x = (l + r + 1) / 2;
-        let data = t.compute_recursively(|ch_data, _| {
+        let data = t.compute_bottom_up(|ch_data, _| {
             let mut nc = 0;
             let mut nv = 1;
             for (ch_nc, ch_nv) in ch_data {
