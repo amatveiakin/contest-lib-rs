@@ -12,6 +12,8 @@ struct Node<T> {
 
 // A linked list that starts with several elements and supports removals and random access via
 // original indices, but not insertions.
+// TODO: Consider using parallel arrays for prev and next. This seems to have reduces
+// LinkedListOnVec RAM usage.
 #[derive(Debug, Clone)]
 pub struct LinkedVector<T> {
     nodes: Vec<Option<Node<T>>>,

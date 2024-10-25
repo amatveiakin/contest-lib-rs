@@ -3,18 +3,13 @@ use std::{fmt, ops};
 
 const NODE_MISSING: usize = usize::MAX;
 
-#[derive(Debug, Clone)]
-struct Node<T> {
-    value: T,
-    prev: usize,
-    next: usize,
-}
-
 // TODO: Consider re-using freed indices. Note that there is a trade-off w.r.t. cache efficiency and
 // debuggability (right now accessing a deleted node is a guaranteed panic).
 #[derive(Clone)]
 pub struct LinkedListOnVec<T> {
-    nodes: Vec<Option<Node<T>>>,
+    nodes: Vec<Option<T>>,
+    prev: Vec<usize>,
+    next: Vec<usize>,
     head: usize,
     tail: usize,
 }
@@ -30,7 +25,13 @@ pub struct LinkedListOnVecIterator<'a, T> {
 
 impl<T> LinkedListOnVec<T> {
     pub fn new() -> Self {
-        LinkedListOnVec { nodes: Vec::new(), head: NODE_MISSING, tail: NODE_MISSING }
+        LinkedListOnVec {
+            nodes: Vec::new(),
+            prev: Vec::new(),
+            next: Vec::new(),
+            head: NODE_MISSING,
+            tail: NODE_MISSING,
+        }
     }
 
     pub fn is_empty(&self) -> bool {
@@ -47,10 +48,10 @@ impl<T> LinkedListOnVec<T> {
         LinkedListOnVecIndex(self.tail)
     }
     pub fn next(&self, index: LinkedListOnVecIndex) -> LinkedListOnVecIndex {
-        LinkedListOnVecIndex(self.nodes[index.0].as_ref().unwrap().next)
+        LinkedListOnVecIndex(self.next[index.0])
     }
     pub fn prev(&self, index: LinkedListOnVecIndex) -> LinkedListOnVecIndex {
-        LinkedListOnVecIndex(self.nodes[index.0].as_ref().unwrap().prev)
+        LinkedListOnVecIndex(self.prev[index.0])
     }
 
     pub fn iter(&self) -> LinkedListOnVecIterator<T> {
@@ -59,47 +60,51 @@ impl<T> LinkedListOnVec<T> {
 
     pub fn push_back(&mut self, value: T) {
         let new_index = self.nodes.len();
-        self.nodes.push(Some(Node { value, prev: self.tail, next: NODE_MISSING }));
+        self.nodes.push(Some(value));
+        self.prev.push(self.tail);
+        self.next.push(NODE_MISSING);
         if self.head == NODE_MISSING {
             self.head = new_index;
         } else {
-            self.nodes[self.tail].as_mut().unwrap().next = new_index;
+            self.next[self.tail] = new_index;
         }
         self.tail = new_index;
     }
     pub fn push_front(&mut self, value: T) {
         let new_index = self.nodes.len();
-        self.nodes.push(Some(Node { value, prev: NODE_MISSING, next: self.head }));
+        self.nodes.push(Some(value));
+        self.prev.push(NODE_MISSING);
+        self.next.push(self.head);
         if self.tail == NODE_MISSING {
             self.tail = new_index;
         } else {
-            self.nodes[self.head].as_mut().unwrap().prev = new_index;
+            self.prev[self.head] = new_index;
         }
         self.head = new_index;
     }
 
     pub fn pop_back(&mut self) -> Option<T> {
         (!self.is_empty()).then(|| {
-            let node = self.nodes[self.tail].take().unwrap();
-            self.tail = node.prev;
+            let value = self.nodes[self.tail].take().unwrap();
+            self.tail = self.prev[self.tail];
             if self.tail == NODE_MISSING {
                 self.head = NODE_MISSING;
             } else {
-                self.nodes[self.tail].as_mut().unwrap().next = NODE_MISSING;
+                self.next[self.tail] = NODE_MISSING;
             }
-            node.value
+            value
         })
     }
     pub fn pop_front(&mut self) -> Option<T> {
         (!self.is_empty()).then(|| {
-            let node = self.nodes[self.head].take().unwrap();
-            self.head = node.next;
+            let value = self.nodes[self.head].take().unwrap();
+            self.head = self.next[self.head];
             if self.head == NODE_MISSING {
                 self.tail = NODE_MISSING;
             } else {
-                self.nodes[self.head].as_mut().unwrap().prev = NODE_MISSING;
+                self.prev[self.head] = NODE_MISSING;
             }
-            node.value
+            value
         })
     }
 
@@ -107,11 +112,13 @@ impl<T> LinkedListOnVec<T> {
         assert!(index.is_valid());
         let new_index = self.nodes.len();
         let prev = index.0;
-        let next = self.nodes[prev].as_ref().unwrap().next;
-        self.nodes.push(Some(Node { value, prev, next }));
-        self.nodes[prev].as_mut().unwrap().next = new_index;
+        let next = self.next[prev];
+        self.nodes.push(Some(value));
+        self.next.push(next);
+        self.prev.push(prev);
+        self.next[prev] = new_index;
         if next != NODE_MISSING {
-            self.nodes[next].as_mut().unwrap().prev = new_index;
+            self.prev[next] = new_index;
         } else {
             assert_eq!(prev, self.tail);
             self.tail = new_index;
@@ -120,12 +127,14 @@ impl<T> LinkedListOnVec<T> {
     pub fn insert_before(&mut self, index: LinkedListOnVecIndex, value: T) {
         assert!(index.is_valid());
         let new_index = self.nodes.len();
-        let prev = self.nodes[index.0].as_ref().unwrap().prev;
+        let prev = self.prev[index.0];
         let next = index.0;
-        self.nodes.push(Some(Node { value, prev, next }));
-        self.nodes[next].as_mut().unwrap().prev = new_index;
+        self.nodes.push(Some(value));
+        self.next.push(next);
+        self.prev.push(prev);
+        self.prev[next] = new_index;
         if prev != NODE_MISSING {
-            self.nodes[prev].as_mut().unwrap().next = new_index;
+            self.next[prev] = new_index;
         } else {
             assert_eq!(next, self.head);
             self.head = new_index;
@@ -133,20 +142,21 @@ impl<T> LinkedListOnVec<T> {
     }
 
     pub fn remove(&mut self, index: LinkedListOnVecIndex) -> T {
-        let node = self.nodes[index.0].take().unwrap();
-        if node.prev != NODE_MISSING {
-            self.nodes[node.prev].as_mut().unwrap().next = node.next;
+        let prev = self.prev[index.0];
+        let next = self.next[index.0];
+        if prev != NODE_MISSING {
+            self.next[prev] = next;
         } else {
             assert_eq!(index.0, self.head);
-            self.head = node.next;
+            self.head = next;
         }
-        if node.next != NODE_MISSING {
-            self.nodes[node.next].as_mut().unwrap().prev = node.prev;
+        if next != NODE_MISSING {
+            self.prev[next] = prev;
         } else {
             assert_eq!(index.0, self.tail);
-            self.tail = node.prev;
+            self.tail = prev;
         }
-        node.value
+        self.nodes[index.0].take().unwrap()
     }
 }
 
@@ -159,12 +169,12 @@ impl LinkedListOnVecIndex {
 impl<T> ops::Index<LinkedListOnVecIndex> for LinkedListOnVec<T> {
     type Output = T;
     fn index(&self, index: LinkedListOnVecIndex) -> &Self::Output {
-        &self.nodes[index.0].as_ref().unwrap().value
+        self.nodes[index.0].as_ref().unwrap()
     }
 }
 impl<T> ops::IndexMut<LinkedListOnVecIndex> for LinkedListOnVec<T> {
     fn index_mut(&mut self, index: LinkedListOnVecIndex) -> &mut Self::Output {
-        &mut self.nodes[index.0].as_mut().unwrap().value
+        self.nodes[index.0].as_mut().unwrap()
     }
 }
 
