@@ -1,3 +1,7 @@
+// A linked list that starts with several elements and supports removals and random access via
+// original indices, but not insertions. For a general-purpose linked list, see `LinkedListOnVec`
+// or `LinkedListOnRc`.
+
 use std::ops;
 
 
@@ -10,8 +14,6 @@ struct Node<T> {
     next: usize,
 }
 
-// A linked list that starts with several elements and supports removals and random access via
-// original indices, but not insertions.
 // TODO: Consider using parallel arrays for prev and next. This seems to have reduces
 // LinkedListOnVec RAM usage.
 #[derive(Debug, Clone)]
