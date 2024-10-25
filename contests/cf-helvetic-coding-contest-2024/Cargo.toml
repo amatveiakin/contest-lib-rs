@@ -1,0 +1,34 @@
+[package]
+name = "cf-helvetic-coding-contest-2024"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+contest_lib_rs = { path = "../.." }
+
+[dev-dependencies]
+pretty_assertions = "1.3.0"
+
+[[bin]]
+name = "a3"
+path = "src/a3.rs"
+
+[[bin]]
+name = "c12"
+path = "src/c12.rs"
+
+[[bin]]
+name = "c3"
+path = "src/c3.rs"
+
+[[bin]]
+name = "f"
+path = "src/f.rs"
+
+[[bin]]
+name = "g1"
+path = "src/g1.rs"
+
+[[bin]]
+name = "g2"
+path = "src/g2.rs"

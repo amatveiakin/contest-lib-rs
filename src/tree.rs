@@ -1,4 +1,4 @@
-use std::array;
+use std::{array, iter};
 
 use crate::base_one::Base;
 use crate::graph::{VertexId, Graph, StorageVertexId};
@@ -65,9 +65,16 @@ impl<VP, EP> Tree<VP, EP> {
     pub fn parent_edge(&self, v: VertexId) -> Option<(VertexId, &EP)> {
         self.vertices[v].parent.as_ref().map(|(p, payload)| (*p as VertexId, payload))
     }
+    pub fn silblings(&self, v: VertexId) -> Box<dyn Iterator<Item = VertexId> + '_> {
+        self.vertices[v].parent.as_ref().map_or(
+            Box::new(iter::empty()),
+            |&(p, _)| Box::new(
+                self.vertices[p as usize].children.iter()
+                    .map(|&u| u as VertexId)
+                    .filter(move |&u| u != v)))
+    }
 
-    // Improvement potential: Rename to `compute_bottom_up` and add `compute_top_down` for things
-    // like vertex depth.
+    // Improvement potential: Rename to `compute_bottom_up` add `compute_top_down`.
     pub fn compute_recursively<R, F>(&self, f: F) -> Vec<R>
     where
         F: Fn(&[&R], VertexId) -> R,
@@ -90,6 +97,28 @@ impl<VP, EP> Tree<VP, EP> {
             .collect::<Vec<_>>();
         assert!(result[v].is_none());
         result[v] = Some(f(&children_results, v));
+    }
+
+    pub fn compute_down_recursively<R, F>(&self, root_value: R, f: F) -> Vec<R>
+    where
+        F: Fn(&R, VertexId) -> R,
+    {
+        let mut result = ivec![None; self.vertices.len()];
+        self.compute_down_recursively_impl(&f, self.root as VertexId, root_value, &mut result);
+        result.into_iter().map(|v| v.unwrap()).collect()
+    }
+
+    fn compute_down_recursively_impl<F, R>(
+        &self, f: &F, v: VertexId, value: R, result: &mut Vec<Option<R>>)
+    where
+        F: Fn(&R, VertexId) -> R,
+    {
+        for u in self.children(v) {
+            let child_value = f(&value, u);
+            self.compute_down_recursively_impl(f, u, child_value, result);
+        }
+        assert!(result[v].is_none());
+        result[v] = Some(value);
     }
 }
 
@@ -257,10 +286,12 @@ mod tests {
         assert_eq!(tree.root(), v1);
         assert_eq!(tree.parent(v1), None);
         assert_eq!(tree.children(v1).collect_vec(), vec![v3]);
+        assert_eq!(tree.silblings(v1).collect_vec(), vec![]);
         assert_eq!(tree.parent(v3), Some(v1));
         assert_eq!(tree.children(v3).len(), 3);
         assert_eq!(tree.degree(v3), 4);
         assert_eq!(tree.edges_adj(v3).map(|(w, _)| w).sorted().collect_vec(), [v1, v2, v4, v6]);
+        assert_eq!(tree.silblings(v4).sorted().collect_vec(), vec![v2, v6]);
     }
 
     #[test]
