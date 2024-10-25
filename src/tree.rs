@@ -325,6 +325,13 @@ mod tests {
         assert_eq!(tree.parent_edge(v2).unwrap().1, &"first-second");
     }
 
+    //          a
+    //       /  |  \
+    //     b    c    d
+    //         / \    \
+    //        e   f    g
+    //                 |
+    //                 h
     #[test]
     fn recursive_computation() {
         let mut graph = UndirectedGraph::new();
@@ -366,5 +373,15 @@ mod tests {
         assert_eq!(subtrees[f], vec![f]);
         assert_eq!(subtrees[g], vec![g, h]);
         assert_eq!(subtrees[h], vec![h]);
+
+        let vertex_depths = tree.compute_top_down(0, |parent_depth, _| parent_depth + 1);
+        assert_eq!(vertex_depths[a], 0);
+        assert_eq!(vertex_depths[b], 1);
+        assert_eq!(vertex_depths[c], 1);
+        assert_eq!(vertex_depths[d], 1);
+        assert_eq!(vertex_depths[e], 2);
+        assert_eq!(vertex_depths[f], 2);
+        assert_eq!(vertex_depths[g], 2);
+        assert_eq!(vertex_depths[h], 3);
     }
 }
