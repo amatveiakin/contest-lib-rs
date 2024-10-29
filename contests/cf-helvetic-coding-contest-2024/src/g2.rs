@@ -4,6 +4,7 @@ use contest_lib_rs::base_one::Base;
 use contest_lib_rs::graph::Graph;
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::iterutils_basic::IterutilsBasic;
+use contest_lib_rs::runner::prelude::*;
 use contest_lib_rs::relax::Relax;
 use contest_lib_rs::undirected_graph::UndirectedGraph;
 use contest_lib_rs::weakly_connected::weakly_connected_components;
@@ -18,7 +19,6 @@ fn max_choice(v: &[usize], budget: usize) -> usize {
     f[budget]
 }
 
-#[allow(unused_variables)]
 fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let [n, m] = read.usizes();
     let c = read.u64();
@@ -42,18 +42,10 @@ fn solve_case<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, writ
     }
 }
 
-#[allow(unused_variables)]
-fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
-    let t = read.usize();
-    for _ in 0..t {
-        solve_case(read, write);
-    }
-}
+make_multi_solver!(solve(solve_case));
 
 fn main() {
-    let mut read = Reader::new(std::io::stdin().lock());
-    let mut write = std::io::BufWriter::new(std::io::stdout().lock());
-    solve(&mut read, &mut write);
+    solver_main(solve);
 }
 
 
@@ -113,7 +105,5 @@ mod tests {
         20
         25
         33");
-
-        // assert_trimmed_eq!(&run_solver(solve, ""), "");
     }
 }

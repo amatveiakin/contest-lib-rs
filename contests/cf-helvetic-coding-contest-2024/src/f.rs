@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::point_2d::Point2D;
+use contest_lib_rs::runner::prelude::*;
 
 type Point = Point2D<i32>;
 
@@ -97,7 +98,6 @@ fn parse_action(s: &str) -> Option<Action> {
     }
 }
 
-#[allow(unused_variables)]
 fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let [n, m] = read.i32s();
     let mut player_pos = HashMap::new();
@@ -168,7 +168,7 @@ fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &m
                 }
             }
             (_, Action::Catch) => panic!(),
-            (Entity::Player(p), Action::Throw) => {
+            (Entity::Player(_), Action::Throw) => {
                 quaffle_carried_by = None;
                 if let Some(gate_owner) = gates.get(&quaffle_pos) {
                     let goal_team = gate_owner.other();
@@ -201,9 +201,7 @@ fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &m
 }
 
 fn main() {
-    let mut read = Reader::new(std::io::stdin().lock());
-    let mut write = std::io::BufWriter::new(std::io::stdout().lock());
-    solve(&mut read, &mut write);
+    solver_main(solve);
 }
 
 
@@ -388,7 +386,5 @@ mod tests {
         R0 C .S"), "\
         3 RED CATCH GOLDEN SNITCH
         FINAL SCORE: 10 0");
-
-        // assert_trimmed_eq!(&run_solver(solve, ""), "");
     }
 }

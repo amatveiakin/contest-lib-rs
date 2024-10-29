@@ -1,8 +1,8 @@
 use contest_lib_rs::base_one::{Base, BaseOneConversion};
 use contest_lib_rs::io::prelude::*;
+use contest_lib_rs::runner::prelude::*;
 use contest_lib_rs::tree::Tree;
 
-#[allow(unused_variables)]
 fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let [n, t] = read.usizes();
     assert_eq!(t, 1);
@@ -18,9 +18,7 @@ fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &m
 }
 
 fn main() {
-    let mut read = Reader::new(std::io::stdin().lock());
-    let mut write = std::io::BufWriter::new(std::io::stdout().lock());
-    solve(&mut read, &mut write);
+    solver_main(solve);
 }
 
 
@@ -52,6 +50,5 @@ mod tests {
         3 4
         3 5
         1"), "Ron");
-        // assert_trimmed_eq!(&run_solver(solve, ""), "");
     }
 }

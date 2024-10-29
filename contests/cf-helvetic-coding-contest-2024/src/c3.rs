@@ -1,8 +1,8 @@
 use contest_lib_rs::base_one::{Base, BaseOneConversion};
 use contest_lib_rs::io::prelude::*;
+use contest_lib_rs::runner::prelude::*;
 use contest_lib_rs::tree::Tree;
 
-#[allow(unused_variables)]
 fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let [n, t] = read.usizes();
     let tree = Tree::from_read_edges(n, Base::ONE, read);
@@ -21,9 +21,7 @@ fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &m
 }
 
 fn main() {
-    let mut read = Reader::new(std::io::stdin().lock());
-    let mut write = std::io::BufWriter::new(std::io::stdout().lock());
-    solve(&mut read, &mut write);
+    solver_main(solve);
 }
 
 
@@ -76,6 +74,5 @@ mod tests {
         Hermione
         Ron
         Hermione");
-        // assert_trimmed_eq!(&run_solver(solve, ""), "");
     }
 }

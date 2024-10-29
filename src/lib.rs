@@ -55,6 +55,7 @@ pub mod rand;
 pub mod recurse;
 pub mod relax;
 pub mod relax_float;
+pub mod runner;
 pub mod segment_bucket_counter;
 pub mod segment_tree;
 pub mod sort_array;

@@ -2,6 +2,7 @@ use std::fmt::Debug;
 
 use contest_lib_rs::io::prelude::*;
 use contest_lib_rs::linked_list_on_vec::LinkedListOnVec;
+use contest_lib_rs::runner::prelude::*;
 
 #[derive(Debug)]
 struct Node {
@@ -39,7 +40,6 @@ fn concat_all(list: &mut LinkedListOnVec<Node>, cur_count: i64) {
     }
 }
 
-#[allow(unused_variables)]
 fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &mut W) {
     let s = read.word_as_chars();
     let n = s.len();
@@ -79,9 +79,7 @@ fn solve<R: std::io::BufRead, W: std::io::Write>(read: &mut Reader<R>, write: &m
 }
 
 fn main() {
-    let mut read = Reader::new(std::io::stdin().lock());
-    let mut write = std::io::BufWriter::new(std::io::stdout().lock());
-    solve(&mut read, &mut write);
+    solver_main(solve);
 }
 
 
@@ -97,6 +95,5 @@ mod tests {
         assert_trimmed_eq!(&run_solver(solve, "()(()())"), "(()(()))");
         assert_trimmed_eq!(&run_solver(solve, "(()(()))"), "()(()())");
         assert_trimmed_eq!(&run_solver(solve, "()"), "()");
-        // assert_trimmed_eq!(&run_solver(solve, ""), "");
     }
 }
