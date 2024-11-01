@@ -18,38 +18,6 @@ name = "b"
 path = "src/b.rs"
 
 [[bin]]
-name = "c"
-path = "src/c.rs"
-
-[[bin]]
-name = "d"
-path = "src/d.rs"
-
-[[bin]]
-name = "e"
-path = "src/e.rs"
-
-[[bin]]
-name = "f"
-path = "src/f.rs"
-
-[[bin]]
-name = "g"
-path = "src/g.rs"
-
-[[bin]]
-name = "h"
-path = "src/h.rs"
-
-[[bin]]
-name = "i"
-path = "src/i.rs"
-
-[[bin]]
-name = "j"
-path = "src/j.rs"
-
-[[bin]]
 name = "k"
 path = "src/k.rs"
 
@@ -60,11 +28,3 @@ path = "src/l.rs"
 [[bin]]
 name = "m"
 path = "src/m.rs"
-
-[[bin]]
-name = "n"
-path = "src/n.rs"
-
-[[bin]]
-name = "o"
-path = "src/o.rs"

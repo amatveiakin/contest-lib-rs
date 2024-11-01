@@ -16,15 +16,3 @@ path = "src/a.rs"
 [[bin]]
 name = "b"
 path = "src/b.rs"
-
-[[bin]]
-name = "c"
-path = "src/c.rs"
-
-[[bin]]
-name = "d"
-path = "src/d.rs"
-
-[[bin]]
-name = "e"
-path = "src/e.rs"
