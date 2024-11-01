@@ -19,12 +19,16 @@
   "contributes": {
     "commands": [
       {
+        "command": "rust-collater.collate",
+        "title": "Competitive Rust: Collate Modules"
+      },
+      {
         "command": "rust-collater.new-contest",
         "title": "Competitive Rust: New Contest"
       },
       {
-        "command": "rust-collater.collate",
-        "title": "Competitive Rust: Collate Modules"
+        "command": "rust-collater.remove-empty-solutions",
+        "title": "Competitive Rust: Remove Empty Solutions"
       }
     ]
   },

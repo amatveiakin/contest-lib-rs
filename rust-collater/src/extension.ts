@@ -3,9 +3,17 @@
 
 import { performance } from "perf_hooks";
 import * as vscode from "vscode";
+import * as path from "path";
 import { addCargoWorkspaceMember, collateDocument } from "./extensionLib";
 
 const CONTESTS_DIR = "contests";
+const SRC_DIR = "src";
+
+const RUST_SUFFIX = ".rs";
+
+const TMPL_DIR = "template";
+const CARGO_TOML_TMPL = "Cargo.toml.tmpl";
+const CODE_RS_TMPL = "code.rs";
 
 const CONTEST_KINDS = [
   ["Codeforces Div. 1", "cf-round-{{id}}-div-1"],
@@ -77,8 +85,6 @@ async function guessWorkspaceRoot(): Promise<vscode.Uri | undefined> {
 }
 
 async function commandCollate() {
-  const RUST_SUFFIX = ".rs";
-
   const startTime = performance.now();
 
   const editor = vscode.window.activeTextEditor;
@@ -140,6 +146,29 @@ async function commandCollate() {
   }
 }
 
+async function updateContestCargoToml(
+  contestName: string,
+  contestDir: vscode.Uri,
+  cargoTmpl: String
+) {
+  const srcDir = vscode.Uri.joinPath(contestDir, SRC_DIR);
+  const problemSet = (await vscode.workspace.fs.readDirectory(srcDir))
+    .filter(
+      ([fileName, fileType]) =>
+        fileType === vscode.FileType.File && fileName.endsWith(RUST_SUFFIX)
+    )
+    .map(([fileName, _]) => fileName.slice(0, -RUST_SUFFIX.length));
+  const cargoBinaries = problemSet.map((problem) => {
+    return `[[bin]]\nname = "${problem}"\npath = "${SRC_DIR}/${problem}${RUST_SUFFIX}"`;
+  });
+  setFileContent(
+    vscode.Uri.joinPath(contestDir, "Cargo.toml"),
+    cargoTmpl
+      .replace("{{contest_name}}", contestName)
+      .replace("{{binaries}}", cargoBinaries.join("\n\n"))
+  );
+}
+
 // Improvement potential: Download tests from Codeforces. In order to speed
 // things up, this should happen after the contest is created. This would allow
 // Rust Language Server to warm up, and also it means one could begin working on
@@ -159,9 +188,9 @@ async function commandNewContest() {
     return;
   }
   const contestsRootDir = vscode.Uri.joinPath(rootDir, CONTESTS_DIR);
-  const tmplDir = vscode.Uri.joinPath(contestsRootDir, "template");
-  const cargoTmplPath = vscode.Uri.joinPath(tmplDir, "Cargo.toml.tmpl");
-  const codeTmplPath = vscode.Uri.joinPath(tmplDir, "code.rs");
+  const tmplDir = vscode.Uri.joinPath(contestsRootDir, TMPL_DIR);
+  const cargoTmplPath = vscode.Uri.joinPath(tmplDir, CARGO_TOML_TMPL);
+  const codeTmplPath = vscode.Uri.joinPath(tmplDir, CODE_RS_TMPL);
   const rootCargoPath = vscode.Uri.joinPath(rootDir, "Cargo.toml");
   let cargoTmpl, codeTmpl, rootCargo;
   try {
@@ -199,19 +228,12 @@ async function commandNewContest() {
   const problemSet = ["a", "b", "c", "d", "e", "f"];
   for (const problem of problemSet) {
     setFileContent(
-      vscode.Uri.joinPath(contestSrcDir, `${problem}.rs`),
+      vscode.Uri.joinPath(contestSrcDir, `${problem}${RUST_SUFFIX}`),
       codeTmpl
     );
   }
-  const cargoBinaries = problemSet.map((problem) => {
-    return `[[bin]]\nname = "${problem}"\npath = "src/${problem}.rs"`;
-  });
-  setFileContent(
-    vscode.Uri.joinPath(contestDir, "Cargo.toml"),
-    cargoTmpl
-      .replace("{{contest_name}}", contestName)
-      .replace("{{binaries}}", cargoBinaries.join("\n\n"))
-  );
+
+  await updateContestCargoToml(contestName, contestDir, cargoTmpl);
   const rootCargoUpdated = addCargoWorkspaceMember(
     rootCargo,
     `${CONTESTS_DIR}/${contestName}`
@@ -224,6 +246,58 @@ async function commandNewContest() {
   vscode.window.showInformationMessage(`Contest created: ${contestName}`);
 }
 
+async function commandRemoveEmptySolutions() {
+  const rootDir = await guessWorkspaceRoot();
+  if (rootDir === undefined) {
+    vscode.window.showErrorMessage("Workspace root not found.");
+    return;
+  }
+  const contestsRootDir = vscode.Uri.joinPath(rootDir, CONTESTS_DIR);
+  const tmplDir = vscode.Uri.joinPath(contestsRootDir, TMPL_DIR);
+  const cargoTmplPath = vscode.Uri.joinPath(tmplDir, CARGO_TOML_TMPL);
+  const codeTmplPath = vscode.Uri.joinPath(tmplDir, CODE_RS_TMPL);
+  let cargoTmpl, codeTmpl;
+  try {
+    cargoTmpl = await getFileContent(cargoTmplPath);
+    codeTmpl = await getFileContent(codeTmplPath);
+  } catch (e: any) {
+    vscode.window.showErrorMessage(e.toString());
+    return;
+  }
+
+  for (const [
+    contestName,
+    contestFileType,
+  ] of await vscode.workspace.fs.readDirectory(contestsRootDir)) {
+    if (contestFileType !== vscode.FileType.Directory) {
+      continue;
+    }
+    if (contestName === TMPL_DIR) {
+      continue;
+    }
+    const contestDir = vscode.Uri.joinPath(contestsRootDir, contestName);
+    const srcDir = vscode.Uri.joinPath(contestDir, SRC_DIR);
+    for (const [
+      solutionName,
+      solutionFileType,
+    ] of await vscode.workspace.fs.readDirectory(srcDir)) {
+      if (solutionFileType !== vscode.FileType.File) {
+        continue;
+      }
+      if (!solutionName.endsWith(RUST_SUFFIX)) {
+        continue;
+      }
+      const solutionPath = vscode.Uri.joinPath(srcDir, solutionName);
+      const solutionText = await getFileContent(solutionPath);
+      // TODO: A fuzzy detector for "basically empty" solutions.
+      if (solutionText === codeTmpl) {
+        await vscode.workspace.fs.delete(solutionPath);
+      }
+    }
+    await updateContestCargoToml(contestName, contestDir, cargoTmpl);
+  }
+}
+
 // Called the very first time a command is executed.
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -234,6 +308,13 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       "rust-collater.new-contest",
       commandNewContest
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "rust-collater.remove-empty-solutions",
+      commandRemoveEmptySolutions
     )
   );
 }
