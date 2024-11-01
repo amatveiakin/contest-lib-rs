@@ -28,19 +28,3 @@ path = "src/d.rs"
 [[bin]]
 name = "e"
 path = "src/e.rs"
-
-[[bin]]
-name = "f1"
-path = "src/f1.rs"
-
-[[bin]]
-name = "f2"
-path = "src/f2.rs"
-
-[[bin]]
-name = "g"
-path = "src/g.rs"
-
-[[bin]]
-name = "h"
-path = "src/h.rs"
