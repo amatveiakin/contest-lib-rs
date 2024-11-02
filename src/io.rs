@@ -1,4 +1,4 @@
-use std::{fmt, mem, str, array};
+use std::{fmt, str, array};
 
 pub mod prelude {
     pub use crate::{emit, emitln};
@@ -107,13 +107,9 @@ impl<R: std::io::BufRead> Reader<R> {
     pub fn vec_word(&mut self, len: usize) -> Vec<String> { self.vec(len) }
 
     fn get_next_line(&mut self) {
-        // Reuse allocated memory from the previous line: `clear` sets length to zero, but keeps
-        // capacity. These bytes are later reused to store the next line. Since the length is zero,
-        // `String::from_utf8` trivially succeeds in O(1).
+        // Reuse allocated memory: `clear` sets length to zero, but keeps capacity.
         self.buf.line.clear();
-        let mut s = String::from_utf8(mem::take(&mut self.buf.line)).unwrap();
-        self.reader.read_line(&mut s).unwrap();
-        self.buf.line = s.into_bytes();
+        self.reader.read_until(b'\n', &mut self.buf.line).unwrap();
         self.buf.pos = 0;
         self.buf.line_in_progress = true;
     }
